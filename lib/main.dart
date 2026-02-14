@@ -70,6 +70,20 @@ class Character {
   }
 }
 
+class GearItem {
+  GearItem({
+    required this.id,
+    required this.name,
+    required this.description,
+    required this.charmBonus,
+  });
+
+  final String id;
+  final String name;
+  final String description;
+  final int charmBonus;
+}
+
 class StoryEvent {
   StoryEvent({
     required this.title,
@@ -125,13 +139,37 @@ class HomePage extends StatefulWidget {
 }
 
 class _HomePageState extends State<HomePage> {
-  static const _saveKey = 'story_save_v1';
+  static const _saveKey = 'story_save_v2';
 
   int _selectedTab = 0;
   int _storyIndex = 0;
   bool _isLoading = true;
 
   final List<String> _logs = [];
+
+  int _baseCharm = 10;
+  String? _equippedItemId;
+
+  final List<GearItem> _gearItems = [
+    GearItem(
+      id: 'silver_tiara',
+      name: '은빛 티아라',
+      description: '품위를 더해 첫인상을 높여준다.',
+      charmBonus: 4,
+    ),
+    GearItem(
+      id: 'rose_perfume',
+      name: '장미 향수',
+      description: '가까운 대화에서 매력이 돋보인다.',
+      charmBonus: 6,
+    ),
+    GearItem(
+      id: 'moon_necklace',
+      name: '월광 목걸이',
+      description: '신비로운 분위기로 호감 상승 효과 강화.',
+      charmBonus: 8,
+    ),
+  ];
 
   final List<Character> _defaultCharacters = [
     Character(
@@ -152,6 +190,20 @@ class _HomePageState extends State<HomePage> {
 
   late List<Character> _characters;
   List<StoryEvent> _events = [];
+
+  int get _equippedCharmBonus {
+    final found = _gearItems.where((i) => i.id == _equippedItemId);
+    if (found.isEmpty) return 0;
+    return found.first.charmBonus;
+  }
+
+  int get _totalCharm => _baseCharm + _equippedCharmBonus;
+
+  int _withCharmBonus(int base) {
+    // 매력 5당 +1 보정
+    final charmScaled = _totalCharm ~/ 5;
+    return base + charmScaled;
+  }
 
   @override
   void initState() {
@@ -197,6 +249,9 @@ class _HomePageState extends State<HomePage> {
     try {
       final data = jsonDecode(raw) as Map<String, dynamic>;
       _storyIndex = (data['storyIndex'] as int? ?? 0).clamp(0, _events.length - 1);
+      _baseCharm = data['baseCharm'] as int? ?? 10;
+      _equippedItemId = data['equippedItemId'] as String?;
+
       _logs
         ..clear()
         ..addAll((data['logs'] as List<dynamic>? ?? []).map((e) => e.toString()));
@@ -232,6 +287,8 @@ class _HomePageState extends State<HomePage> {
     final prefs = await SharedPreferences.getInstance();
     final data = {
       'storyIndex': _storyIndex,
+      'baseCharm': _baseCharm,
+      'equippedItemId': _equippedItemId,
       'logs': _logs,
       'characters': _characters.map((c) => c.toJson()).toList(),
     };
@@ -243,45 +300,69 @@ class _HomePageState extends State<HomePage> {
   }
 
   Future<void> _applyChoice(StoryChoice choice) async {
+    final gain = _withCharmBonus(choice.affectionDelta);
+
     setState(() {
       final character = _findCharacter(choice.target);
-      character.affection = (character.affection + choice.affectionDelta).clamp(0, 100);
-      _logs.insert(0, '[스토리] ${choice.result} (${character.name} +${choice.affectionDelta})');
+      character.affection = (character.affection + gain).clamp(0, 100);
+      _logs.insert(0, '[스토리] ${choice.result} (${character.name} +$gain)');
       if (_storyIndex < _events.length - 1) {
         _storyIndex += 1;
       }
     });
 
     await _saveProgress();
-    _showSnack(choice.result);
+    _showSnack('${choice.result} (매력 보정 적용 +$gain)');
   }
 
   Future<void> _goDate(Character character) async {
+    const base = 8;
+    final gain = _withCharmBonus(base);
+
     setState(() {
       character.dates += 1;
-      character.affection = (character.affection + 8).clamp(0, 100);
-      _logs.insert(0, '[데이트] ${character.name}와 분수대 산책 (+8)');
+      character.affection = (character.affection + gain).clamp(0, 100);
+      _logs.insert(0, '[데이트] ${character.name}와 분수대 산책 (+$gain)');
     });
 
     await _saveProgress();
-    _showSnack('${character.name}와 데이트를 즐겼어요.');
+    _showSnack('${character.name}와 데이트를 즐겼어요. (+$gain)');
   }
 
   Future<void> _sendGift(Character character) async {
     final bool favoriteBonus = character.gifts % 2 == 0;
-    final int bonus = favoriteBonus ? 12 : 6;
+    final int base = favoriteBonus ? 12 : 6;
+    final gain = _withCharmBonus(base);
 
     setState(() {
       character.gifts += 1;
-      character.affection = (character.affection + bonus).clamp(0, 100);
+      character.affection = (character.affection + gain).clamp(0, 100);
       _logs.insert(
         0,
-        '[선물] ${character.name}에게 ${favoriteBonus ? character.favoriteGift : '향초'} 전달 (+$bonus)',
+        '[선물] ${character.name}에게 ${favoriteBonus ? character.favoriteGift : '향초'} 전달 (+$gain)',
       );
     });
 
     await _saveProgress();
-    _showSnack('${character.name}에게 선물을 전했어요.');
+    _showSnack('${character.name}에게 선물을 전했어요. (+$gain)');
+  }
+
+  Future<void> _equipItem(GearItem item) async {
+    setState(() {
+      _equippedItemId = item.id;
+      _logs.insert(0, '[장착] ${item.name} 장착 (매력 +${item.charmBonus})');
+    });
+    await _saveProgress();
+    _showSnack('${item.name} 장착! 총 매력 $_totalCharm');
+  }
+
+  Future<void> _unequipItem() async {
+    setState(() {
+      _equippedItemId = null;
+      _logs.insert(0, '[장착] 아이템 해제');
+    });
+    await _saveProgress();
+    _showSnack('아이템을 해제했어요.');
   }
 
   Future<void> _resetProgress() async {
@@ -290,6 +371,8 @@ class _HomePageState extends State<HomePage> {
 
     setState(() {
       _storyIndex = 0;
+      _baseCharm = 10;
+      _equippedItemId = null;
       _logs.clear();
       _characters = _defaultCharacters
           .map(
@@ -368,12 +451,36 @@ class _HomePageState extends State<HomePage> {
     );
   }
 
+  Widget _buildHeroStatusCard() {
+    final equipped = _gearItems.where((i) => i.id == _equippedItemId).toList();
+    final equippedName = equipped.isEmpty ? '없음' : equipped.first.name;
+
+    return Card(
+      child: Padding(
+        padding: const EdgeInsets.all(12),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text('주인공 상태', style: Theme.of(context).textTheme.titleMedium),
+            const SizedBox(height: 6),
+            Text('기본 매력: $_baseCharm · 장착 보너스: +$_equippedCharmBonus · 총 매력: $_totalCharm'),
+            Text('장착 아이템: $equippedName'),
+            const SizedBox(height: 6),
+            Text('효과: 호감도 상승량에 매력 기반 보정이 추가됩니다.'),
+          ],
+        ),
+      ),
+    );
+  }
+
   Widget _buildStoryPage() {
     final event = _events[_storyIndex];
 
     return ListView(
       padding: const EdgeInsets.all(16),
       children: [
+        _buildHeroStatusCard(),
+        const SizedBox(height: 10),
         Card(
           child: Padding(
             padding: const EdgeInsets.all(16),
@@ -420,61 +527,89 @@ class _HomePageState extends State<HomePage> {
   }
 
   Widget _buildCharactersPage() {
-    return ListView.builder(
+    return ListView(
       padding: const EdgeInsets.all(12),
-      itemCount: _characters.length,
-      itemBuilder: (context, index) {
-        final c = _characters[index];
-        return Card(
+      children: [
+        _buildHeroStatusCard(),
+        const SizedBox(height: 8),
+        Card(
           child: Padding(
-            padding: const EdgeInsets.all(14),
+            padding: const EdgeInsets.all(12),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Row(
-                  children: [
-                    CircleAvatar(
-                      radius: 28,
-                      backgroundColor: Theme.of(context).colorScheme.secondaryContainer,
-                      backgroundImage: c.imageUrl.isNotEmpty ? NetworkImage(c.imageUrl) : null,
-                      child: c.imageUrl.isEmpty ? const Icon(Icons.person) : null,
-                    ),
-                    const SizedBox(width: 12),
-                    Expanded(
-                      child: Text(
-                        '${c.name} · ${c.title}',
-                        style: Theme.of(context).textTheme.titleMedium,
-                      ),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 10),
-                Text(c.description),
-                const SizedBox(height: 10),
-                LinearProgressIndicator(value: c.affection / 100),
-                const SizedBox(height: 4),
-                Text('호감도 ${c.affection} / 100 · 데이트 ${c.dates}회 · 선물 ${c.gifts}회'),
-                const SizedBox(height: 12),
+                Text('장비 인벤토리', style: Theme.of(context).textTheme.titleMedium),
+                const SizedBox(height: 8),
                 Wrap(
                   spacing: 8,
+                  runSpacing: 8,
                   children: [
-                    OutlinedButton.icon(
-                      onPressed: () => _goDate(c),
-                      icon: const Icon(Icons.favorite),
-                      label: const Text('데이트'),
+                    ..._gearItems.map(
+                      (item) => OutlinedButton(
+                        onPressed: () => _equipItem(item),
+                        child: Text('${item.name} (+${item.charmBonus})'),
+                      ),
                     ),
-                    OutlinedButton.icon(
-                      onPressed: () => _sendGift(c),
-                      icon: const Icon(Icons.card_giftcard),
-                      label: const Text('선물하기'),
-                    ),
+                    TextButton(onPressed: _unequipItem, child: const Text('해제')),
                   ],
                 ),
               ],
             ),
           ),
-        );
-      },
+        ),
+        const SizedBox(height: 8),
+        ..._characters.map((c) {
+          return Card(
+            child: Padding(
+              padding: const EdgeInsets.all(14),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    children: [
+                      CircleAvatar(
+                        radius: 28,
+                        backgroundColor: Theme.of(context).colorScheme.secondaryContainer,
+                        backgroundImage: c.imageUrl.isNotEmpty ? NetworkImage(c.imageUrl) : null,
+                        child: c.imageUrl.isEmpty ? const Icon(Icons.person) : null,
+                      ),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: Text(
+                          '${c.name} · ${c.title}',
+                          style: Theme.of(context).textTheme.titleMedium,
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 10),
+                  Text(c.description),
+                  const SizedBox(height: 10),
+                  LinearProgressIndicator(value: c.affection / 100),
+                  const SizedBox(height: 4),
+                  Text('호감도 ${c.affection} / 100 · 데이트 ${c.dates}회 · 선물 ${c.gifts}회'),
+                  const SizedBox(height: 12),
+                  Wrap(
+                    spacing: 8,
+                    children: [
+                      OutlinedButton.icon(
+                        onPressed: () => _goDate(c),
+                        icon: const Icon(Icons.favorite),
+                        label: const Text('데이트'),
+                      ),
+                      OutlinedButton.icon(
+                        onPressed: () => _sendGift(c),
+                        icon: const Icon(Icons.card_giftcard),
+                        label: const Text('선물하기'),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+            ),
+          );
+        }),
+      ],
     );
   }
 
