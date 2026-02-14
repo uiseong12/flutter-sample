@@ -24,6 +24,7 @@ flutter:
     - assets/art/
     - assets/ui/
     - assets/minigame/
+    - assets/tiles/
     - assets/generated/bg_castle/001-medieval-fantasy-royal-castle-courtyard-.png
     - assets/generated/bg_ballroom/001-luxurious-medieval-ballroom-interior-at-.png
     - assets/generated/bg_tower/001-mystic-mage-tower-observatory-at-midnigh.png
