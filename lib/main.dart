@@ -1521,6 +1521,15 @@ class _GameShellState extends State<GameShell> {
     return all.where((e) => (e['node'] as int? ?? -1) == nodeNumber).toList();
   }
 
+  Map<String, dynamic>? _premiumSampleForChoice(int nodeNumber, StoryChoice choice, {int choiceIndex = 0}) {
+    final samples = _premiumSamplesForNode(nodeNumber);
+    if (samples.isEmpty) return null;
+    for (final s in samples) {
+      if (s['targetName']?.toString() == choice.mainTarget) return s;
+    }
+    return choiceIndex < samples.length ? samples[choiceIndex] : samples.first;
+  }
+
   String _choiceKindLabel(ChoiceKind kind) {
     switch (kind) {
       case ChoiceKind.free:
@@ -1549,10 +1558,12 @@ class _GameShellState extends State<GameShell> {
     setState(() {});
   }
 
-  Future<void> _applyPremiumSample(Map<String, dynamic> sample) async {
+  Future<void> _applyPremiumSample(Map<String, dynamic> sample, {bool consumeToken = true}) async {
     final targetName = sample['targetName']?.toString() ?? _story[_storyIndex].leftCharacter;
     final target = _characterByName(targetName);
-    _premiumTokens = max(0, _premiumTokens - 1);
+    if (consumeToken) {
+      _premiumTokens = max(0, _premiumTokens - 1);
+    }
 
     final affinity = sample['affectionAdd'] as int? ?? 0;
     if (affinity != 0) {
@@ -1665,12 +1676,57 @@ class _GameShellState extends State<GameShell> {
     }
 
     if (open == 'token') {
-      await _applyPremiumSample(picked);
+      await _applyPremiumSample(picked, consumeToken: true);
     } else {
       final clone = Map<String, dynamic>.from(picked);
       clone['affectionAdd'] = (clone['affectionAdd'] as int? ?? 0) - 1;
-      await _applyPremiumSample(clone);
+      await _applyPremiumSample(clone, consumeToken: false);
     }
+  }
+
+  Future<void> _openAttachedPremiumForChoice(StoryBeat beat, StoryChoice choice, int choiceIndex, Map<String, dynamic> sample) async {
+    if (_endingCharacterName != null) return;
+
+    final open = await showDialog<String>(
+      context: context,
+      builder: (_) => AlertDialog(
+        title: const Text('추가 장면(프리미엄)'),
+        content: Text('${sample['title']}\n\n${sample['scene']}'),
+        actions: [
+          TextButton(onPressed: () => Navigator.pop(context, 'later'), child: const Text('무료 선택 유지')),
+          TextButton(onPressed: () => Navigator.pop(context, 'ad'), child: const Text('광고 보고 열기')),
+          FilledButton(onPressed: () => Navigator.pop(context, 'token'), child: const Text('토큰 1개 사용')),
+        ],
+      ),
+    );
+
+    if (open == null || open == 'later') return;
+
+    if (open == 'ad') {
+      final ok = await _consumeAdView('premium_open', 10);
+      if (!ok) {
+        if (!mounted) return;
+        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('오늘 프리미엄 광고 개방 한도 도달')));
+        return;
+      }
+    } else if (_premiumTokens <= 0) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('토큰이 부족합니다.')));
+      return;
+    }
+
+    final premiumChoice = StoryChoice(
+      label: '[프리미엄] ${choice.label}',
+      mainTarget: choice.mainTarget,
+      mainDelta: choice.mainDelta,
+      result: '${choice.result}\n(추가 장면: ${sample['title']})',
+      sideTarget: choice.sideTarget,
+      sideDelta: choice.sideDelta,
+      kind: ChoiceKind.premium,
+    );
+
+    await _pickStoryChoice(premiumChoice, choiceIndex);
+    await _applyPremiumSample(sample, consumeToken: open == 'token');
   }
 
   Future<void> _usePremiumChoice(StoryBeat beat) async {
@@ -2459,24 +2515,47 @@ class _GameShellState extends State<GameShell> {
                             final choice = beat.choices[i];
                             final routeLocked = _isChoiceBlockedByRouteLock(choice);
                             final kind = i == beat.choices.length - 1 ? ChoiceKind.condition : ChoiceKind.free;
-                            return ElevatedButton.icon(
-                              style: ElevatedButton.styleFrom(
-                                backgroundColor: kind == ChoiceKind.free ? null : Colors.indigo.withOpacity(0.72),
-                              ),
-                              onPressed: (_endingCharacterName != null || routeLocked) ? null : () => _pickStoryChoice(
-                                StoryChoice(
-                                  label: choice.label,
-                                  mainTarget: choice.mainTarget,
-                                  mainDelta: choice.mainDelta,
-                                  result: choice.result,
-                                  sideTarget: choice.sideTarget,
-                                  sideDelta: choice.sideDelta,
-                                  kind: kind,
+                            final premiumSample = _premiumSampleForChoice(_storyIndex + 1, choice, choiceIndex: i);
+                            return Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                ElevatedButton.icon(
+                                  style: ElevatedButton.styleFrom(
+                                    backgroundColor: kind == ChoiceKind.free ? null : Colors.indigo.withOpacity(0.72),
+                                  ),
+                                  onPressed: (_endingCharacterName != null || routeLocked)
+                                      ? null
+                                      : () => _pickStoryChoice(
+                                            StoryChoice(
+                                              label: choice.label,
+                                              mainTarget: choice.mainTarget,
+                                              mainDelta: choice.mainDelta,
+                                              result: choice.result,
+                                              sideTarget: choice.sideTarget,
+                                              sideDelta: choice.sideDelta,
+                                              kind: kind,
+                                            ),
+                                            i,
+                                          ),
+                                  icon: Icon(kind == ChoiceKind.free ? Icons.radio_button_unchecked : Icons.key, size: 16),
+                                  label: Text('[${_choiceKindLabel(kind)}] ${choice.label}'),
                                 ),
-                                i,
-                              ),
-                              icon: Icon(kind == ChoiceKind.free ? Icons.radio_button_unchecked : Icons.key, size: 16),
-                              label: Text('[${_choiceKindLabel(kind)}] ${choice.label}'),
+                                if (premiumSample != null)
+                                  Padding(
+                                    padding: const EdgeInsets.only(top: 4),
+                                    child: OutlinedButton.icon(
+                                      style: OutlinedButton.styleFrom(
+                                        foregroundColor: const Color(0xFFC3B3FF),
+                                        side: const BorderSide(color: Color(0xFF7E67FF)),
+                                      ),
+                                      onPressed: (_endingCharacterName != null || routeLocked)
+                                          ? null
+                                          : () => _openAttachedPremiumForChoice(beat, choice, i, premiumSample),
+                                      icon: const Icon(Icons.auto_awesome, size: 16),
+                                      label: Text('[프리미엄] 추가 장면 · ${premiumSample['title']}'),
+                                    ),
+                                  ),
+                              ],
                             );
                           },
                         ),
