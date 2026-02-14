@@ -201,9 +201,9 @@ class _GameShellState extends State<GameShell> {
 
   final List<OutfitItem> _outfits = [
     OutfitItem(id: 'default', name: '수수한 여행복', price: 0, charmBonus: 0, avatarAsset: 'assets/generated/heroine/001-full-body-2d-romance-webtoon-style-heroi.png'),
-    OutfitItem(id: 'noble_dress', name: '귀족 연회 드레스', price: 220, charmBonus: 4, avatarAsset: 'assets/art/player_noble.svg'),
-    OutfitItem(id: 'ranger_look', name: '숲의 레인저 복장', price: 180, charmBonus: 3, avatarAsset: 'assets/art/player_ranger.svg'),
-    OutfitItem(id: 'moon_gown', name: '월광 궁정 예복', price: 380, charmBonus: 7, avatarAsset: 'assets/art/player_moon.svg'),
+    OutfitItem(id: 'noble_dress', name: '귀족 연회 드레스', price: 220, charmBonus: 4, avatarAsset: 'assets/generated/outfit_noble/001-full-body-female-protagonist-romance-web.png'),
+    OutfitItem(id: 'ranger_look', name: '숲의 레인저 복장', price: 180, charmBonus: 3, avatarAsset: 'assets/generated/outfit_ranger/001-full-body-female-protagonist-romance-web.png'),
+    OutfitItem(id: 'moon_gown', name: '월광 궁정 예복', price: 380, charmBonus: 7, avatarAsset: 'assets/generated/outfit_moon/001-full-body-female-protagonist-romance-web.png'),
   ];
 
   final List<ShopItem> _giftItems = [
