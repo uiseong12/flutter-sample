@@ -206,6 +206,7 @@ class _GameShellState extends State<GameShell> {
   final List<String> _logs = [];
   final List<_Sparkle> _sparkles = [];
   final Map<String, int> _lastDelta = {};
+  final Map<String, String> _dateModeByCharacter = {};
 
   final Map<String, Expression> _expressions = {};
   final Map<String, RelationshipState> _relationshipStates = {};
@@ -1366,6 +1367,32 @@ class _GameShellState extends State<GameShell> {
     setState(() {});
   }
 
+  void _showQuickInventory() {
+    showModalBottomSheet(
+      context: context,
+      showDragHandle: true,
+      builder: (_) => Container(
+        decoration: const BoxDecoration(image: DecorationImage(image: AssetImage('assets/ui/mini_inventory_sheet.png'), fit: BoxFit.cover)),
+        child: ListView(
+          padding: const EdgeInsets.all(12),
+          children: [
+            const Text('빠른 장착', style: TextStyle(fontWeight: FontWeight.w700)),
+            ..._outfits.map((o) => ListTile(
+                  title: Text(o.name),
+                  subtitle: Text('매력 +${o.charmBonus}'),
+                  trailing: o.id == _equippedOutfitId ? const Text('착용중') : null,
+                  onTap: () {
+                    setState(() => _equippedOutfitId = o.id);
+                    _save();
+                    Navigator.pop(context);
+                  },
+                )),
+          ],
+        ),
+      ),
+    );
+  }
+
   Future<void> _buyOutfit(OutfitItem item) async {
     if (_gold < item.price) {
       ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('골드가 부족합니다.')));
@@ -1919,16 +1946,79 @@ class _GameShellState extends State<GameShell> {
   Widget _objectivePanel() {
     return Container(
       padding: const EdgeInsets.all(10),
-      decoration: BoxDecoration(color: Colors.black.withOpacity(0.42), borderRadius: BorderRadius.circular(10)),
+      decoration: BoxDecoration(
+        image: const DecorationImage(image: AssetImage('assets/ui/panel_parchment_dark.png'), fit: BoxFit.fill),
+        borderRadius: BorderRadius.circular(10),
+      ),
       child: const Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         mainAxisSize: MainAxisSize.min,
         children: [
-          Text('목표', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+          Text('목표', style: TextStyle(color: Color(0xFFF6F1E8), fontWeight: FontWeight.w700, shadows: [Shadow(color: Color(0x99000000), blurRadius: 6, offset: Offset(0, 1))])),
           SizedBox(height: 3),
-          Text('1) 호감도 100 선점', style: TextStyle(color: Colors.white70, fontSize: 12)),
-          Text('2) 분기 루트 개방', style: TextStyle(color: Colors.white70, fontSize: 12)),
+          Text('1) 호감도 100 선점', style: TextStyle(color: Color(0xFFF6F1E8), fontSize: 12)),
+          Text('2) 분기 루트 개방', style: TextStyle(color: Color(0xFFF6F1E8), fontSize: 12)),
         ],
+      ),
+    );
+  }
+
+  Widget _topBottomScrim() {
+    return IgnorePointer(
+      child: Column(
+        children: [
+          Expanded(
+            flex: 2,
+            child: Container(
+              decoration: const BoxDecoration(
+                gradient: LinearGradient(
+                  begin: Alignment.topCenter,
+                  end: Alignment.bottomCenter,
+                  colors: [Color(0x8C000000), Color(0x00000000)],
+                ),
+              ),
+            ),
+          ),
+          const Spacer(flex: 5),
+          Expanded(
+            flex: 3,
+            child: Container(
+              decoration: const BoxDecoration(
+                gradient: LinearGradient(
+                  begin: Alignment.bottomCenter,
+                  end: Alignment.topCenter,
+                  colors: [Color(0xA6000000), Color(0x00000000)],
+                ),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _sealPrimaryButton(String label, VoidCallback? onPressed) {
+    final enabled = onPressed != null;
+    return GestureDetector(
+      onTapDown: (_) => _playClick(),
+      child: Opacity(
+        opacity: enabled ? 1 : 0.45,
+        child: Container(
+          decoration: BoxDecoration(
+            image: const DecorationImage(image: AssetImage('assets/ui/button_primary_seal_v2.png'), fit: BoxFit.fill),
+            boxShadow: enabled ? [const BoxShadow(color: Color(0x887E67FF), blurRadius: 10)] : null,
+          ),
+          child: TextButton(
+            onPressed: onPressed,
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 12),
+              child: Text(
+                label,
+                style: const TextStyle(fontSize: 17, fontWeight: FontWeight.w700, color: Color(0xFFF6F1E8), shadows: [Shadow(color: Color(0x99000000), blurRadius: 6)]),
+              ),
+            ),
+          ),
+        ),
       ),
     );
   }
@@ -1944,7 +2034,7 @@ class _GameShellState extends State<GameShell> {
           height: 70,
           child: Stack(
             children: [
-              Positioned.fill(child: Image.asset('assets/ui/hud_top_frame.png', fit: BoxFit.fill)),
+              Positioned.fill(child: Image.asset('assets/ui/top_hud_frame_v3.png', fit: BoxFit.fill)),
               Positioned(
                 left: 58,
                 top: 25,
@@ -1974,7 +2064,7 @@ class _GameShellState extends State<GameShell> {
       ),
       bottomNavigationBar: Container(
         decoration: BoxDecoration(
-          image: DecorationImage(image: AssetImage('assets/ui/bottom_nav_frame.png'), fit: BoxFit.fill),
+          image: DecorationImage(image: AssetImage('assets/ui/bottom_nav_frame_v3.png'), fit: BoxFit.fill),
         ),
         child: NavigationBar(
           backgroundColor: Colors.transparent,
@@ -2032,7 +2122,8 @@ class _GameShellState extends State<GameShell> {
             fit: BoxFit.cover,
           ),
         ),
-        Positioned.fill(child: Container(color: Colors.black.withOpacity(0.28))),
+        Positioned.fill(child: Container(color: Colors.black.withOpacity(0.18))),
+        Positioned.fill(child: _topBottomScrim()),
 
         Center(
           child: Stack(
@@ -2046,10 +2137,10 @@ class _GameShellState extends State<GameShell> {
                   child: _fullBodySprite(_playerAvatar, width: 250),
                 ),
               ),
-              Positioned(left: 18, top: 120, child: Image.asset('assets/ui/equip_slot_ring.png', width: 42)),
-              Positioned(right: 18, top: 120, child: Image.asset('assets/ui/equip_slot_brooch.png', width: 42)),
-              Positioned(left: 24, bottom: 120, child: Image.asset('assets/ui/equip_slot_cloak.png', width: 42)),
-              Positioned(right: 24, bottom: 120, child: Image.asset('assets/ui/equip_slot_dress.png', width: 42)),
+              Positioned(left: 18, top: 120, child: GestureDetector(onTap: _showQuickInventory, child: Image.asset('assets/ui/equip_slot_ring.png', width: 42))),
+              Positioned(right: 18, top: 120, child: GestureDetector(onTap: _showQuickInventory, child: Image.asset('assets/ui/equip_slot_brooch.png', width: 42))),
+              Positioned(left: 24, bottom: 120, child: GestureDetector(onTap: _showQuickInventory, child: Image.asset('assets/ui/equip_slot_cloak.png', width: 42))),
+              Positioned(right: 24, bottom: 120, child: GestureDetector(onTap: _showQuickInventory, child: Image.asset('assets/ui/equip_slot_dress.png', width: 42))),
             ],
           ),
         ),
@@ -2061,7 +2152,21 @@ class _GameShellState extends State<GameShell> {
             width: 220,
             padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
             decoration: BoxDecoration(image: DecorationImage(image: AssetImage('assets/ui/panel_parchment_dark.png'), fit: BoxFit.fill)),
-            child: const Text('오늘 AP 12/12\n남은 할 일: 스토리 1 · 데이트 1 · 알바 1', style: TextStyle(color: Colors.white, fontSize: 12)),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const Text('오늘 AP 12/12', style: TextStyle(color: Color(0xFFF6F1E8), fontSize: 12, fontWeight: FontWeight.w700)),
+                const SizedBox(height: 6),
+                Wrap(
+                  spacing: 6,
+                  children: const [
+                    Chip(label: Text('📘 1', style: TextStyle(fontSize: 11))),
+                    Chip(label: Text('💗 1', style: TextStyle(fontSize: 11))),
+                    Chip(label: Text('🔧 1', style: TextStyle(fontSize: 11))),
+                  ],
+                ),
+              ],
+            ),
           ),
         ),
 
@@ -2154,12 +2259,11 @@ class _GameShellState extends State<GameShell> {
                       ],
                     ),
                   ),
-                  FilledButton(
-                    onPressed: () {
-                      _playClick();
+                  SizedBox(
+                    width: 180,
+                    child: _sealPrimaryButton('다음 노드', () {
                       setState(() => _menuIndex = 1);
-                    },
-                    child: const Text('다음 노드'),
+                    }),
                   ),
                 ],
               ),
@@ -2249,7 +2353,8 @@ class _GameShellState extends State<GameShell> {
                     ),
                   ),
                 ),
-                Positioned.fill(child: Container(color: Colors.black.withOpacity(0.38))),
+                Positioned.fill(child: Container(color: Colors.black.withOpacity(0.28))),
+                Positioned.fill(child: _topBottomScrim()),
                 Positioned(
                   left: 12,
                   right: 12,
@@ -2263,14 +2368,12 @@ class _GameShellState extends State<GameShell> {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        const Text('스토리 진행도 (아래 → 위)', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 17)),
+                        const Text('스토리 진행도 (아래 → 위)', style: TextStyle(color: Color(0xFFF6F1E8), fontWeight: FontWeight.w700, fontSize: 17, shadows: [Shadow(color: Color(0x99000000), blurRadius: 6)])),
                         const SizedBox(height: 4),
-                        Text('클리어: $cleared / ${_story.length}', style: const TextStyle(color: Colors.white70)),
-                        Text('현재: EP ${_storyIndex + 1}. ${preview.title}', style: const TextStyle(color: Colors.white70)),
+                        Text('클리어: $cleared / ${_story.length}', style: const TextStyle(color: Color(0xFFF6F1E8))),
+                        Text('현재: EP ${_storyIndex + 1}. ${preview.title}', style: const TextStyle(color: Color(0xFFF6F1E8))),
                         if (_endingCharacterName != null)
                           Text('확정 엔딩: $_endingCharacterName', style: const TextStyle(color: Colors.amberAccent, fontWeight: FontWeight.bold)),
-                        const SizedBox(height: 4),
-                        const Text('아이콘: 💔감정 · ⚖️재판 · 👗의전 · 🔍조사 (노드 길게 눌러 프리뷰)', style: TextStyle(color: Colors.white60, fontSize: 11)),
                       ],
                     ),
                   ),
@@ -2286,18 +2389,14 @@ class _GameShellState extends State<GameShell> {
                   left: 12,
                   right: 12,
                   bottom: 12,
-                  child: FilledButton(
-                    onPressed: () {
-                      _playClick();
-                      setState(() {
-                        _inStoryScene = true;
-                        _sceneKey += 1;
-                        _transitionPreset = TransitionPreset.fade;
-                      });
-                      _beginBeatLine();
-                    },
-                    child: Text(cleared == 0 ? '스토리 시작' : '이 스텝부터 진행'),
-                  ),
+                  child: _sealPrimaryButton(cleared == 0 ? '스토리 시작' : '이 스텝부터 진행', () {
+                    setState(() {
+                      _inStoryScene = true;
+                      _sceneKey += 1;
+                      _transitionPreset = TransitionPreset.fade;
+                    });
+                    _beginBeatLine();
+                  }),
                 ),
               ],
             ),
@@ -2411,24 +2510,31 @@ class _GameShellState extends State<GameShell> {
                       });
                     },
                     onLongPress: () => _showNodePreview(beat),
-                    child: AnimatedContainer(
-                      duration: const Duration(milliseconds: 180),
-                      width: 34,
-                      height: 34,
-                      alignment: Alignment.center,
-                      decoration: BoxDecoration(
-                        shape: BoxShape.circle,
-                        color: selected ? Colors.amber : (done ? const Color(0xFF8A6B4D) : const Color(0xFF364A66)),
-                        border: Border.all(color: Colors.white70),
-                        boxShadow: selected ? [const BoxShadow(color: Colors.amberAccent, blurRadius: 8)] : null,
-                      ),
-                      child: Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Image.asset(_nodeTypeIconAsset(beat), width: 12, height: 12),
-                          Text('${n['id']! + 1}', style: const TextStyle(color: Colors.white, fontSize: 9, fontWeight: FontWeight.bold)),
-                        ],
-                      ),
+                    child: Stack(
+                      clipBehavior: Clip.none,
+                      children: [
+                        AnimatedContainer(
+                          duration: const Duration(milliseconds: 180),
+                          width: 38,
+                          height: 38,
+                          alignment: Alignment.center,
+                          decoration: BoxDecoration(
+                            shape: BoxShape.circle,
+                            color: selected ? const Color(0xFF7E67FF) : (done ? const Color(0xFF8A6B4D) : const Color(0xFF364A66)),
+                            border: Border.all(color: Colors.white70),
+                            boxShadow: selected ? [const BoxShadow(color: Color(0xCC7E67FF), blurRadius: 10)] : null,
+                          ),
+                          child: Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Image.asset(_nodeTypeIconAsset(beat), width: 12, height: 12),
+                              Text('${n['id']! + 1}', style: const TextStyle(color: Colors.white, fontSize: 9, fontWeight: FontWeight.bold)),
+                            ],
+                          ),
+                        ),
+                        if (selected) Positioned(top: -16, right: -10, child: Image.asset('assets/ui/node_current_flag.png', width: 24)),
+                        if (beat % 5 == 0) const Positioned(bottom: -8, right: -8, child: Icon(Icons.warning_amber_rounded, size: 14, color: Colors.orangeAccent)),
+                      ],
                     ),
                   ),
                 );
@@ -2750,6 +2856,28 @@ class _GameShellState extends State<GameShell> {
     );
   }
 
+  Widget _workTab(String label, WorkMiniGame game) {
+    final selected = _selectedWork == game;
+    return InkWell(
+      onTap: () {
+        _playClick();
+        setState(() => _selectedWork = game);
+        if (_workTimeLeft > 0) _prepareWorkRound();
+      },
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 120),
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+        decoration: BoxDecoration(
+          color: selected ? const Color(0xFF6F54A8) : const Color(0xFF6A523C),
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(color: selected ? const Color(0xFFE9D7A1) : const Color(0xFFB28A62), width: 2),
+          boxShadow: selected ? [const BoxShadow(color: Color(0x887E67FF), blurRadius: 8)] : null,
+        ),
+        child: Text(label, style: const TextStyle(color: Color(0xFFF6F1E8), fontWeight: FontWeight.w700)),
+      ),
+    );
+  }
+
   Widget _workPage() {
     const herbs = ['라벤더', '로즈마리', '박하', '세이지'];
 
@@ -2835,18 +2963,14 @@ class _GameShellState extends State<GameShell> {
           ),
         ),
         const SizedBox(height: 8),
-        SegmentedButton<WorkMiniGame>(
-          segments: const [
-            ButtonSegment(value: WorkMiniGame.herbSort, label: Text('약초 분류'), icon: Icon(Icons.spa)),
-            ButtonSegment(value: WorkMiniGame.smithTiming, label: Text('대장간 단조'), icon: Icon(Icons.hardware)),
-            ButtonSegment(value: WorkMiniGame.haggling, label: Text('시장 흥정'), icon: Icon(Icons.payments)),
+        Wrap(
+          spacing: 6,
+          runSpacing: 6,
+          children: [
+            _workTab('약초 분류', WorkMiniGame.herbSort),
+            _workTab('대장간 단조', WorkMiniGame.smithTiming),
+            _workTab('시장 흥정', WorkMiniGame.haggling),
           ],
-          selected: {_selectedWork},
-          onSelectionChanged: (s) {
-            _playClick();
-            setState(() => _selectedWork = s.first);
-            if (_workTimeLeft > 0) _prepareWorkRound();
-          },
         ),
         const SizedBox(height: 10),
         Card(
@@ -2859,13 +2983,35 @@ class _GameShellState extends State<GameShell> {
                 const SizedBox(height: 10),
                 gameBody,
                 const SizedBox(height: 10),
-                OutlinedButton(onPressed: _workTimeLeft > 0 ? null : _startWorkMiniGame, child: const Text('아르바이트 시작')),
+                _sealPrimaryButton('아르바이트 시작', _workTimeLeft > 0 ? null : _startWorkMiniGame),
               ],
             ),
           ),
         ),
       ],
     );
+  }
+
+  Future<void> _showGiftTargetPicker(ShopItem item) async {
+    final selected = await showModalBottomSheet<Character>(
+      context: context,
+      showDragHandle: true,
+      builder: (_) => ListView(
+        padding: const EdgeInsets.all(12),
+        children: [
+          Text('${item.name} 선물 대상 선택', style: const TextStyle(fontWeight: FontWeight.w700)),
+          ..._characters.map((c) => ListTile(
+                leading: SizedBox(width: 40, height: 54, child: _characterImageWithExpression(c, width: 34)),
+                title: Text(c.name),
+                subtitle: Text(c.role),
+                onTap: () => Navigator.pop(context, c),
+              )),
+        ],
+      ),
+    );
+    if (selected != null) {
+      await _buyGift(item, selected);
+    }
   }
 
   Widget _shopPage() {
@@ -2909,10 +3055,7 @@ class _GameShellState extends State<GameShell> {
                     Text('${item.name} · ${item.price}G', style: const TextStyle(fontWeight: FontWeight.w700)),
                     Text(item.description),
                     const SizedBox(height: 8),
-                    Wrap(
-                      spacing: 6,
-                      children: _characters.map((c) => OutlinedButton(onPressed: () => _buyGift(item, c), child: Text('${c.name}에게 선물'))).toList(),
-                    ),
+                    _sealPrimaryButton('선물하기', () => _showGiftTargetPicker(item)),
                   ],
                 ),
               ),
@@ -2929,63 +3072,95 @@ class _GameShellState extends State<GameShell> {
       return max(0, need - c.affection);
     }
 
+    Future<void> startDate(Character c) async {
+      final mode = _dateModeByCharacter[c.name] ?? 'short';
+      await _dateRandom(c);
+      if (mode == 'event') {
+        await _addAffection(c, 4, '[사건데이트]');
+        _applyPoliticalDelta({'publicTrust': 2}, '사건데이트');
+        await _save();
+      }
+      if (mounted) setState(() {});
+    }
+
     return ListView(
       padding: const EdgeInsets.all(12),
       children: [
         const Text('데이트', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
         const SizedBox(height: 6),
-        const Text('짧은 데이트(2~3분) / 사건 데이트(5~7분) 중 선택하세요.'),
+        const Text('캐릭터별 모드 선택 후 시작하세요.'),
         const SizedBox(height: 8),
-        ..._characters.map((c) => Card(
-              child: Padding(
-                padding: const EdgeInsets.all(10),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Row(
-                      children: [
-                        SizedBox(width: 40, height: 54, child: _characterImageWithExpression(c, width: 36)),
-                        const SizedBox(width: 8),
-                        Expanded(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text('${c.name} (${c.role})', style: const TextStyle(fontWeight: FontWeight.w700)),
-                              Text('호감도 ${c.affection} · 관계 ${_relationshipLabel(_relationshipStates[c.name] ?? RelationshipState.strange)}'),
-                              Text('다음 해금까지 +${toNext(c)}', style: const TextStyle(fontSize: 12, color: Colors.indigo)),
-                            ],
-                          ),
+        ..._characters.map((c) {
+          final mode = _dateModeByCharacter[c.name] ?? 'short';
+          final nextNeed = toNext(c);
+          return Card(
+            color: const Color(0xFFF4EEE2),
+            child: Padding(
+              padding: const EdgeInsets.all(10),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    children: [
+                      Container(
+                        width: 56,
+                        height: 72,
+                        decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(8)),
+                        child: _characterImageWithExpression(c, width: 52),
+                      ),
+                      const SizedBox(width: 10),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(c.name, style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 16)),
+                            Text(_relationshipLabel(_relationshipStates[c.name] ?? RelationshipState.strange)),
+                            const SizedBox(height: 4),
+                            LinearProgressIndicator(value: c.affection / 100, minHeight: 8),
+                            const SizedBox(height: 3),
+                            Text('다음 해금 +$nextNeed (보이스 1 + 스토리 1)', style: const TextStyle(fontSize: 12, color: Color(0xFF5B4A7B))),
+                          ],
                         ),
-                      ],
-                    ),
-                    const SizedBox(height: 8),
-                    Row(
-                      children: [
-                        Expanded(child: OutlinedButton(onPressed: () => _dateRandom(c), child: const Text('짧은 데이트'))),
-                        const SizedBox(width: 8),
-                        Expanded(
-                          child: FilledButton(
-                            onPressed: () async {
-                              await _dateRandom(c);
-                              await _addAffection(c, 4, '[사건데이트]');
-                              _applyPoliticalDelta({'publicTrust': 2}, '사건데이트');
-                              await _save();
-                              if (mounted) setState(() {});
-                            },
-                            child: const Text('사건 데이트'),
-                          ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 8),
+                  Row(
+                    children: [
+                      Expanded(
+                        child: SegmentedButton<String>(
+                          segments: const [
+                            ButtonSegment(value: 'short', label: Text('짧음')),
+                            ButtonSegment(value: 'event', label: Text('사건')),
+                          ],
+                          selected: {mode},
+                          onSelectionChanged: (s) => setState(() => _dateModeByCharacter[c.name] = s.first),
                         ),
-                      ],
-                    ),
-                  ],
-                ),
+                      ),
+                      const SizedBox(width: 8),
+                      _sealPrimaryButton('시작', () => startDate(c)),
+                    ],
+                  ),
+                ],
               ),
-            )),
+            ),
+          );
+        }),
       ],
     );
   }
 
   Widget _ledgerPage() {
+    const names = {
+      'legitimacy': '정통성',
+      'economy': '경제력',
+      'publicTrust': '민심',
+      'military': '군사',
+      'surveillance': '감시도',
+    };
+
+    String alertLevel(int v) => v >= 80 ? '위험' : (v >= 50 ? '주의' : '안전');
+
     return ListView(
       padding: const EdgeInsets.all(12),
       children: [
@@ -2996,9 +3171,9 @@ class _GameShellState extends State<GameShell> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text('${e.key} · ${e.value}'),
+                  Text('${names[e.key] ?? e.key} · ${e.value}'),
                   const SizedBox(height: 4),
-                  LinearProgressIndicator(value: e.value / 100, minHeight: 8),
+                  LinearProgressIndicator(value: e.value / 100, minHeight: 10),
                 ],
               ),
             )),
@@ -3009,66 +3184,90 @@ class _GameShellState extends State<GameShell> {
               padding: const EdgeInsets.only(bottom: 6),
               child: Row(
                 children: [
-                  SizedBox(width: 44, child: Text('D-${e.key}')),
+                  SizedBox(width: 50, child: Text('D-${e.key}')),
+                  const Icon(Icons.gavel, size: 14, color: Colors.brown),
+                  const SizedBox(width: 4),
                   Expanded(child: LinearProgressIndicator(value: e.value / 100, minHeight: 7)),
                   const SizedBox(width: 8),
                   Text('${e.value}'),
                 ],
               ),
             )),
+        Text('경고 레벨: ${alertLevel(_politicalStats['surveillance'] ?? 0)}', style: const TextStyle(fontWeight: FontWeight.w700)),
         const SizedBox(height: 10),
         const Text('증거 카드 (필터: 길드/은등회/왕실)', style: TextStyle(fontWeight: FontWeight.bold)),
         Wrap(spacing: 6, runSpacing: 6, children: _evidenceOwned.map((e) => Chip(label: Text(e))).toList()),
         const SizedBox(height: 10),
         const Text('플래그 로그(요약)', style: TextStyle(fontWeight: FontWeight.bold)),
         const SizedBox(height: 6),
-        ..._logs.take(5).map((e) => Text('• $e')),
+        Wrap(
+          spacing: 6,
+          runSpacing: 6,
+          children: _logs.take(8).map((e) => Chip(label: Text(e.length > 24 ? '${e.substring(0, 24)}…' : e))).toList(),
+        ),
       ],
     );
   }
 
   Widget _codexPage() {
     final unlocked = _evidenceOwned.length + _keyFlags.values.where((e) => e).length;
+    Widget silhouetteGrid(int total, int opened) {
+      return GridView.builder(
+        shrinkWrap: true,
+        physics: const NeverScrollableScrollPhysics(),
+        itemCount: total,
+        gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(crossAxisCount: 3, crossAxisSpacing: 6, mainAxisSpacing: 6, childAspectRatio: 1.2),
+        itemBuilder: (_, i) => Container(
+          decoration: BoxDecoration(
+            color: i < opened ? const Color(0xFF3E2F50) : const Color(0xFF1E1B22),
+            borderRadius: BorderRadius.circular(8),
+          ),
+          child: Center(child: Text(i < opened ? '해금' : '???', style: const TextStyle(color: Color(0xFFF6F1E8)))),
+        ),
+      );
+    }
+
     return ListView(
       padding: const EdgeInsets.all(12),
       children: [
         const Text('도감', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
         const SizedBox(height: 8),
-        ListTile(title: const Text('보이스'), subtitle: Text('해금 ${_keyFlags.values.where((e) => e).length}/20 · 조건 힌트 제공')),
-        ListTile(title: const Text('CG'), subtitle: Text('해금 ${_evidenceOwned.length}/30 · 잠금 항목은 힌트만 노출')),
-        ListTile(title: const Text('엔딩'), subtitle: Text(_endingRuleId == null ? '실루엣 상태 + 달성 힌트' : '최근 해금: $_endingRuleId')),
-        ListTile(title: const Text('POV'), subtitle: Text('해금 진행도 $unlocked/40 (예: 2/3 충족)')),
+        ListTile(title: const Text('보이스'), subtitle: Text('해금 ${_keyFlags.values.where((e) => e).length}/20')),
+        ListTile(title: const Text('CG'), subtitle: Text('해금 ${_evidenceOwned.length}/30')),
+        ListTile(title: const Text('엔딩'), subtitle: Text(_endingRuleId == null ? '실루엣 상태 + 힌트' : '최근 해금: $_endingRuleId')),
+        ListTile(title: const Text('POV'), subtitle: Text('진행도 $unlocked/40 (2/3 충족 형식)')),
+        const SizedBox(height: 8),
+        silhouetteGrid(9, min(9, _evidenceOwned.length)),
       ],
     );
   }
 
   Widget _settingsPage() {
-    return ListView(
-      padding: const EdgeInsets.all(12),
-      children: [
-        const Text('설정', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
-        SwitchListTile(
-          value: _autoPlay,
-          onChanged: (v) => setState(() => _autoPlay = v),
-          title: const Text('오토 플레이'),
-        ),
-        SwitchListTile(
-          value: _skipTyping,
-          onChanged: (v) {
-            setState(() => _skipTyping = v);
-            _beginBeatLine();
-          },
-          title: const Text('타이핑 스킵'),
-        ),
-        ListTile(
-          title: const Text('광고/과금 원칙'),
-          subtitle: const Text('감정씬 직전·직후 강제 광고 없음\n보상형 광고 중심으로 노출'),
-        ),
-        ListTile(
-          title: const Text('데이터 스키마'),
-          subtitle: Text(_unlockContentSchema.isEmpty ? '미로드' : 'unlock_content_schema_v1 로드됨'),
-        ),
-      ],
+    return Container(
+      decoration: const BoxDecoration(image: DecorationImage(image: AssetImage('assets/ui/panel_parchment_light.png'), fit: BoxFit.cover)),
+      child: ListView(
+        padding: const EdgeInsets.all(12),
+        children: [
+          const Text('설정', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+          SwitchListTile.adaptive(
+            value: _autoPlay,
+            onChanged: (v) => setState(() => _autoPlay = v),
+            title: const Text('오토 플레이'),
+          ),
+          SwitchListTile.adaptive(
+            value: _skipTyping,
+            onChanged: (v) {
+              setState(() => _skipTyping = v);
+              _beginBeatLine();
+            },
+            title: const Text('타이핑 스킵'),
+          ),
+          const ListTile(
+            title: Text('광고/과금 원칙'),
+            subtitle: Text('감정씬 직전·직후 강제 광고 없음\n보상형 광고 중심 노출'),
+          ),
+        ],
+      ),
     );
   }
 }
