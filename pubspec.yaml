@@ -21,6 +21,10 @@ flutter:
     - premium_choices_v1.json
     - unlock_content_schema_v1.json
     - story_dialogues_30.json
+    - story_dialogues_cinematic_1_10.json
+    - story_dialogues_route_elian_16_30.json
+    - story_dialogues_route_lucian_16_30.json
+    - story_dialogues_route_serena_16_30.json
     - assets/story_events.json
     - assets/art/
     - assets/ui/

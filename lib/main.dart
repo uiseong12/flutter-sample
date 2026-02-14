@@ -233,6 +233,8 @@ class _GameShellState extends State<GameShell> {
   final Map<String, String> _dateModeByCharacter = {};
   final Map<int, List<Map<String, dynamic>>> _nodeDialogues = {};
   final Map<int, List<Map<String, dynamic>>> _nodeCheckpoints = {};
+  final Map<String, Map<int, List<Map<String, dynamic>>>> _routeNodeDialogues = {'elian': {}, 'lucian': {}, 'serena': {}};
+  final Map<String, Map<int, List<Map<String, dynamic>>>> _routeNodeCheckpoints = {'elian': {}, 'lucian': {}, 'serena': {}};
   final Map<int, Set<int>> _resolvedCheckpointAts = {};
   int _nodeDialogueIndex = 0;
 
@@ -1076,11 +1078,9 @@ class _GameShellState extends State<GameShell> {
     try {
       _unlockContentSchema = jsonDecode(await rootBundle.loadString('unlock_content_schema_v1.json')) as Map<String, dynamic>;
     } catch (_) {}
-    try {
-      final m = jsonDecode(await rootBundle.loadString('story_dialogues_30.json')) as Map<String, dynamic>;
+    void mergeNodesFromJson(Map<String, dynamic> m, Map<int, List<Map<String, dynamic>>> targetDialogues,
+        Map<int, List<Map<String, dynamic>>> targetCheckpoints) {
       final nodes = (m['nodes'] as List<dynamic>? ?? []);
-      _nodeDialogues.clear();
-      _nodeCheckpoints.clear();
       for (final n in nodes) {
         final map = n as Map<String, dynamic>;
         final id = map['node'] as int?;
@@ -1093,11 +1093,41 @@ class _GameShellState extends State<GameShell> {
             'cond': l['cond'],
           };
         }).toList();
-        _nodeDialogues[id] = lines;
+        targetDialogues[id] = lines;
 
         final cps = (map['checkpoints'] as List<dynamic>? ?? []).map((e) => (e as Map<String, dynamic>)).toList();
-        _nodeCheckpoints[id] = cps;
+        targetCheckpoints[id] = cps;
       }
+    }
+
+    try {
+      _nodeDialogues.clear();
+      _nodeCheckpoints.clear();
+      for (final r in _routeNodeDialogues.keys) {
+        _routeNodeDialogues[r]!.clear();
+        _routeNodeCheckpoints[r]!.clear();
+      }
+
+      final base = jsonDecode(await rootBundle.loadString('story_dialogues_30.json')) as Map<String, dynamic>;
+      mergeNodesFromJson(base, _nodeDialogues, _nodeCheckpoints);
+
+      try {
+        final cine = jsonDecode(await rootBundle.loadString('story_dialogues_cinematic_1_10.json')) as Map<String, dynamic>;
+        mergeNodesFromJson(cine, _nodeDialogues, _nodeCheckpoints);
+      } catch (_) {}
+
+      try {
+        final e = jsonDecode(await rootBundle.loadString('story_dialogues_route_elian_16_30.json')) as Map<String, dynamic>;
+        mergeNodesFromJson(e, _routeNodeDialogues['elian']!, _routeNodeCheckpoints['elian']!);
+      } catch (_) {}
+      try {
+        final l = jsonDecode(await rootBundle.loadString('story_dialogues_route_lucian_16_30.json')) as Map<String, dynamic>;
+        mergeNodesFromJson(l, _routeNodeDialogues['lucian']!, _routeNodeCheckpoints['lucian']!);
+      } catch (_) {}
+      try {
+        final s = jsonDecode(await rootBundle.loadString('story_dialogues_route_serena_16_30.json')) as Map<String, dynamic>;
+        mergeNodesFromJson(s, _routeNodeDialogues['serena']!, _routeNodeCheckpoints['serena']!);
+      } catch (_) {}
     } catch (_) {}
   }
 
@@ -1262,9 +1292,25 @@ class _GameShellState extends State<GameShell> {
     return true;
   }
 
+  String? _lockedRouteCode() {
+    if (_lockedRouteCharacterName == '엘리안') return 'elian';
+    if (_lockedRouteCharacterName == '루시안') return 'lucian';
+    if (_lockedRouteCharacterName == '세레나') return 'serena';
+    return null;
+  }
+
+  List<Map<String, dynamic>> _activeNodeLines(int nodeId) {
+    final route = _lockedRouteCode();
+    if (route != null && nodeId >= 16) {
+      final routeLines = _routeNodeDialogues[route]?[nodeId];
+      if (routeLines != null && routeLines.isNotEmpty) return routeLines;
+    }
+    return _nodeDialogues[nodeId] ?? const [];
+  }
+
   List<Map<String, dynamic>> _currentDialogueLines() {
-    final raw = _nodeDialogues[_storyIndex + 1];
-    if (raw == null || raw.isEmpty) {
+    final raw = _activeNodeLines(_storyIndex + 1);
+    if (raw.isEmpty) {
       final b = _story[_storyIndex];
       return [
         {'speaker': b.speaker, 'line': b.line}
@@ -1298,8 +1344,17 @@ class _GameShellState extends State<GameShell> {
     return _nodeDialogueIndex < lines.length - 1;
   }
 
+  List<Map<String, dynamic>> _activeNodeCheckpoints(int nodeId) {
+    final route = _lockedRouteCode();
+    if (route != null && nodeId >= 16) {
+      final routeCps = _routeNodeCheckpoints[route]?[nodeId];
+      if (routeCps != null && routeCps.isNotEmpty) return routeCps;
+    }
+    return _nodeCheckpoints[nodeId] ?? const [];
+  }
+
   Map<String, dynamic>? _currentCheckpoint() {
-    final cps = _nodeCheckpoints[_storyIndex + 1] ?? const [];
+    final cps = _activeNodeCheckpoints(_storyIndex + 1);
     final resolved = _resolvedCheckpointAts[_storyIndex + 1] ?? <int>{};
     for (final cp in cps) {
       final at = cp['at'] as int? ?? -1;

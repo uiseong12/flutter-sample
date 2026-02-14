@@ -1,0 +1,1599 @@
+{
+  "version": 1,
+  "meta": {
+    "route": "elian",
+    "scope": "nodes_16_30"
+  },
+  "nodes": [
+    {
+      "node": 16,
+      "lines": [
+        {
+          "speaker": "나",
+          "line": "봉인의 균열. 같은 사건이지만, 함께 선 사람에 따라 해석이 달라진다."
+        },
+        {
+          "speaker": "나",
+          "line": "오늘의 선택은 사람도, 제도도 함께 건드린다."
+        },
+        {
+          "speaker": "엘리안",
+          "line": "후폭풍은 내가 막는다. 넌 진실을 버리지 마."
+        },
+        {
+          "speaker": "나",
+          "line": "첫 판단 이후, 관계의 온도가 분명해졌다."
+        },
+        {
+          "speaker": "나",
+          "line": "두 번째 판단에서는 비용을 나누고, 세 번째 판단에서는 결말의 어조를 고른다."
+        },
+        {
+          "speaker": "엘리안",
+          "line": "왕관은 무겁다. 혼자 쓰지 마."
+        }
+      ],
+      "checkpoints": [
+        {
+          "at": 4,
+          "title": "체크포인트 A · 사건 대응",
+          "options": [
+            {
+              "label": "치안/질서 우선",
+              "target": "엘리안",
+              "affectionDelta": 2,
+              "political": {
+                "military": 2,
+                "surveillance": 1
+              },
+              "result": "빠르게 진압했다."
+            },
+            {
+              "label": "민심/보급 우선",
+              "target": "세레나",
+              "affectionDelta": 2,
+              "political": {
+                "publicTrust": 2,
+                "economy": 1
+              },
+              "result": "체감 안정이 올라갔다."
+            }
+          ]
+        },
+        {
+          "at": 6,
+          "title": "체크포인트 B · 증거/여론",
+          "options": [
+            {
+              "label": "증거 축적",
+              "target": "루시안",
+              "affectionDelta": 2,
+              "political": {
+                "legitimacy": 2
+              },
+              "result": "법리 우위를 확보했다."
+            },
+            {
+              "label": "여론 선점",
+              "target": "세레나",
+              "affectionDelta": 1,
+              "political": {
+                "publicTrust": 2,
+                "surveillance": 1
+              },
+              "result": "속도를 얻고 감시를 감수했다."
+            }
+          ]
+        },
+        {
+          "at": 8,
+          "title": "체크포인트 C · 관계 결속",
+          "options": [
+            {
+              "label": "관계를 전면에 둔다",
+              "target": "엘리안",
+              "affectionDelta": 3,
+              "political": {
+                "publicTrust": 1
+              },
+              "result": "관계선이 확정적으로 전진했다."
+            },
+            {
+              "label": "정치 문장을 남긴다",
+              "target": "루시안",
+              "affectionDelta": 1,
+              "political": {
+                "legitimacy": 2
+              },
+              "result": "정치 안정은 올랐지만 온도는 낮아졌다."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "node": 17,
+      "lines": [
+        {
+          "speaker": "나",
+          "line": "밤의 편지. 같은 사건이지만, 함께 선 사람에 따라 해석이 달라진다."
+        },
+        {
+          "speaker": "나",
+          "line": "오늘의 선택은 사람도, 제도도 함께 건드린다."
+        },
+        {
+          "speaker": "엘리안",
+          "line": "춤은 서툴러도 괜찮다. 손은 놓지 마."
+        },
+        {
+          "speaker": "나",
+          "line": "첫 판단 이후, 관계의 온도가 분명해졌다."
+        },
+        {
+          "speaker": "나",
+          "line": "두 번째 판단에서는 비용을 나누고, 세 번째 판단에서는 결말의 어조를 고른다."
+        },
+        {
+          "speaker": "엘리안",
+          "line": "왕관은 무겁다. 혼자 쓰지 마."
+        }
+      ],
+      "checkpoints": [
+        {
+          "at": 4,
+          "title": "체크포인트 A · 사건 대응",
+          "options": [
+            {
+              "label": "치안/질서 우선",
+              "target": "엘리안",
+              "affectionDelta": 2,
+              "political": {
+                "military": 2,
+                "surveillance": 1
+              },
+              "result": "빠르게 진압했다."
+            },
+            {
+              "label": "민심/보급 우선",
+              "target": "세레나",
+              "affectionDelta": 2,
+              "political": {
+                "publicTrust": 2,
+                "economy": 1
+              },
+              "result": "체감 안정이 올라갔다."
+            }
+          ]
+        },
+        {
+          "at": 6,
+          "title": "체크포인트 B · 증거/여론",
+          "options": [
+            {
+              "label": "증거 축적",
+              "target": "루시안",
+              "affectionDelta": 2,
+              "political": {
+                "legitimacy": 2
+              },
+              "result": "법리 우위를 확보했다."
+            },
+            {
+              "label": "여론 선점",
+              "target": "세레나",
+              "affectionDelta": 1,
+              "political": {
+                "publicTrust": 2,
+                "surveillance": 1
+              },
+              "result": "속도를 얻고 감시를 감수했다."
+            }
+          ]
+        },
+        {
+          "at": 8,
+          "title": "체크포인트 C · 관계 결속",
+          "options": [
+            {
+              "label": "관계를 전면에 둔다",
+              "target": "루시안",
+              "affectionDelta": 3,
+              "political": {
+                "publicTrust": 1
+              },
+              "result": "관계선이 확정적으로 전진했다."
+            },
+            {
+              "label": "정치 문장을 남긴다",
+              "target": "루시안",
+              "affectionDelta": 1,
+              "political": {
+                "legitimacy": 2
+              },
+              "result": "정치 안정은 올랐지만 온도는 낮아졌다."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "node": 18,
+      "lines": [
+        {
+          "speaker": "나",
+          "line": "무도회의 함정. 같은 사건이지만, 함께 선 사람에 따라 해석이 달라진다."
+        },
+        {
+          "speaker": "나",
+          "line": "오늘의 선택은 사람도, 제도도 함께 건드린다."
+        },
+        {
+          "speaker": "엘리안",
+          "line": "나는 검으로 지키겠다. 너는 끝까지 서 있어."
+        },
+        {
+          "speaker": "나",
+          "line": "첫 판단 이후, 관계의 온도가 분명해졌다."
+        },
+        {
+          "speaker": "나",
+          "line": "두 번째 판단에서는 비용을 나누고, 세 번째 판단에서는 결말의 어조를 고른다."
+        },
+        {
+          "speaker": "엘리안",
+          "line": "왕관은 무겁다. 혼자 쓰지 마."
+        }
+      ],
+      "checkpoints": [
+        {
+          "at": 4,
+          "title": "체크포인트 A · 사건 대응",
+          "options": [
+            {
+              "label": "치안/질서 우선",
+              "target": "엘리안",
+              "affectionDelta": 2,
+              "political": {
+                "military": 2,
+                "surveillance": 1
+              },
+              "result": "빠르게 진압했다."
+            },
+            {
+              "label": "민심/보급 우선",
+              "target": "세레나",
+              "affectionDelta": 2,
+              "political": {
+                "publicTrust": 2,
+                "economy": 1
+              },
+              "result": "체감 안정이 올라갔다."
+            }
+          ]
+        },
+        {
+          "at": 6,
+          "title": "체크포인트 B · 증거/여론",
+          "options": [
+            {
+              "label": "증거 축적",
+              "target": "루시안",
+              "affectionDelta": 2,
+              "political": {
+                "legitimacy": 2
+              },
+              "result": "법리 우위를 확보했다."
+            },
+            {
+              "label": "여론 선점",
+              "target": "세레나",
+              "affectionDelta": 1,
+              "political": {
+                "publicTrust": 2,
+                "surveillance": 1
+              },
+              "result": "속도를 얻고 감시를 감수했다."
+            }
+          ]
+        },
+        {
+          "at": 8,
+          "title": "체크포인트 C · 관계 결속",
+          "options": [
+            {
+              "label": "관계를 전면에 둔다",
+              "target": "세레나",
+              "affectionDelta": 3,
+              "political": {
+                "publicTrust": 1
+              },
+              "result": "관계선이 확정적으로 전진했다."
+            },
+            {
+              "label": "정치 문장을 남긴다",
+              "target": "루시안",
+              "affectionDelta": 1,
+              "political": {
+                "legitimacy": 2
+              },
+              "result": "정치 안정은 올랐지만 온도는 낮아졌다."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "node": 19,
+      "lines": [
+        {
+          "speaker": "나",
+          "line": "밤 공판 준비. 같은 사건이지만, 함께 선 사람에 따라 해석이 달라진다."
+        },
+        {
+          "speaker": "나",
+          "line": "오늘의 선택은 사람도, 제도도 함께 건드린다."
+        },
+        {
+          "speaker": "엘리안",
+          "line": "후폭풍은 내가 막는다. 넌 진실을 버리지 마."
+        },
+        {
+          "speaker": "나",
+          "line": "첫 판단 이후, 관계의 온도가 분명해졌다."
+        },
+        {
+          "speaker": "나",
+          "line": "두 번째 판단에서는 비용을 나누고, 세 번째 판단에서는 결말의 어조를 고른다."
+        },
+        {
+          "speaker": "엘리안",
+          "line": "왕관은 무겁다. 혼자 쓰지 마."
+        }
+      ],
+      "checkpoints": [
+        {
+          "at": 4,
+          "title": "체크포인트 A · 사건 대응",
+          "options": [
+            {
+              "label": "치안/질서 우선",
+              "target": "엘리안",
+              "affectionDelta": 2,
+              "political": {
+                "military": 2,
+                "surveillance": 1
+              },
+              "result": "빠르게 진압했다."
+            },
+            {
+              "label": "민심/보급 우선",
+              "target": "세레나",
+              "affectionDelta": 2,
+              "political": {
+                "publicTrust": 2,
+                "economy": 1
+              },
+              "result": "체감 안정이 올라갔다."
+            }
+          ]
+        },
+        {
+          "at": 6,
+          "title": "체크포인트 B · 증거/여론",
+          "options": [
+            {
+              "label": "증거 축적",
+              "target": "루시안",
+              "affectionDelta": 2,
+              "political": {
+                "legitimacy": 2
+              },
+              "result": "법리 우위를 확보했다."
+            },
+            {
+              "label": "여론 선점",
+              "target": "세레나",
+              "affectionDelta": 1,
+              "political": {
+                "publicTrust": 2,
+                "surveillance": 1
+              },
+              "result": "속도를 얻고 감시를 감수했다."
+            }
+          ]
+        },
+        {
+          "at": 8,
+          "title": "체크포인트 C · 관계 결속",
+          "options": [
+            {
+              "label": "관계를 전면에 둔다",
+              "target": "엘리안",
+              "affectionDelta": 3,
+              "political": {
+                "publicTrust": 1
+              },
+              "result": "관계선이 확정적으로 전진했다."
+            },
+            {
+              "label": "정치 문장을 남긴다",
+              "target": "루시안",
+              "affectionDelta": 1,
+              "political": {
+                "legitimacy": 2
+              },
+              "result": "정치 안정은 올랐지만 온도는 낮아졌다."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "node": 20,
+      "lines": [
+        {
+          "speaker": "나",
+          "line": "중간보스 재판. 같은 사건이지만, 함께 선 사람에 따라 해석이 달라진다."
+        },
+        {
+          "speaker": "나",
+          "line": "오늘의 선택은 사람도, 제도도 함께 건드린다."
+        },
+        {
+          "speaker": "엘리안",
+          "line": "춤은 서툴러도 괜찮다. 손은 놓지 마."
+        },
+        {
+          "speaker": "나",
+          "line": "첫 판단 이후, 관계의 온도가 분명해졌다."
+        },
+        {
+          "speaker": "나",
+          "line": "두 번째 판단에서는 비용을 나누고, 세 번째 판단에서는 결말의 어조를 고른다."
+        },
+        {
+          "speaker": "엘리안",
+          "line": "왕관은 무겁다. 혼자 쓰지 마."
+        }
+      ],
+      "checkpoints": [
+        {
+          "at": 4,
+          "title": "체크포인트 A · 사건 대응",
+          "options": [
+            {
+              "label": "치안/질서 우선",
+              "target": "엘리안",
+              "affectionDelta": 2,
+              "political": {
+                "military": 2,
+                "surveillance": 1
+              },
+              "result": "빠르게 진압했다."
+            },
+            {
+              "label": "민심/보급 우선",
+              "target": "세레나",
+              "affectionDelta": 2,
+              "political": {
+                "publicTrust": 2,
+                "economy": 1
+              },
+              "result": "체감 안정이 올라갔다."
+            }
+          ]
+        },
+        {
+          "at": 6,
+          "title": "체크포인트 B · 증거/여론",
+          "options": [
+            {
+              "label": "증거 축적",
+              "target": "루시안",
+              "affectionDelta": 2,
+              "political": {
+                "legitimacy": 2
+              },
+              "result": "법리 우위를 확보했다."
+            },
+            {
+              "label": "여론 선점",
+              "target": "세레나",
+              "affectionDelta": 1,
+              "political": {
+                "publicTrust": 2,
+                "surveillance": 1
+              },
+              "result": "속도를 얻고 감시를 감수했다."
+            }
+          ]
+        },
+        {
+          "at": 8,
+          "title": "체크포인트 C · 관계 결속",
+          "options": [
+            {
+              "label": "관계를 전면에 둔다",
+              "target": "루시안",
+              "affectionDelta": 3,
+              "political": {
+                "publicTrust": 1
+              },
+              "result": "관계선이 확정적으로 전진했다."
+            },
+            {
+              "label": "정치 문장을 남긴다",
+              "target": "루시안",
+              "affectionDelta": 1,
+              "political": {
+                "legitimacy": 2
+              },
+              "result": "정치 안정은 올랐지만 온도는 낮아졌다."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "node": 21,
+      "lines": [
+        {
+          "speaker": "나",
+          "line": "내란 징후. 같은 사건이지만, 함께 선 사람에 따라 해석이 달라진다."
+        },
+        {
+          "speaker": "나",
+          "line": "오늘의 선택은 사람도, 제도도 함께 건드린다."
+        },
+        {
+          "speaker": "엘리안",
+          "line": "나는 검으로 지키겠다. 너는 끝까지 서 있어."
+        },
+        {
+          "speaker": "나",
+          "line": "첫 판단 이후, 관계의 온도가 분명해졌다."
+        },
+        {
+          "speaker": "나",
+          "line": "두 번째 판단에서는 비용을 나누고, 세 번째 판단에서는 결말의 어조를 고른다."
+        },
+        {
+          "speaker": "엘리안",
+          "line": "왕관은 무겁다. 혼자 쓰지 마."
+        }
+      ],
+      "checkpoints": [
+        {
+          "at": 4,
+          "title": "체크포인트 A · 사건 대응",
+          "options": [
+            {
+              "label": "치안/질서 우선",
+              "target": "엘리안",
+              "affectionDelta": 2,
+              "political": {
+                "military": 2,
+                "surveillance": 1
+              },
+              "result": "빠르게 진압했다."
+            },
+            {
+              "label": "민심/보급 우선",
+              "target": "세레나",
+              "affectionDelta": 2,
+              "political": {
+                "publicTrust": 2,
+                "economy": 1
+              },
+              "result": "체감 안정이 올라갔다."
+            }
+          ]
+        },
+        {
+          "at": 6,
+          "title": "체크포인트 B · 증거/여론",
+          "options": [
+            {
+              "label": "증거 축적",
+              "target": "루시안",
+              "affectionDelta": 2,
+              "political": {
+                "legitimacy": 2
+              },
+              "result": "법리 우위를 확보했다."
+            },
+            {
+              "label": "여론 선점",
+              "target": "세레나",
+              "affectionDelta": 1,
+              "political": {
+                "publicTrust": 2,
+                "surveillance": 1
+              },
+              "result": "속도를 얻고 감시를 감수했다."
+            }
+          ]
+        },
+        {
+          "at": 8,
+          "title": "체크포인트 C · 관계 결속",
+          "options": [
+            {
+              "label": "관계를 전면에 둔다",
+              "target": "세레나",
+              "affectionDelta": 3,
+              "political": {
+                "publicTrust": 1
+              },
+              "result": "관계선이 확정적으로 전진했다."
+            },
+            {
+              "label": "정치 문장을 남긴다",
+              "target": "루시안",
+              "affectionDelta": 1,
+              "political": {
+                "legitimacy": 2
+              },
+              "result": "정치 안정은 올랐지만 온도는 낮아졌다."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "node": 22,
+      "lines": [
+        {
+          "speaker": "나",
+          "line": "검은 인장. 같은 사건이지만, 함께 선 사람에 따라 해석이 달라진다."
+        },
+        {
+          "speaker": "나",
+          "line": "오늘의 선택은 사람도, 제도도 함께 건드린다."
+        },
+        {
+          "speaker": "엘리안",
+          "line": "후폭풍은 내가 막는다. 넌 진실을 버리지 마."
+        },
+        {
+          "speaker": "나",
+          "line": "첫 판단 이후, 관계의 온도가 분명해졌다."
+        },
+        {
+          "speaker": "나",
+          "line": "두 번째 판단에서는 비용을 나누고, 세 번째 판단에서는 결말의 어조를 고른다."
+        },
+        {
+          "speaker": "엘리안",
+          "line": "왕관은 무겁다. 혼자 쓰지 마."
+        }
+      ],
+      "checkpoints": [
+        {
+          "at": 4,
+          "title": "체크포인트 A · 사건 대응",
+          "options": [
+            {
+              "label": "치안/질서 우선",
+              "target": "엘리안",
+              "affectionDelta": 2,
+              "political": {
+                "military": 2,
+                "surveillance": 1
+              },
+              "result": "빠르게 진압했다."
+            },
+            {
+              "label": "민심/보급 우선",
+              "target": "세레나",
+              "affectionDelta": 2,
+              "political": {
+                "publicTrust": 2,
+                "economy": 1
+              },
+              "result": "체감 안정이 올라갔다."
+            }
+          ]
+        },
+        {
+          "at": 6,
+          "title": "체크포인트 B · 증거/여론",
+          "options": [
+            {
+              "label": "증거 축적",
+              "target": "루시안",
+              "affectionDelta": 2,
+              "political": {
+                "legitimacy": 2
+              },
+              "result": "법리 우위를 확보했다."
+            },
+            {
+              "label": "여론 선점",
+              "target": "세레나",
+              "affectionDelta": 1,
+              "political": {
+                "publicTrust": 2,
+                "surveillance": 1
+              },
+              "result": "속도를 얻고 감시를 감수했다."
+            }
+          ]
+        },
+        {
+          "at": 8,
+          "title": "체크포인트 C · 관계 결속",
+          "options": [
+            {
+              "label": "관계를 전면에 둔다",
+              "target": "엘리안",
+              "affectionDelta": 3,
+              "political": {
+                "publicTrust": 1
+              },
+              "result": "관계선이 확정적으로 전진했다."
+            },
+            {
+              "label": "정치 문장을 남긴다",
+              "target": "루시안",
+              "affectionDelta": 1,
+              "political": {
+                "legitimacy": 2
+              },
+              "result": "정치 안정은 올랐지만 온도는 낮아졌다."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "node": 23,
+      "lines": [
+        {
+          "speaker": "나",
+          "line": "균열의 고백. 같은 사건이지만, 함께 선 사람에 따라 해석이 달라진다."
+        },
+        {
+          "speaker": "나",
+          "line": "오늘의 선택은 사람도, 제도도 함께 건드린다."
+        },
+        {
+          "speaker": "엘리안",
+          "line": "춤은 서툴러도 괜찮다. 손은 놓지 마."
+        },
+        {
+          "speaker": "나",
+          "line": "첫 판단 이후, 관계의 온도가 분명해졌다."
+        },
+        {
+          "speaker": "나",
+          "line": "두 번째 판단에서는 비용을 나누고, 세 번째 판단에서는 결말의 어조를 고른다."
+        },
+        {
+          "speaker": "엘리안",
+          "line": "왕관은 무겁다. 혼자 쓰지 마."
+        }
+      ],
+      "checkpoints": [
+        {
+          "at": 4,
+          "title": "체크포인트 A · 사건 대응",
+          "options": [
+            {
+              "label": "치안/질서 우선",
+              "target": "엘리안",
+              "affectionDelta": 2,
+              "political": {
+                "military": 2,
+                "surveillance": 1
+              },
+              "result": "빠르게 진압했다."
+            },
+            {
+              "label": "민심/보급 우선",
+              "target": "세레나",
+              "affectionDelta": 2,
+              "political": {
+                "publicTrust": 2,
+                "economy": 1
+              },
+              "result": "체감 안정이 올라갔다."
+            }
+          ]
+        },
+        {
+          "at": 6,
+          "title": "체크포인트 B · 증거/여론",
+          "options": [
+            {
+              "label": "증거 축적",
+              "target": "루시안",
+              "affectionDelta": 2,
+              "political": {
+                "legitimacy": 2
+              },
+              "result": "법리 우위를 확보했다."
+            },
+            {
+              "label": "여론 선점",
+              "target": "세레나",
+              "affectionDelta": 1,
+              "political": {
+                "publicTrust": 2,
+                "surveillance": 1
+              },
+              "result": "속도를 얻고 감시를 감수했다."
+            }
+          ]
+        },
+        {
+          "at": 8,
+          "title": "체크포인트 C · 관계 결속",
+          "options": [
+            {
+              "label": "관계를 전면에 둔다",
+              "target": "루시안",
+              "affectionDelta": 3,
+              "political": {
+                "publicTrust": 1
+              },
+              "result": "관계선이 확정적으로 전진했다."
+            },
+            {
+              "label": "정치 문장을 남긴다",
+              "target": "루시안",
+              "affectionDelta": 1,
+              "political": {
+                "legitimacy": 2
+              },
+              "result": "정치 안정은 올랐지만 온도는 낮아졌다."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "node": 24,
+      "lines": [
+        {
+          "speaker": "나",
+          "line": "왕관의 무게. 같은 사건이지만, 함께 선 사람에 따라 해석이 달라진다."
+        },
+        {
+          "speaker": "나",
+          "line": "오늘의 선택은 사람도, 제도도 함께 건드린다."
+        },
+        {
+          "speaker": "엘리안",
+          "line": "나는 검으로 지키겠다. 너는 끝까지 서 있어."
+        },
+        {
+          "speaker": "나",
+          "line": "첫 판단 이후, 관계의 온도가 분명해졌다."
+        },
+        {
+          "speaker": "나",
+          "line": "두 번째 판단에서는 비용을 나누고, 세 번째 판단에서는 결말의 어조를 고른다."
+        },
+        {
+          "speaker": "엘리안",
+          "line": "왕관은 무겁다. 혼자 쓰지 마."
+        }
+      ],
+      "checkpoints": [
+        {
+          "at": 4,
+          "title": "체크포인트 A · 사건 대응",
+          "options": [
+            {
+              "label": "치안/질서 우선",
+              "target": "엘리안",
+              "affectionDelta": 2,
+              "political": {
+                "military": 2,
+                "surveillance": 1
+              },
+              "result": "빠르게 진압했다."
+            },
+            {
+              "label": "민심/보급 우선",
+              "target": "세레나",
+              "affectionDelta": 2,
+              "political": {
+                "publicTrust": 2,
+                "economy": 1
+              },
+              "result": "체감 안정이 올라갔다."
+            }
+          ]
+        },
+        {
+          "at": 6,
+          "title": "체크포인트 B · 증거/여론",
+          "options": [
+            {
+              "label": "증거 축적",
+              "target": "루시안",
+              "affectionDelta": 2,
+              "political": {
+                "legitimacy": 2
+              },
+              "result": "법리 우위를 확보했다."
+            },
+            {
+              "label": "여론 선점",
+              "target": "세레나",
+              "affectionDelta": 1,
+              "political": {
+                "publicTrust": 2,
+                "surveillance": 1
+              },
+              "result": "속도를 얻고 감시를 감수했다."
+            }
+          ]
+        },
+        {
+          "at": 8,
+          "title": "체크포인트 C · 관계 결속",
+          "options": [
+            {
+              "label": "관계를 전면에 둔다",
+              "target": "세레나",
+              "affectionDelta": 3,
+              "political": {
+                "publicTrust": 1
+              },
+              "result": "관계선이 확정적으로 전진했다."
+            },
+            {
+              "label": "정치 문장을 남긴다",
+              "target": "루시안",
+              "affectionDelta": 1,
+              "political": {
+                "legitimacy": 2
+              },
+              "result": "정치 안정은 올랐지만 온도는 낮아졌다."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "node": 25,
+      "lines": [
+        {
+          "speaker": "나",
+          "line": "결속 선언. 같은 사건이지만, 함께 선 사람에 따라 해석이 달라진다."
+        },
+        {
+          "speaker": "나",
+          "line": "오늘의 선택은 사람도, 제도도 함께 건드린다."
+        },
+        {
+          "speaker": "엘리안",
+          "line": "후폭풍은 내가 막는다. 넌 진실을 버리지 마."
+        },
+        {
+          "speaker": "나",
+          "line": "첫 판단 이후, 관계의 온도가 분명해졌다."
+        },
+        {
+          "speaker": "나",
+          "line": "두 번째 판단에서는 비용을 나누고, 세 번째 판단에서는 결말의 어조를 고른다."
+        },
+        {
+          "speaker": "엘리안",
+          "line": "왕관은 무겁다. 혼자 쓰지 마."
+        }
+      ],
+      "checkpoints": [
+        {
+          "at": 4,
+          "title": "체크포인트 A · 사건 대응",
+          "options": [
+            {
+              "label": "치안/질서 우선",
+              "target": "엘리안",
+              "affectionDelta": 2,
+              "political": {
+                "military": 2,
+                "surveillance": 1
+              },
+              "result": "빠르게 진압했다."
+            },
+            {
+              "label": "민심/보급 우선",
+              "target": "세레나",
+              "affectionDelta": 2,
+              "political": {
+                "publicTrust": 2,
+                "economy": 1
+              },
+              "result": "체감 안정이 올라갔다."
+            }
+          ]
+        },
+        {
+          "at": 6,
+          "title": "체크포인트 B · 증거/여론",
+          "options": [
+            {
+              "label": "증거 축적",
+              "target": "루시안",
+              "affectionDelta": 2,
+              "political": {
+                "legitimacy": 2
+              },
+              "result": "법리 우위를 확보했다."
+            },
+            {
+              "label": "여론 선점",
+              "target": "세레나",
+              "affectionDelta": 1,
+              "political": {
+                "publicTrust": 2,
+                "surveillance": 1
+              },
+              "result": "속도를 얻고 감시를 감수했다."
+            }
+          ]
+        },
+        {
+          "at": 8,
+          "title": "체크포인트 C · 관계 결속",
+          "options": [
+            {
+              "label": "관계를 전면에 둔다",
+              "target": "엘리안",
+              "affectionDelta": 3,
+              "political": {
+                "publicTrust": 1
+              },
+              "result": "관계선이 확정적으로 전진했다."
+            },
+            {
+              "label": "정치 문장을 남긴다",
+              "target": "루시안",
+              "affectionDelta": 1,
+              "political": {
+                "legitimacy": 2
+              },
+              "result": "정치 안정은 올랐지만 온도는 낮아졌다."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "node": 26,
+      "lines": [
+        {
+          "speaker": "나",
+          "line": "침묵의 새벽. 같은 사건이지만, 함께 선 사람에 따라 해석이 달라진다."
+        },
+        {
+          "speaker": "나",
+          "line": "오늘의 선택은 사람도, 제도도 함께 건드린다."
+        },
+        {
+          "speaker": "엘리안",
+          "line": "춤은 서툴러도 괜찮다. 손은 놓지 마."
+        },
+        {
+          "speaker": "나",
+          "line": "첫 판단 이후, 관계의 온도가 분명해졌다."
+        },
+        {
+          "speaker": "나",
+          "line": "두 번째 판단에서는 비용을 나누고, 세 번째 판단에서는 결말의 어조를 고른다."
+        },
+        {
+          "speaker": "엘리안",
+          "line": "왕관은 무겁다. 혼자 쓰지 마."
+        }
+      ],
+      "checkpoints": [
+        {
+          "at": 4,
+          "title": "체크포인트 A · 사건 대응",
+          "options": [
+            {
+              "label": "치안/질서 우선",
+              "target": "엘리안",
+              "affectionDelta": 2,
+              "political": {
+                "military": 2,
+                "surveillance": 1
+              },
+              "result": "빠르게 진압했다."
+            },
+            {
+              "label": "민심/보급 우선",
+              "target": "세레나",
+              "affectionDelta": 2,
+              "political": {
+                "publicTrust": 2,
+                "economy": 1
+              },
+              "result": "체감 안정이 올라갔다."
+            }
+          ]
+        },
+        {
+          "at": 6,
+          "title": "체크포인트 B · 증거/여론",
+          "options": [
+            {
+              "label": "증거 축적",
+              "target": "루시안",
+              "affectionDelta": 2,
+              "political": {
+                "legitimacy": 2
+              },
+              "result": "법리 우위를 확보했다."
+            },
+            {
+              "label": "여론 선점",
+              "target": "세레나",
+              "affectionDelta": 1,
+              "political": {
+                "publicTrust": 2,
+                "surveillance": 1
+              },
+              "result": "속도를 얻고 감시를 감수했다."
+            }
+          ]
+        },
+        {
+          "at": 8,
+          "title": "체크포인트 C · 관계 결속",
+          "options": [
+            {
+              "label": "관계를 전면에 둔다",
+              "target": "루시안",
+              "affectionDelta": 3,
+              "political": {
+                "publicTrust": 1
+              },
+              "result": "관계선이 확정적으로 전진했다."
+            },
+            {
+              "label": "정치 문장을 남긴다",
+              "target": "루시안",
+              "affectionDelta": 1,
+              "political": {
+                "legitimacy": 2
+              },
+              "result": "정치 안정은 올랐지만 온도는 낮아졌다."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "node": 27,
+      "lines": [
+        {
+          "speaker": "나",
+          "line": "진실 공개 여부. 같은 사건이지만, 함께 선 사람에 따라 해석이 달라진다."
+        },
+        {
+          "speaker": "나",
+          "line": "오늘의 선택은 사람도, 제도도 함께 건드린다."
+        },
+        {
+          "speaker": "엘리안",
+          "line": "나는 검으로 지키겠다. 너는 끝까지 서 있어."
+        },
+        {
+          "speaker": "나",
+          "line": "첫 판단 이후, 관계의 온도가 분명해졌다."
+        },
+        {
+          "speaker": "나",
+          "line": "두 번째 판단에서는 비용을 나누고, 세 번째 판단에서는 결말의 어조를 고른다."
+        },
+        {
+          "speaker": "엘리안",
+          "line": "왕관은 무겁다. 혼자 쓰지 마."
+        }
+      ],
+      "checkpoints": [
+        {
+          "at": 4,
+          "title": "체크포인트 A · 사건 대응",
+          "options": [
+            {
+              "label": "치안/질서 우선",
+              "target": "엘리안",
+              "affectionDelta": 2,
+              "political": {
+                "military": 2,
+                "surveillance": 1
+              },
+              "result": "빠르게 진압했다."
+            },
+            {
+              "label": "민심/보급 우선",
+              "target": "세레나",
+              "affectionDelta": 2,
+              "political": {
+                "publicTrust": 2,
+                "economy": 1
+              },
+              "result": "체감 안정이 올라갔다."
+            }
+          ]
+        },
+        {
+          "at": 6,
+          "title": "체크포인트 B · 증거/여론",
+          "options": [
+            {
+              "label": "증거 축적",
+              "target": "루시안",
+              "affectionDelta": 2,
+              "political": {
+                "legitimacy": 2
+              },
+              "result": "법리 우위를 확보했다."
+            },
+            {
+              "label": "여론 선점",
+              "target": "세레나",
+              "affectionDelta": 1,
+              "political": {
+                "publicTrust": 2,
+                "surveillance": 1
+              },
+              "result": "속도를 얻고 감시를 감수했다."
+            }
+          ]
+        },
+        {
+          "at": 8,
+          "title": "체크포인트 C · 관계 결속",
+          "options": [
+            {
+              "label": "관계를 전면에 둔다",
+              "target": "세레나",
+              "affectionDelta": 3,
+              "political": {
+                "publicTrust": 1
+              },
+              "result": "관계선이 확정적으로 전진했다."
+            },
+            {
+              "label": "정치 문장을 남긴다",
+              "target": "루시안",
+              "affectionDelta": 1,
+              "political": {
+                "legitimacy": 2
+              },
+              "result": "정치 안정은 올랐지만 온도는 낮아졌다."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "node": 28,
+      "lines": [
+        {
+          "speaker": "나",
+          "line": "마지막 공판. 같은 사건이지만, 함께 선 사람에 따라 해석이 달라진다."
+        },
+        {
+          "speaker": "나",
+          "line": "오늘의 선택은 사람도, 제도도 함께 건드린다."
+        },
+        {
+          "speaker": "엘리안",
+          "line": "후폭풍은 내가 막는다. 넌 진실을 버리지 마."
+        },
+        {
+          "speaker": "나",
+          "line": "첫 판단 이후, 관계의 온도가 분명해졌다."
+        },
+        {
+          "speaker": "나",
+          "line": "두 번째 판단에서는 비용을 나누고, 세 번째 판단에서는 결말의 어조를 고른다."
+        },
+        {
+          "speaker": "엘리안",
+          "line": "왕관은 무겁다. 혼자 쓰지 마."
+        }
+      ],
+      "checkpoints": [
+        {
+          "at": 4,
+          "title": "체크포인트 A · 사건 대응",
+          "options": [
+            {
+              "label": "치안/질서 우선",
+              "target": "엘리안",
+              "affectionDelta": 2,
+              "political": {
+                "military": 2,
+                "surveillance": 1
+              },
+              "result": "빠르게 진압했다."
+            },
+            {
+              "label": "민심/보급 우선",
+              "target": "세레나",
+              "affectionDelta": 2,
+              "political": {
+                "publicTrust": 2,
+                "economy": 1
+              },
+              "result": "체감 안정이 올라갔다."
+            }
+          ]
+        },
+        {
+          "at": 6,
+          "title": "체크포인트 B · 증거/여론",
+          "options": [
+            {
+              "label": "증거 축적",
+              "target": "루시안",
+              "affectionDelta": 2,
+              "political": {
+                "legitimacy": 2
+              },
+              "result": "법리 우위를 확보했다."
+            },
+            {
+              "label": "여론 선점",
+              "target": "세레나",
+              "affectionDelta": 1,
+              "political": {
+                "publicTrust": 2,
+                "surveillance": 1
+              },
+              "result": "속도를 얻고 감시를 감수했다."
+            }
+          ]
+        },
+        {
+          "at": 8,
+          "title": "체크포인트 C · 관계 결속",
+          "options": [
+            {
+              "label": "관계를 전면에 둔다",
+              "target": "엘리안",
+              "affectionDelta": 3,
+              "political": {
+                "publicTrust": 1
+              },
+              "result": "관계선이 확정적으로 전진했다."
+            },
+            {
+              "label": "정치 문장을 남긴다",
+              "target": "루시안",
+              "affectionDelta": 1,
+              "political": {
+                "legitimacy": 2
+              },
+              "result": "정치 안정은 올랐지만 온도는 낮아졌다."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "node": 29,
+      "lines": [
+        {
+          "speaker": "나",
+          "line": "최종 전야. 같은 사건이지만, 함께 선 사람에 따라 해석이 달라진다."
+        },
+        {
+          "speaker": "나",
+          "line": "오늘의 선택은 사람도, 제도도 함께 건드린다."
+        },
+        {
+          "speaker": "엘리안",
+          "line": "춤은 서툴러도 괜찮다. 손은 놓지 마."
+        },
+        {
+          "speaker": "나",
+          "line": "첫 판단 이후, 관계의 온도가 분명해졌다."
+        },
+        {
+          "speaker": "나",
+          "line": "두 번째 판단에서는 비용을 나누고, 세 번째 판단에서는 결말의 어조를 고른다."
+        },
+        {
+          "speaker": "엘리안",
+          "line": "왕관은 무겁다. 혼자 쓰지 마."
+        }
+      ],
+      "checkpoints": [
+        {
+          "at": 4,
+          "title": "체크포인트 A · 사건 대응",
+          "options": [
+            {
+              "label": "치안/질서 우선",
+              "target": "엘리안",
+              "affectionDelta": 2,
+              "political": {
+                "military": 2,
+                "surveillance": 1
+              },
+              "result": "빠르게 진압했다."
+            },
+            {
+              "label": "민심/보급 우선",
+              "target": "세레나",
+              "affectionDelta": 2,
+              "political": {
+                "publicTrust": 2,
+                "economy": 1
+              },
+              "result": "체감 안정이 올라갔다."
+            }
+          ]
+        },
+        {
+          "at": 6,
+          "title": "체크포인트 B · 증거/여론",
+          "options": [
+            {
+              "label": "증거 축적",
+              "target": "루시안",
+              "affectionDelta": 2,
+              "political": {
+                "legitimacy": 2
+              },
+              "result": "법리 우위를 확보했다."
+            },
+            {
+              "label": "여론 선점",
+              "target": "세레나",
+              "affectionDelta": 1,
+              "political": {
+                "publicTrust": 2,
+                "surveillance": 1
+              },
+              "result": "속도를 얻고 감시를 감수했다."
+            }
+          ]
+        },
+        {
+          "at": 8,
+          "title": "체크포인트 C · 관계 결속",
+          "options": [
+            {
+              "label": "관계를 전면에 둔다",
+              "target": "루시안",
+              "affectionDelta": 3,
+              "political": {
+                "publicTrust": 1
+              },
+              "result": "관계선이 확정적으로 전진했다."
+            },
+            {
+              "label": "정치 문장을 남긴다",
+              "target": "루시안",
+              "affectionDelta": 1,
+              "political": {
+                "legitimacy": 2
+              },
+              "result": "정치 안정은 올랐지만 온도는 낮아졌다."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "node": 30,
+      "lines": [
+        {
+          "speaker": "나",
+          "line": "왕관의 결론. 같은 사건이지만, 함께 선 사람에 따라 해석이 달라진다."
+        },
+        {
+          "speaker": "나",
+          "line": "오늘의 선택은 사람도, 제도도 함께 건드린다."
+        },
+        {
+          "speaker": "엘리안",
+          "line": "나는 검으로 지키겠다. 너는 끝까지 서 있어."
+        },
+        {
+          "speaker": "나",
+          "line": "첫 판단 이후, 관계의 온도가 분명해졌다."
+        },
+        {
+          "speaker": "나",
+          "line": "두 번째 판단에서는 비용을 나누고, 세 번째 판단에서는 결말의 어조를 고른다."
+        },
+        {
+          "speaker": "엘리안",
+          "line": "왕관은 무겁다. 혼자 쓰지 마."
+        }
+      ],
+      "checkpoints": [
+        {
+          "at": 4,
+          "title": "체크포인트 A · 사건 대응",
+          "options": [
+            {
+              "label": "치안/질서 우선",
+              "target": "엘리안",
+              "affectionDelta": 2,
+              "political": {
+                "military": 2,
+                "surveillance": 1
+              },
+              "result": "빠르게 진압했다."
+            },
+            {
+              "label": "민심/보급 우선",
+              "target": "세레나",
+              "affectionDelta": 2,
+              "political": {
+                "publicTrust": 2,
+                "economy": 1
+              },
+              "result": "체감 안정이 올라갔다."
+            }
+          ]
+        },
+        {
+          "at": 6,
+          "title": "체크포인트 B · 증거/여론",
+          "options": [
+            {
+              "label": "증거 축적",
+              "target": "루시안",
+              "affectionDelta": 2,
+              "political": {
+                "legitimacy": 2
+              },
+              "result": "법리 우위를 확보했다."
+            },
+            {
+              "label": "여론 선점",
+              "target": "세레나",
+              "affectionDelta": 1,
+              "political": {
+                "publicTrust": 2,
+                "surveillance": 1
+              },
+              "result": "속도를 얻고 감시를 감수했다."
+            }
+          ]
+        },
+        {
+          "at": 8,
+          "title": "체크포인트 C · 관계 결속",
+          "options": [
+            {
+              "label": "관계를 전면에 둔다",
+              "target": "세레나",
+              "affectionDelta": 3,
+              "political": {
+                "publicTrust": 1
+              },
+              "result": "관계선이 확정적으로 전진했다."
+            },
+            {
+              "label": "정치 문장을 남긴다",
+              "target": "루시안",
+              "affectionDelta": 1,
+              "political": {
+                "legitimacy": 2
+              },
+              "result": "정치 안정은 올랐지만 온도는 낮아졌다."
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
