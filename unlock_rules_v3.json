@@ -1,0 +1,52 @@
+{
+  "relationshipStates": [
+    "stranger",
+    "favorable",
+    "trust",
+    "shaken",
+    "bond",
+    "allied_lovers",
+    "oath"
+  ],
+  "unlockTemplates": {
+    "normal": {
+      "requiredAny": 2,
+      "pool": [
+        "affectionThreshold",
+        "stateReached",
+        "politicalStatThreshold",
+        "flagTrue",
+        "evidenceOwned",
+        "costumeTag"
+      ]
+    },
+    "premiumCg": {
+      "requiredAll": 3,
+      "pool": [
+        "affectionThreshold",
+        "politicalStatThreshold",
+        "flagTrue"
+      ]
+    }
+  },
+  "examples": [
+    {
+      "id": "knight_pov_1",
+      "conditions": [
+        {"type": "affectionThreshold", "target": "knight", "value": 40},
+        {"type": "politicalStatThreshold", "stat": "military", "value": 35},
+        {"type": "flagTrue", "flag": "publicly_supported_me"}
+      ],
+      "rule": "2of3"
+    },
+    {
+      "id": "rival_confession_cg",
+      "conditions": [
+        {"type": "affectionThreshold", "target": "rival", "value": 60},
+        {"type": "politicalStatThreshold", "stat": "legitimacy", "value": 50},
+        {"type": "flagTrue", "flag": "saved_in_ceremony"}
+      ],
+      "rule": "3of3"
+    }
+  ]
+}

@@ -34,6 +34,15 @@
 - 로그/저장
   - shared_preferences로 상태 저장
 
+## 기획/밸런스 문서
+- `DESIGN_V2.md`
+- `ROMANCE_SYSTEM_V3.md`
+- `story_nodes_30.json`
+- `ending_rules.json`
+- `stat_balance_table.json`
+- `unlock_rules_v3.json`
+- `monetization_ad_rules_v3.md`
+
 ## 실행
 ```bash
 flutter pub get
