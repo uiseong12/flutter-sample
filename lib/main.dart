@@ -77,6 +77,8 @@ class StoryBeat {
     required this.leftCharacter,
     required this.rightCharacter,
     required this.choices,
+    this.showLeft = true,
+    this.showRight = true,
   });
 
   final String title;
@@ -86,6 +88,8 @@ class StoryBeat {
   final String leftCharacter;
   final String rightCharacter;
   final List<StoryChoice> choices;
+  final bool showLeft;
+  final bool showRight;
 }
 
 class ShopItem {
@@ -128,7 +132,7 @@ class GameShell extends StatefulWidget {
 }
 
 class _GameShellState extends State<GameShell> {
-  static const _saveKey = 'vn_save_v5';
+  static const _saveKey = 'vn_save_v6';
   final Random _random = Random();
 
   int _menuIndex = 0;
@@ -136,6 +140,7 @@ class _GameShellState extends State<GameShell> {
   int _storyIndex = 0;
   int _baseCharm = 12;
   bool _loaded = false;
+  bool _inStoryScene = false;
 
   int _workTimeLeft = 0;
   int _workScore = 0;
@@ -167,34 +172,10 @@ class _GameShellState extends State<GameShell> {
   ];
 
   final List<OutfitItem> _outfits = [
-    OutfitItem(
-      id: 'default',
-      name: '수수한 여행복',
-      price: 0,
-      charmBonus: 0,
-      avatarAsset: 'assets/art/player_default.svg',
-    ),
-    OutfitItem(
-      id: 'noble_dress',
-      name: '귀족 연회 드레스',
-      price: 220,
-      charmBonus: 4,
-      avatarAsset: 'assets/art/player_noble.svg',
-    ),
-    OutfitItem(
-      id: 'ranger_look',
-      name: '숲의 레인저 복장',
-      price: 180,
-      charmBonus: 3,
-      avatarAsset: 'assets/art/player_ranger.svg',
-    ),
-    OutfitItem(
-      id: 'moon_gown',
-      name: '월광 궁정 예복',
-      price: 380,
-      charmBonus: 7,
-      avatarAsset: 'assets/art/player_moon.svg',
-    ),
+    OutfitItem(id: 'default', name: '수수한 여행복', price: 0, charmBonus: 0, avatarAsset: 'assets/art/player_default.svg'),
+    OutfitItem(id: 'noble_dress', name: '귀족 연회 드레스', price: 220, charmBonus: 4, avatarAsset: 'assets/art/player_noble.svg'),
+    OutfitItem(id: 'ranger_look', name: '숲의 레인저 복장', price: 180, charmBonus: 3, avatarAsset: 'assets/art/player_ranger.svg'),
+    OutfitItem(id: 'moon_gown', name: '월광 궁정 예복', price: 380, charmBonus: 7, avatarAsset: 'assets/art/player_moon.svg'),
   ];
 
   final List<ShopItem> _giftItems = [
@@ -211,23 +192,11 @@ class _GameShellState extends State<GameShell> {
       backgroundAsset: 'assets/art/story_castle.svg',
       leftCharacter: '엘리안',
       rightCharacter: '루시안',
+      showLeft: false,
+      showRight: false,
       choices: [
-        StoryChoice(
-          label: '[엘리안] 경비 계획을 함께 검토한다',
-          mainTarget: '엘리안',
-          mainDelta: 10,
-          sideTarget: '루시안',
-          sideDelta: -1,
-          result: '엘리안은 당신을 신뢰하기 시작했다.',
-        ),
-        StoryChoice(
-          label: '[루시안] 첩보 보고서를 심야 분석한다',
-          mainTarget: '루시안',
-          mainDelta: 10,
-          sideTarget: '세레나',
-          sideDelta: 1,
-          result: '루시안은 조용히 당신 편에 서기로 결심했다.',
-        ),
+        StoryChoice(label: '[엘리안] 경비 계획을 함께 검토한다', mainTarget: '엘리안', mainDelta: 10, sideTarget: '루시안', sideDelta: -1, result: '엘리안은 당신을 신뢰하기 시작했다.'),
+        StoryChoice(label: '[루시안] 첩보 보고서를 심야 분석한다', mainTarget: '루시안', mainDelta: 10, sideTarget: '세레나', sideDelta: 1, result: '루시안은 조용히 당신 편에 서기로 결심했다.'),
       ],
     ),
     StoryBeat(
@@ -237,23 +206,11 @@ class _GameShellState extends State<GameShell> {
       backgroundAsset: 'assets/art/story_ballroom.svg',
       leftCharacter: '세레나',
       rightCharacter: '엘리안',
+      showLeft: true,
+      showRight: true,
       choices: [
-        StoryChoice(
-          label: '[세레나] 외교 연합을 제안한다',
-          mainTarget: '세레나',
-          mainDelta: 11,
-          sideTarget: '엘리안',
-          sideDelta: -1,
-          result: '세레나는 당신에게만 비밀을 공유했다.',
-        ),
-        StoryChoice(
-          label: '[엘리안] 시민 앞에서 함께 춤춘다',
-          mainTarget: '엘리안',
-          mainDelta: 9,
-          sideTarget: '세레나',
-          sideDelta: 1,
-          result: '엘리안의 눈빛이 흔들렸다. 더 이상 상관과 부하가 아니었다.',
-        ),
+        StoryChoice(label: '[세레나] 외교 연합을 제안한다', mainTarget: '세레나', mainDelta: 11, sideTarget: '엘리안', sideDelta: -1, result: '세레나는 당신에게만 비밀을 공유했다.'),
+        StoryChoice(label: '[엘리안] 시민 앞에서 함께 춤춘다', mainTarget: '엘리안', mainDelta: 9, sideTarget: '세레나', sideDelta: 1, result: '엘리안의 눈빛이 흔들렸다. 더 이상 상관과 부하가 아니었다.'),
       ],
     ),
     StoryBeat(
@@ -263,26 +220,30 @@ class _GameShellState extends State<GameShell> {
       backgroundAsset: 'assets/art/story_tower.svg',
       leftCharacter: '루시안',
       rightCharacter: '세레나',
+      showLeft: true,
+      showRight: false,
       choices: [
-        StoryChoice(
-          label: '[루시안] 실험을 허가하고 끝까지 함께한다',
-          mainTarget: '루시안',
-          mainDelta: 12,
-          sideTarget: '엘리안',
-          sideDelta: -2,
-          result: '루시안은 처음으로 당신 앞에서 감정을 숨기지 않았다.',
-        ),
-        StoryChoice(
-          label: '[세레나] 시민 안전을 우선해 실험을 중지시킨다',
-          mainTarget: '세레나',
-          mainDelta: 10,
-          sideTarget: '루시안',
-          sideDelta: -2,
-          result: '세레나는 당신의 결단에 진심 어린 존경을 보냈다.',
-        ),
+        StoryChoice(label: '[루시안] 실험을 허가하고 끝까지 함께한다', mainTarget: '루시안', mainDelta: 12, sideTarget: '엘리안', sideDelta: -2, result: '루시안은 처음으로 당신 앞에서 감정을 숨기지 않았다.'),
+        StoryChoice(label: '[세레나] 시민 안전을 우선해 실험을 중지시킨다', mainTarget: '세레나', mainDelta: 10, sideTarget: '루시안', sideDelta: -2, result: '세레나는 당신의 결단에 진심 어린 존경을 보냈다.'),
+      ],
+    ),
+    StoryBeat(
+      title: '결전 전야',
+      speaker: '나레이션',
+      line: '전쟁의 북소리가 다가온다. 마지막 밤, 누구의 손을 잡을 것인가.',
+      backgroundAsset: 'assets/art/story_castle.svg',
+      leftCharacter: '엘리안',
+      rightCharacter: '루시안',
+      showLeft: true,
+      showRight: true,
+      choices: [
+        StoryChoice(label: '[엘리안] 성벽 순찰을 함께하며 마음을 고백한다', mainTarget: '엘리안', mainDelta: 14, sideTarget: '루시안', sideDelta: -2, result: '엘리안은 당신의 손을 놓지 않았다.'),
+        StoryChoice(label: '[루시안] 마탑 옥상에서 새벽까지 대화한다', mainTarget: '루시안', mainDelta: 14, sideTarget: '세레나', sideDelta: -1, result: '루시안은 당신에게만 약점을 보였다.'),
       ],
     ),
   ];
+
+  late List<int?> _storySelections;
 
   Character _characterByName(String name) => _characters.firstWhere((e) => e.name == name);
 
@@ -293,6 +254,7 @@ class _GameShellState extends State<GameShell> {
   @override
   void initState() {
     super.initState();
+    _storySelections = List<int?>.filled(_story.length, null);
     _load();
   }
 
@@ -306,6 +268,9 @@ class _GameShellState extends State<GameShell> {
       _baseCharm = m['baseCharm'] ?? _baseCharm;
       _equippedOutfitId = m['equippedOutfitId'] ?? _equippedOutfitId;
       _endingCharacterName = m['endingCharacterName'] as String?;
+      _storySelections = ((m['storySelections'] as List<dynamic>?) ?? List.filled(_story.length, null))
+          .map<int?>((e) => e == null ? null : e as int)
+          .toList();
       _logs
         ..clear()
         ..addAll((m['logs'] as List<dynamic>? ?? []).map((e) => e.toString()));
@@ -336,6 +301,7 @@ class _GameShellState extends State<GameShell> {
         'baseCharm': _baseCharm,
         'equippedOutfitId': _equippedOutfitId,
         'endingCharacterName': _endingCharacterName,
+        'storySelections': _storySelections,
         'logs': _logs,
         'characters': _characters.map((e) => e.toJson()).toList(),
       }),
@@ -345,9 +311,7 @@ class _GameShellState extends State<GameShell> {
   int _scaledGain(int base) => base + (_totalCharm ~/ 5);
 
   Future<void> _checkEndingIfNeeded(Character c) async {
-    if (_endingCharacterName != null) return;
-    if (c.affection < 100) return;
-
+    if (_endingCharacterName != null || c.affection < 100) return;
     _endingCharacterName = c.name;
     _logs.insert(0, '[엔딩] ${c.name} 루트 확정 (최초 100 달성)');
     await _save();
@@ -361,11 +325,8 @@ class _GameShellState extends State<GameShell> {
         content: Text('${c.name}의 호감도가 가장 먼저 100에 도달했습니다.\n\n${c.name} 엔딩 루트가 확정됩니다.'),
         actions: [
           TextButton(
-            onPressed: () {
-              Navigator.pop(context);
-              setState(() => _menuIndex = 1);
-            },
-            child: const Text('스토리 계속'),
+            onPressed: () => Navigator.pop(context),
+            child: const Text('확인'),
           )
         ],
       ),
@@ -378,20 +339,21 @@ class _GameShellState extends State<GameShell> {
     await _checkEndingIfNeeded(target);
   }
 
-  Future<void> _pickStoryChoice(StoryChoice choice) async {
+  Future<void> _pickStoryChoice(StoryChoice choice, int choiceIndex) async {
     if (_endingCharacterName != null) return;
 
+    _storySelections[_storyIndex] = choiceIndex;
+
     final main = _characterByName(choice.mainTarget);
-    final mainGain = _scaledGain(choice.mainDelta);
-    await _addAffection(main, mainGain, '[스토리]');
+    await _addAffection(main, _scaledGain(choice.mainDelta), '[스토리]');
 
     if (choice.sideTarget != null) {
       final side = _characterByName(choice.sideTarget!);
       side.affection = (side.affection + choice.sideDelta).clamp(0, 100);
     }
 
-    if (_storyIndex < _story.length - 1) _storyIndex += 1;
     _logs.insert(0, '[대사] ${choice.result}');
+    if (_storyIndex < _story.length - 1) _storyIndex += 1;
     await _save();
 
     if (!mounted) return;
@@ -404,10 +366,8 @@ class _GameShellState extends State<GameShell> {
       ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('골드가 부족합니다.')));
       return;
     }
-
     _gold -= item.price;
-    final gain = _scaledGain(item.affectionBoost);
-    await _addAffection(target, gain, '[상점] ${item.name} 선물 ->');
+    await _addAffection(target, _scaledGain(item.affectionBoost), '[상점] ${item.name} 선물 ->');
     await _save();
     setState(() {});
   }
@@ -417,7 +377,6 @@ class _GameShellState extends State<GameShell> {
       ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('골드가 부족합니다.')));
       return;
     }
-
     _gold -= item.price;
     _equippedOutfitId = item.id;
     _logs.insert(0, '[장착] ${item.name} 착용 (매력 +${item.charmBonus})');
@@ -438,7 +397,6 @@ class _GameShellState extends State<GameShell> {
     }
 
     if (!mounted) return;
-
     final reward = 20 + (_workScore * 7);
     _gold += reward;
     _logs.insert(0, '[아르바이트] 점수 $_workScore점, 골드 +$reward');
@@ -478,17 +436,11 @@ class _GameShellState extends State<GameShell> {
     setState(() {});
   }
 
-  Widget _statChip(String label, String value) {
-    return Chip(label: Text('$label $value'), visualDensity: VisualDensity.compact);
+  Widget _fullBodySprite(String asset, {double width = 220}) {
+    return SizedBox(width: width, height: width * 1.45, child: SvgPicture.asset(asset, fit: BoxFit.contain));
   }
 
-  Widget _fullBodySprite(String asset, {double width = 220}) {
-    return SizedBox(
-      width: width,
-      height: width * 1.45,
-      child: SvgPicture.asset(asset, fit: BoxFit.contain),
-    );
-  }
+  Widget _statChip(String label, String value) => Chip(label: Text('$label $value'), visualDensity: VisualDensity.compact);
 
   @override
   Widget build(BuildContext context) {
@@ -499,11 +451,9 @@ class _GameShellState extends State<GameShell> {
         title: const Text('로열 하트 크로니클'),
         actions: [
           if (_endingCharacterName != null)
-            Center(
-              child: Padding(
-                padding: const EdgeInsets.only(right: 12),
-                child: Text('엔딩: $_endingCharacterName', style: const TextStyle(fontWeight: FontWeight.bold)),
-              ),
+            Padding(
+              padding: const EdgeInsets.only(right: 12),
+              child: Center(child: Text('엔딩: $_endingCharacterName', style: const TextStyle(fontWeight: FontWeight.bold))),
             ),
           Padding(
             padding: const EdgeInsets.only(right: 12),
@@ -513,7 +463,7 @@ class _GameShellState extends State<GameShell> {
       ),
       body: IndexedStack(
         index: _menuIndex,
-        children: [_homePage(), _storyPage(), _workPage(), _shopPage(), _datePage(), _logPage()],
+        children: [_homePage(), _storyRootPage(), _workPage(), _shopPage(), _datePage(), _logPage()],
       ),
       bottomNavigationBar: NavigationBar(
         selectedIndex: _menuIndex,
@@ -532,7 +482,6 @@ class _GameShellState extends State<GameShell> {
 
   Widget _homePage() {
     final outfit = _outfits.firstWhere((e) => e.id == _equippedOutfitId);
-
     return ListView(
       padding: const EdgeInsets.all(14),
       children: [
@@ -545,21 +494,14 @@ class _GameShellState extends State<GameShell> {
               children: [
                 Positioned.fill(child: SvgPicture.asset('assets/art/home_bg.svg', fit: BoxFit.cover)),
                 Positioned.fill(child: Container(color: Colors.black.withOpacity(0.28))),
-                Positioned(
-                  left: 12,
-                  bottom: 0,
-                  child: _fullBodySprite(_playerAvatar, width: 180),
-                ),
+                Positioned(left: 12, bottom: 0, child: _fullBodySprite(_playerAvatar, width: 180)),
                 Positioned(
                   right: 14,
                   top: 20,
                   child: Container(
                     width: 220,
                     padding: const EdgeInsets.all(12),
-                    decoration: BoxDecoration(
-                      color: Colors.black.withOpacity(0.5),
-                      borderRadius: BorderRadius.circular(12),
-                    ),
+                    decoration: BoxDecoration(color: Colors.black.withOpacity(0.5), borderRadius: BorderRadius.circular(12)),
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
@@ -567,7 +509,7 @@ class _GameShellState extends State<GameShell> {
                         const SizedBox(height: 6),
                         Text('착용: ${outfit.name}', style: const TextStyle(color: Colors.white70)),
                         Text('총 매력: $_totalCharm', style: const TextStyle(color: Colors.white70)),
-                        Text('엔딩 조건: 호감도 100 선점', style: const TextStyle(color: Colors.white70)),
+                        const Text('엔딩 조건: 호감도 100 선점', style: TextStyle(color: Colors.white70)),
                       ],
                     ),
                   ),
@@ -596,7 +538,7 @@ class _GameShellState extends State<GameShell> {
           runSpacing: 4,
           children: [
             _statChip('💰', '$_gold'),
-            _statChip('⭐', '스토리 ${_storyIndex + 1}/${_story.length}'),
+            _statChip('⭐', '진행 ${_storySelections.where((e) => e != null).length}/${_story.length}'),
             ..._characters.map((c) => _statChip(c.name, '${c.affection}')),
           ],
         )
@@ -608,10 +550,7 @@ class _GameShellState extends State<GameShell> {
     return InkWell(
       onTap: onTap,
       child: Container(
-        decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(14),
-          gradient: LinearGradient(colors: [color.withOpacity(0.85), color.withOpacity(0.5)]),
-        ),
+        decoration: BoxDecoration(borderRadius: BorderRadius.circular(14), gradient: LinearGradient(colors: [color.withOpacity(0.85), color.withOpacity(0.5)])),
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
@@ -624,7 +563,98 @@ class _GameShellState extends State<GameShell> {
     );
   }
 
-  Widget _storyPage() {
+  Widget _storyRootPage() {
+    return _inStoryScene ? _storyScenePage() : _storyProgressPage();
+  }
+
+  Widget _storyProgressPage() {
+    final cleared = _storySelections.where((e) => e != null).length;
+
+    return ListView(
+      padding: const EdgeInsets.all(14),
+      children: [
+        Card(
+          child: Padding(
+            padding: const EdgeInsets.all(12),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const Text('스토리 진행도', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 17)),
+                const SizedBox(height: 8),
+                _progressRouteLine(),
+                const SizedBox(height: 6),
+                Text('클리어: $cleared / ${_story.length}'),
+                if (_endingCharacterName != null)
+                  Text('확정 엔딩: $_endingCharacterName', style: const TextStyle(fontWeight: FontWeight.bold)),
+                const SizedBox(height: 8),
+                FilledButton(
+                  onPressed: () => setState(() => _inStoryScene = true),
+                  child: Text(cleared == 0 ? '스토리 시작' : '스토리 이어하기'),
+                ),
+              ],
+            ),
+          ),
+        ),
+        const SizedBox(height: 10),
+        ...List.generate(_story.length, (i) {
+          final beat = _story[i];
+          final picked = _storySelections[i];
+          return Card(
+            child: Padding(
+              padding: const EdgeInsets.all(12),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text('EP ${i + 1}. ${beat.title}', style: const TextStyle(fontWeight: FontWeight.bold)),
+                  const SizedBox(height: 4),
+                  Text(beat.line, maxLines: 2, overflow: TextOverflow.ellipsis),
+                  const SizedBox(height: 8),
+                  if (picked == null)
+                    const Text('선택 전', style: TextStyle(color: Colors.grey))
+                  else
+                    Text('선택 루트: ${beat.choices[picked].label}', style: const TextStyle(color: Colors.teal, fontWeight: FontWeight.w600)),
+                ],
+              ),
+            ),
+          );
+        })
+      ],
+    );
+  }
+
+  Widget _progressRouteLine() {
+    return SingleChildScrollView(
+      scrollDirection: Axis.horizontal,
+      child: Row(
+        children: List.generate(_story.length, (i) {
+          final done = _storySelections[i] != null;
+          return Row(
+            children: [
+              Container(
+                width: 24,
+                height: 24,
+                alignment: Alignment.center,
+                decoration: BoxDecoration(
+                  color: done ? Colors.pink : Colors.white,
+                  border: Border.all(color: Colors.pink),
+                  shape: BoxShape.circle,
+                ),
+                child: Text(done ? '●' : '○', style: TextStyle(color: done ? Colors.white : Colors.pink, fontSize: 12)),
+              ),
+              if (i != _story.length - 1)
+                Container(
+                  width: 26,
+                  height: 2,
+                  color: (_storySelections[i] != null) ? Colors.pink : Colors.grey.shade400,
+                ),
+            ],
+          );
+        }),
+      ),
+    );
+  }
+
+  Widget _storyScenePage() {
     final beat = _story[_storyIndex];
     final left = _characterByName(beat.leftCharacter);
     final right = _characterByName(beat.rightCharacter);
@@ -633,36 +663,54 @@ class _GameShellState extends State<GameShell> {
       children: [
         Positioned.fill(child: SvgPicture.asset(beat.backgroundAsset, fit: BoxFit.cover)),
         Positioned.fill(child: Container(color: Colors.black.withOpacity(0.32))),
-        Positioned(left: 8, bottom: 130, child: _fullBodyCharacterCard(left)),
-        Positioned(right: 8, bottom: 130, child: _fullBodyCharacterCard(right)),
+        Positioned(
+          top: 10,
+          left: 10,
+          child: OutlinedButton.icon(
+            style: OutlinedButton.styleFrom(backgroundColor: Colors.black.withOpacity(0.4), foregroundColor: Colors.white),
+            onPressed: () => setState(() => _inStoryScene = false),
+            icon: const Icon(Icons.arrow_back),
+            label: const Text('스토리 맵'),
+          ),
+        ),
+        Positioned(left: 8, bottom: 130, child: _animatedCharacterCard(left, visible: beat.showLeft)),
+        Positioned(right: 8, bottom: 130, child: _animatedCharacterCard(right, visible: beat.showRight)),
         Positioned(left: 0, right: 0, bottom: 0, child: _dialogWindow(beat)),
       ],
     );
   }
 
-  Widget _fullBodyCharacterCard(Character c) {
-    return GestureDetector(
-      onTap: () async {
-        if (_endingCharacterName != null) return;
-        await _addAffection(c, 1, '[상호작용]');
-        await _save();
-        if (mounted) setState(() {});
-      },
-      child: Container(
-        width: 210,
-        height: 330,
-        padding: const EdgeInsets.all(8),
-        decoration: BoxDecoration(
-          color: Colors.black.withOpacity(0.36),
-          borderRadius: BorderRadius.circular(14),
-          border: Border.all(color: Colors.white24),
-        ),
-        child: Column(
-          children: [
-            Expanded(child: _fullBodySprite(c.fullBodyAsset, width: 170)),
-            Text(c.name, style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
-            Text('❤ ${c.affection}', style: const TextStyle(color: Colors.white70)),
-          ],
+  Widget _animatedCharacterCard(Character c, {required bool visible}) {
+    return AnimatedSlide(
+      duration: const Duration(milliseconds: 350),
+      offset: visible ? Offset.zero : const Offset(0, 0.12),
+      child: AnimatedOpacity(
+        duration: const Duration(milliseconds: 280),
+        opacity: visible ? 1 : 0,
+        child: GestureDetector(
+          onTap: () async {
+            if (!visible || _endingCharacterName != null) return;
+            await _addAffection(c, 1, '[상호작용]');
+            await _save();
+            if (mounted) setState(() {});
+          },
+          child: Container(
+            width: 210,
+            height: 330,
+            padding: const EdgeInsets.all(8),
+            decoration: BoxDecoration(
+              color: Colors.black.withOpacity(0.36),
+              borderRadius: BorderRadius.circular(14),
+              border: Border.all(color: Colors.white24),
+            ),
+            child: Column(
+              children: [
+                Expanded(child: _fullBodySprite(c.fullBodyAsset, width: 170)),
+                Text(c.name, style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+                Text('❤ ${c.affection}', style: const TextStyle(color: Colors.white70)),
+              ],
+            ),
+          ),
         ),
       ),
     );
@@ -685,14 +733,13 @@ class _GameShellState extends State<GameShell> {
             Wrap(
               spacing: 8,
               runSpacing: 8,
-              children: beat.choices
-                  .map(
-                    (choice) => ElevatedButton(
-                      onPressed: _endingCharacterName != null ? null : () => _pickStoryChoice(choice),
-                      child: Text(choice.label),
-                    ),
-                  )
-                  .toList(),
+              children: List.generate(
+                beat.choices.length,
+                (i) => ElevatedButton(
+                  onPressed: _endingCharacterName != null ? null : () => _pickStoryChoice(beat.choices[i], i),
+                  child: Text(beat.choices[i].label),
+                ),
+              ),
             ),
           ],
         ),
@@ -714,19 +761,9 @@ class _GameShellState extends State<GameShell> {
             Text('남은 시간: $_workTimeLeft초'),
             Text('점수: $_workScore'),
             const SizedBox(height: 12),
-            FilledButton(
-              onPressed: _workTimeLeft > 0
-                  ? () {
-                      setState(() => _workScore += 1);
-                    }
-                  : null,
-              child: const Text('작업! (+1점)'),
-            ),
+            FilledButton(onPressed: _workTimeLeft > 0 ? () => setState(() => _workScore += 1) : null, child: const Text('작업! (+1점)')),
             const SizedBox(height: 10),
-            OutlinedButton(
-              onPressed: _workTimeLeft > 0 ? null : _startWorkMiniGame,
-              child: const Text('아르바이트 시작'),
-            ),
+            OutlinedButton(onPressed: _workTimeLeft > 0 ? null : _startWorkMiniGame, child: const Text('아르바이트 시작')),
           ],
         ),
       ),
@@ -739,57 +776,48 @@ class _GameShellState extends State<GameShell> {
       children: [
         const Text('의상 상점 (착용 시 전신 외형/매력 변화)', style: TextStyle(fontWeight: FontWeight.bold)),
         const SizedBox(height: 8),
-        ..._outfits.map(
-          (o) => Card(
-            child: ListTile(
-              leading: SizedBox(width: 42, height: 52, child: SvgPicture.asset(o.avatarAsset)),
-              title: Text('${o.name}  (+${o.charmBonus} 매력)'),
-              subtitle: Text(o.price == 0 ? '기본 의상' : '${o.price} G'),
-              trailing: FilledButton(
-                onPressed: o.id == _equippedOutfitId
-                    ? null
-                    : () {
-                        if (o.price == 0) {
-                          setState(() => _equippedOutfitId = o.id);
-                          _save();
-                        } else {
-                          _buyOutfit(o);
-                        }
-                      },
-                child: Text(o.id == _equippedOutfitId ? '착용중' : '착용'),
+        ..._outfits.map((o) => Card(
+              child: ListTile(
+                leading: SizedBox(width: 42, height: 52, child: SvgPicture.asset(o.avatarAsset)),
+                title: Text('${o.name}  (+${o.charmBonus} 매력)'),
+                subtitle: Text(o.price == 0 ? '기본 의상' : '${o.price} G'),
+                trailing: FilledButton(
+                  onPressed: o.id == _equippedOutfitId
+                      ? null
+                      : () {
+                          if (o.price == 0) {
+                            setState(() => _equippedOutfitId = o.id);
+                            _save();
+                          } else {
+                            _buyOutfit(o);
+                          }
+                        },
+                  child: Text(o.id == _equippedOutfitId ? '착용중' : '착용'),
+                ),
               ),
-            ),
-          ),
-        ),
+            )),
         const SizedBox(height: 10),
         const Text('호감도 아이템', style: TextStyle(fontWeight: FontWeight.bold)),
         const SizedBox(height: 8),
-        ..._giftItems.map(
-          (item) => Card(
-            child: Padding(
-              padding: const EdgeInsets.all(10),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text('${item.name} · ${item.price}G', style: const TextStyle(fontWeight: FontWeight.w700)),
-                  Text(item.description),
-                  const SizedBox(height: 8),
-                  Wrap(
-                    spacing: 6,
-                    children: _characters
-                        .map(
-                          (c) => OutlinedButton(
-                            onPressed: () => _buyGift(item, c),
-                            child: Text('${c.name}에게 선물'),
-                          ),
-                        )
-                        .toList(),
-                  ),
-                ],
+        ..._giftItems.map((item) => Card(
+              child: Padding(
+                padding: const EdgeInsets.all(10),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text('${item.name} · ${item.price}G', style: const TextStyle(fontWeight: FontWeight.w700)),
+                    Text(item.description),
+                    const SizedBox(height: 8),
+                    Wrap(
+                      spacing: 6,
+                      children: _characters
+                          .map((c) => OutlinedButton(onPressed: () => _buyGift(item, c), child: Text('${c.name}에게 선물')))
+                          .toList(),
+                    ),
+                  ],
+                ),
               ),
-            ),
-          ),
-        ),
+            )),
       ],
     );
   }
@@ -802,16 +830,14 @@ class _GameShellState extends State<GameShell> {
         const SizedBox(height: 6),
         const Text('호감도 구간에 따라 랜덤 이벤트 연출이 달라집니다.'),
         const SizedBox(height: 8),
-        ..._characters.map(
-          (c) => Card(
-            child: ListTile(
-              leading: SizedBox(width: 40, height: 54, child: SvgPicture.asset(c.fullBodyAsset)),
-              title: Text('${c.name} (${c.role})'),
-              subtitle: Text('호감도 ${c.affection}'),
-              trailing: FilledButton(onPressed: () => _dateRandom(c), child: const Text('데이트')),
-            ),
-          ),
-        )
+        ..._characters.map((c) => Card(
+              child: ListTile(
+                leading: SizedBox(width: 40, height: 54, child: SvgPicture.asset(c.fullBodyAsset)),
+                title: Text('${c.name} (${c.role})'),
+                subtitle: Text('호감도 ${c.affection}'),
+                trailing: FilledButton(onPressed: () => _dateRandom(c), child: const Text('데이트')),
+              ),
+            )),
       ],
     );
   }
