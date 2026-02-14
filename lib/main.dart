@@ -2970,28 +2970,39 @@ class _GameShellState extends State<GameShell> {
                 Positioned(
                   left: 12,
                   right: 12,
-                  bottom: 18,
-                  child: Row(
-                    children: [
-                      Expanded(
-                        child: _sealPrimaryButton('선택 노드 시작', () {
-                          setState(() {
-                            _inStoryScene = true;
-                            _sceneKey += 1;
-                            _transitionPreset = TransitionPreset.fade;
-                          });
-                          _beginBeatLine();
-                        }),
+                  bottom: 96,
+                  child: SafeArea(
+                    top: false,
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
+                      decoration: BoxDecoration(
+                        color: Colors.black.withOpacity(0.36),
+                        borderRadius: BorderRadius.circular(10),
+                        border: Border.all(color: Colors.white24),
                       ),
-                      const SizedBox(width: 8),
-                      const Expanded(
-                        child: Text(
-                          '노드를 한 번 더 탭하면 바로 시작',
-                          style: TextStyle(color: Color(0xFFF6F1E8), fontSize: 12, shadows: [Shadow(color: Color(0x99000000), blurRadius: 6)]),
-                          textAlign: TextAlign.center,
-                        ),
+                      child: Row(
+                        children: [
+                          Expanded(
+                            child: _sealPrimaryButton('선택 노드 시작', () {
+                              setState(() {
+                                _inStoryScene = true;
+                                _sceneKey += 1;
+                                _transitionPreset = TransitionPreset.fade;
+                              });
+                              _beginBeatLine();
+                            }),
+                          ),
+                          const SizedBox(width: 8),
+                          const Expanded(
+                            child: Text(
+                              '현재 노드 재탭으로 즉시 시작',
+                              style: TextStyle(color: Color(0xFFF6F1E8), fontSize: 11, shadows: [Shadow(color: Color(0x99000000), blurRadius: 6)]),
+                              textAlign: TextAlign.center,
+                            ),
+                          ),
+                        ],
                       ),
-                    ],
+                    ),
                   ),
                 ),
               ],
