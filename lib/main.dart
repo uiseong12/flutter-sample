@@ -1326,45 +1326,31 @@ class _GameShellState extends State<GameShell> {
   }
 
   Widget _branchRouteMap() {
-    // 30 nodes: 10 steps x 3 branches (bottom -> top)
+    // 30-stage vertical route with in-between branch-like lane changes
     const viewH = 520.0;
-    const laneX = [42.0, 168.0, 294.0];
-    const steps = 10;
-    const stepGap = 210.0;
-    final mapH = 180 + (steps - 1) * stepGap;
+    const stepGap = 122.0;
+    const laneX = [48.0, 168.0, 288.0];
+
+    final lanePattern = [1, 0, 2, 1, 2, 0, 1, 2, 1, 0, 2, 1, 0, 1, 2, 1, 2, 0, 1, 0, 2, 1, 2, 1, 0, 1, 2, 0, 1, 2];
+    final totalSteps = _story.length; // 30
+    final mapH = 170 + (totalSteps - 1) * stepGap;
 
     final nodes = <Map<String, int>>[];
-    for (int step = 0; step < steps; step++) {
-      for (int lane = 0; lane < 3; lane++) {
-        final id = step * 3 + lane;
-        nodes.add({'id': id, 'beat': id, 'lane': lane, 'step': step});
-      }
+    for (int i = 0; i < totalSteps; i++) {
+      nodes.add({'id': i, 'beat': i, 'lane': lanePattern[i % lanePattern.length], 'step': i});
     }
 
     Offset nodePos(Map<String, int> n) {
       final x = laneX[n['lane']!];
-      final y = mapH - 74 - (n['step']! * stepGap);
+      final y = mapH - 72 - (n['step']! * stepGap);
       return Offset(x, y);
     }
 
     final links = <List<int>>[];
-    for (int step = 0; step < steps - 1; step++) {
-      for (int lane = 0; lane < 3; lane++) {
-        final fromId = step * 3 + lane;
-        for (int d in [-1, 0, 1]) {
-          final toLane = lane + d;
-          if (toLane < 0 || toLane > 2) continue;
-          final toId = (step + 1) * 3 + toLane;
-          links.add([fromId, toId]);
-        }
-      }
-    }
-
-    bool isLocked(Map<String, int> n) {
-      final step = n['step']!;
-      final id = n['id']!;
-      if (!_stepNodePick.containsKey(step)) return false;
-      return _stepNodePick[step] != id;
+    for (int i = 0; i < totalSteps - 1; i++) {
+      links.add([i, i + 1]);
+      // light branch-looking side links
+      if (i % 5 == 2 && i + 2 < totalSteps) links.add([i, i + 2]);
     }
 
     return Container(
@@ -1391,21 +1377,15 @@ class _GameShellState extends State<GameShell> {
                 final pos = nodePos(n);
                 final done = _storySelections[beat] != null;
                 final selected = beat == _storyIndex;
-                final locked = isLocked(n);
 
                 return Positioned(
                   left: pos.dx,
                   top: pos.dy,
                   child: GestureDetector(
-                    onTap: locked
-                        ? null
-                        : () {
-                            _playClick();
-                            setState(() {
-                              _storyIndex = beat;
-                              _stepNodePick[n['step']!] = n['id']!;
-                            });
-                          },
+                    onTap: () {
+                      _playClick();
+                      setState(() => _storyIndex = beat);
+                    },
                     child: AnimatedContainer(
                       duration: const Duration(milliseconds: 180),
                       width: 34,
@@ -1413,18 +1393,11 @@ class _GameShellState extends State<GameShell> {
                       alignment: Alignment.center,
                       decoration: BoxDecoration(
                         shape: BoxShape.circle,
-                        color: locked
-                            ? const Color(0xFF2D3A4F)
-                            : selected
-                                ? Colors.amber
-                                : (done ? const Color(0xFF8A6B4D) : const Color(0xFF364A66)),
+                        color: selected ? Colors.amber : (done ? const Color(0xFF8A6B4D) : const Color(0xFF364A66)),
                         border: Border.all(color: Colors.white70),
                         boxShadow: selected ? [const BoxShadow(color: Colors.amberAccent, blurRadius: 8)] : null,
                       ),
-                      child: Text(
-                        locked ? '×' : '${n['id']! + 1}',
-                        style: const TextStyle(color: Colors.white, fontSize: 10, fontWeight: FontWeight.bold),
-                      ),
+                      child: Text('${n['id']! + 1}', style: const TextStyle(color: Colors.white, fontSize: 10, fontWeight: FontWeight.bold)),
                     ),
                   ),
                 );
@@ -1843,14 +1816,18 @@ class _RouteLinkPainter extends CustomPainter {
       final b = byId(l[1]);
       final p1 = nodePos(a) + const Offset(17, 17);
       final p2 = nodePos(b) + const Offset(17, 17);
-      final cp = Offset((p1.dx + p2.dx) / 2, p1.dy - 28);
+      final seed = ((a['id'] ?? 0) * 31 + (b['id'] ?? 0) * 17) % 7;
+      final wobble = 10.0 + seed * 2.0;
+
+      final cp1 = Offset((p1.dx * 0.70 + p2.dx * 0.30) + (seed.isEven ? wobble : -wobble), (p1.dy * 0.70 + p2.dy * 0.30));
+      final cp2 = Offset((p1.dx * 0.30 + p2.dx * 0.70) + (seed.isEven ? -wobble : wobble), (p1.dy * 0.30 + p2.dy * 0.70));
 
       final path = Path()
         ..moveTo(p1.dx, p1.dy)
-        ..quadraticBezierTo(cp.dx, cp.dy, p2.dx, p2.dy);
+        ..cubicTo(cp1.dx, cp1.dy, cp2.dx, cp2.dy, p2.dx, p2.dy);
 
       final isActive = (a['beat'] == selectedBeat) || (b['beat'] == selectedBeat);
-      _drawDashedPath(canvas, path, isActive ? active : base);
+      _drawDashedPath(canvas, path, isActive ? active : base, dash: 4.5, gap: 6.0);
     }
   }
 
