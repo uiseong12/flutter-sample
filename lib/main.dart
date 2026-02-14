@@ -221,60 +221,368 @@ class _GameShellState extends State<GameShell> {
     ShopItem(id: 'ancient_book', name: '고대 문양 서책', price: 140, description: '지적 자극을 주는 특별한 책.', affectionBoost: 11),
   ];
 
-  late final List<StoryBeat> _story = [
+    late final List<StoryBeat> _story = [
     StoryBeat(
-      title: '왕궁 입성',
+      title: '1-1 계약약혼',
       speaker: '나레이션',
-      line: '붉은 노을이 성벽을 물들였다. 첫 선택이 권력과 사랑의 균형을 만든다.',
+      line: '몰락귀족 여주 이세라는 생존을 위해 기사단장과 계약약혼을 맺는다. 약혼식 직후 복식 위반 고발장이 날아든다.',
       backgroundAsset: 'assets/generated/bg_castle/001-medieval-fantasy-royal-castle-courtyard-.png',
       leftCharacter: '엘리안',
-      rightCharacter: '루시안',
-      showLeft: false,
-      showRight: false,
+      rightCharacter: '세레나',
       choices: [
-        StoryChoice(label: '[엘리안] 경비 계획을 함께 검토한다', mainTarget: '엘리안', mainDelta: 10, sideTarget: '루시안', sideDelta: -1, result: '엘리안은 당신을 신뢰하기 시작했다.'),
-        StoryChoice(label: '[루시안] 첩보 보고서를 심야 분석한다', mainTarget: '루시안', mainDelta: 10, sideTarget: '세레나', sideDelta: 1, result: '루시안은 조용히 당신 편에 서기로 결심했다.'),
+        StoryChoice(label: '[엘리안] 법정에 즉시 항변', mainTarget: '엘리안', mainDelta: 9, result: '엘리안은 검이 아닌 법전을 들었다.'),
+        StoryChoice(label: '[세레나] 귀족 살롱 여론전', mainTarget: '세레나', mainDelta: 9, result: '세레나는 웃으며 귀족들의 방향을 틀었다.'),
       ],
     ),
     StoryBeat(
-      title: '가면무도회',
+      title: '1-2 조작된 염색샘플',
       speaker: '세레나',
-      line: '당신이 누구와 춤을 추는지, 그 장면은 곧 정치적 선언이 된다.',
+      line: '위반 증거로 제출된 염색 샘플에서 조작 흔적이 드러난다.',
+      backgroundAsset: 'assets/generated/bg_castle/001-medieval-fantasy-royal-castle-courtyard-.png',
+      leftCharacter: '세레나',
+      rightCharacter: '루시안',
+      choices: [
+        StoryChoice(label: '[루시안] 시약 감정서 제출', mainTarget: '루시안', mainDelta: 8, result: '루시안은 염료의 시간을 증명했다.'),
+        StoryChoice(label: '[세레나] 서기관 진술 확보', mainTarget: '세레나', mainDelta: 8, result: '봉인함 교체 시간이 밝혀졌다.'),
+      ],
+    ),
+    StoryBeat(
+      title: '1-3 첫 반격',
+      speaker: '나레이션',
+      line: '복식법정청 내부자가 법을 사유화한 정황이 드러난다.',
+      backgroundAsset: 'assets/generated/bg_tower/001-mystic-mage-tower-observatory-at-midnigh.png',
+      leftCharacter: '엘리안',
+      rightCharacter: '루시안',
+      choices: [
+        StoryChoice(label: '[엘리안] 내부고발자 보호', mainTarget: '엘리안', mainDelta: 9, result: '증언이 살아남아 반격의 문이 열렸다.'),
+        StoryChoice(label: '[루시안] 장부 암호 해독', mainTarget: '루시안', mainDelta: 9, result: '숫자 뒤에 숨은 손이 드러났다.'),
+      ],
+    ),
+    StoryBeat(
+      title: '2-1 공개 망신의 날',
+      speaker: '나레이션',
+      line: '궁정은 복식법 위반을 무기로 여주의 가문 재산까지 압류하려 든다.',
+      backgroundAsset: 'assets/generated/bg_ballroom/001-luxurious-medieval-ballroom-interior-at-.png',
+      leftCharacter: '엘리안',
+      rightCharacter: '세레나',
+      choices: [
+        StoryChoice(label: '[엘리안] 군납선 보호', mainTarget: '엘리안', mainDelta: 9, result: '병참 라인이 끊기지 않았다.'),
+        StoryChoice(label: '[세레나] 의회파 분열', mainTarget: '세레나', mainDelta: 9, result: '표결판이 갈라졌다.'),
+      ],
+    ),
+    StoryBeat(
+      title: '2-2 길드 장부',
+      speaker: '루시안',
+      line: '직물·염색 길드의 장부 한 줄이 귀족전보다 치명적인 경제제재를 암시한다.',
+      backgroundAsset: 'assets/generated/bg_ballroom/001-luxurious-medieval-ballroom-interior-at-.png',
+      leftCharacter: '루시안',
+      rightCharacter: '세레나',
+      choices: [
+        StoryChoice(label: '[루시안] 거래코드 해독', mainTarget: '루시안', mainDelta: 10, result: '가짜 보랏빛 유통선이 잡혔다.'),
+        StoryChoice(label: '[세레나] 길드장 협약', mainTarget: '세레나', mainDelta: 8, result: '시장 가격이 우리 쪽으로 기울었다.'),
+      ],
+    ),
+    StoryBeat(
+      title: '2-3 감정 이전의 동맹',
+      speaker: '엘리안',
+      line: '두 사람은 감정보다 먼저 동맹을 선택한다. 그러나 시선은 이미 흔들린다.',
+      backgroundAsset: 'assets/generated/bg_castle/001-medieval-fantasy-royal-castle-courtyard-.png',
+      leftCharacter: '엘리안',
+      rightCharacter: '루시안',
+      choices: [
+        StoryChoice(label: '[엘리안] 공개서약', mainTarget: '엘리안', mainDelta: 10, result: '방패와 서약이 같은 방향을 향했다.'),
+        StoryChoice(label: '[루시안] 비밀서약', mainTarget: '루시안', mainDelta: 10, result: '침묵의 계약이 체결됐다.'),
+      ],
+    ),
+    StoryBeat(
+      title: '3-1 신판 소환',
+      speaker: '나레이션',
+      line: '여주가 준-신판 절차에 회부된다. 의식은 이미 판결이 정해진 연극 같다.',
+      backgroundAsset: 'assets/generated/bg_tower/001-mystic-mage-tower-observatory-at-midnigh.png',
+      leftCharacter: '루시안',
+      rightCharacter: '세레나',
+      choices: [
+        StoryChoice(label: '[루시안] 절차 모순 제시', mainTarget: '루시안', mainDelta: 11, result: '제단의 규칙이 스스로 무너졌다.'),
+        StoryChoice(label: '[세레나] 참관인 설득', mainTarget: '세레나', mainDelta: 9, result: '증언의 순서를 뒤집었다.'),
+      ],
+    ),
+    StoryBeat(
+      title: '3-2 물의 맹세문',
+      speaker: '나레이션',
+      line: '맹세문 필사가 사건 이후 잉크로 작성된 사실이 발견된다.',
+      backgroundAsset: 'assets/generated/bg_tower/001-mystic-mage-tower-observatory-at-midnigh.png',
+      leftCharacter: '엘리안',
+      rightCharacter: '루시안',
+      choices: [
+        StoryChoice(label: '[엘리안] 증인 호위', mainTarget: '엘리안', mainDelta: 10, result: '증인은 끝까지 살아서 말했다.'),
+        StoryChoice(label: '[루시안] 잉크 연대측정', mainTarget: '루시안', mainDelta: 10, result: '문서가 거짓임이 확정됐다.'),
+      ],
+    ),
+    StoryBeat(
+      title: '3-3 공개 선언',
+      speaker: '엘리안',
+      line: '엘리안은 명예보다 여주 편에 서겠다고 공개 선언한다.',
+      backgroundAsset: 'assets/generated/bg_castle/001-medieval-fantasy-royal-castle-courtyard-.png',
+      leftCharacter: '엘리안',
+      rightCharacter: '세레나',
+      choices: [
+        StoryChoice(label: '[엘리안] 전군 앞 맹세', mainTarget: '엘리안', mainDelta: 12, result: '정치적 거래가 상호선택으로 바뀌었다.'),
+        StoryChoice(label: '[세레나] 선언 수위 조절', mainTarget: '세레나', mainDelta: 9, result: '불씨를 남기고 화재를 피했다.'),
+      ],
+    ),
+    StoryBeat(
+      title: '4-1 왕실색 유출',
+      speaker: '나레이션',
+      line: '왕실 정통성 상징인 보랏빛 봉인 염료 조합이 유출됐다는 정보가 뜬다.',
+      backgroundAsset: 'assets/generated/bg_ballroom/001-luxurious-medieval-ballroom-interior-at-.png',
+      leftCharacter: '루시안',
+      rightCharacter: '세레나',
+      choices: [
+        StoryChoice(label: '[루시안] 저장고 추적', mainTarget: '루시안', mainDelta: 10, result: '봉인 파편 이동경로를 포착했다.'),
+        StoryChoice(label: '[세레나] 재단장 잠입', mainTarget: '세레나', mainDelta: 10, result: '가짜 보랏빛 공급처를 찾아냈다.'),
+      ],
+    ),
+    StoryBeat(
+      title: '4-2 왕실색 사용권',
+      speaker: '세레나',
+      line: '자주색은 패션이 아니라 왕위 정통성 장치였다.',
       backgroundAsset: 'assets/generated/bg_ballroom/001-luxurious-medieval-ballroom-interior-at-.png',
       leftCharacter: '세레나',
       rightCharacter: '엘리안',
       choices: [
-        StoryChoice(label: '[세레나] 외교 연합을 제안한다', mainTarget: '세레나', mainDelta: 11, sideTarget: '엘리안', sideDelta: -1, result: '세레나는 당신에게만 비밀을 공유했다.'),
-        StoryChoice(label: '[엘리안] 시민 앞에서 함께 춤춘다', mainTarget: '엘리안', mainDelta: 9, sideTarget: '세레나', sideDelta: 1, result: '엘리안의 눈빛이 흔들렸다.'),
+        StoryChoice(label: '[세레나] 사용권 공표', mainTarget: '세레나', mainDelta: 11, result: '사칭 세력이 잠시 숨었다.'),
+        StoryChoice(label: '[엘리안] 압수수색 강행', mainTarget: '엘리안', mainDelta: 11, result: '가짜 왕실복이 시장에서 사라졌다.'),
       ],
     ),
     StoryBeat(
-      title: '마탑의 밤',
+      title: '4-3 배신의 밤',
       speaker: '루시안',
-      line: '금지된 결계는 누군가의 미래를 살리고, 또 누군가의 신념을 부순다.',
+      line: '동맹의 배신처럼 보이는 선택이 모두를 갈라놓는다.',
       backgroundAsset: 'assets/generated/bg_tower/001-mystic-mage-tower-observatory-at-midnigh.png',
       leftCharacter: '루시안',
-      rightCharacter: '세레나',
-      showLeft: true,
-      showRight: false,
+      rightCharacter: '엘리안',
       choices: [
-        StoryChoice(label: '[루시안] 실험을 허가하고 끝까지 함께한다', mainTarget: '루시안', mainDelta: 12, sideTarget: '엘리안', sideDelta: -2, result: '루시안은 감정을 숨기지 않았다.'),
-        StoryChoice(label: '[세레나] 시민 안전을 우선해 실험을 중지시킨다', mainTarget: '세레나', mainDelta: 10, sideTarget: '루시안', sideDelta: -2, result: '세레나는 당신의 결단에 존경을 보냈다.'),
+        StoryChoice(label: '[루시안] 진짜 배후 추적', mainTarget: '루시안', mainDelta: 12, result: '배신은 미끼였고 배후는 더 깊었다.'),
+        StoryChoice(label: '[엘리안] 즉시 처분', mainTarget: '엘리안', mainDelta: 8, result: 'BAD_ENDING: 성급한 처분으로 증거선이 끊기고 여주는 반역죄로 추방된다.'),
       ],
     ),
     StoryBeat(
-      title: '결전 전야',
+      title: '5-1 은등회 파벌',
       speaker: '나레이션',
-      line: '전쟁의 북소리가 다가온다. 마지막 밤, 누구의 손을 잡을 것인가.',
+      line: '여성 공동체 은등회 내부 파벌이 폭발한다.',
       backgroundAsset: 'assets/generated/bg_castle/001-medieval-fantasy-royal-castle-courtyard-.png',
+      leftCharacter: '세레나',
+      rightCharacter: '루시안',
+      choices: [
+        StoryChoice(label: '[세레나] 중립 규칙안', mainTarget: '세레나', mainDelta: 11, result: '파벌의 칼끝이 잠시 거두어졌다.'),
+        StoryChoice(label: '[루시안] 회계 조작 색출', mainTarget: '루시안', mainDelta: 9, result: '장부의 거짓이 걷혔다.'),
+      ],
+    ),
+    StoryBeat(
+      title: '5-2 질서와 변화',
+      speaker: '엘리안',
+      line: '남주는 질서를, 여주는 변화를 말한다. 가치관 충돌이 깊어진다.',
+      backgroundAsset: 'assets/generated/bg_castle/001-medieval-fantasy-royal-castle-courtyard-.png',
+      leftCharacter: '엘리안',
+      rightCharacter: '세레나',
+      choices: [
+        StoryChoice(label: '[엘리안] 단계적 개혁', mainTarget: '엘리안', mainDelta: 10, result: '결별은 피했지만 균열은 남았다.'),
+        StoryChoice(label: '[세레나] 급진 개편', mainTarget: '세레나', mainDelta: 10, result: '구질서의 반격이 시작됐다.'),
+      ],
+    ),
+    StoryBeat(
+      title: '5-3 침묵의 거리',
+      speaker: '나레이션',
+      line: '말보다 긴 침묵이 둘 사이를 가른다.',
+      backgroundAsset: 'assets/generated/bg_ballroom/001-luxurious-medieval-ballroom-interior-at-.png',
       leftCharacter: '엘리안',
       rightCharacter: '루시안',
       choices: [
-        StoryChoice(label: '[엘리안] 성벽 순찰을 함께하며 마음을 고백한다', mainTarget: '엘리안', mainDelta: 14, sideTarget: '루시안', sideDelta: -2, result: '엘리안은 당신의 손을 놓지 않았다.'),
-        StoryChoice(label: '[루시안] 마탑 옥상에서 새벽까지 대화한다', mainTarget: '루시안', mainDelta: 14, sideTarget: '세레나', sideDelta: -1, result: '루시안은 당신에게만 약점을 보였다.'),
+        StoryChoice(label: '[엘리안] 행동으로 사과', mainTarget: '엘리안', mainDelta: 12, result: '그는 말보다 먼저 방패가 되었다.'),
+        StoryChoice(label: '[루시안] 논리로 봉합', mainTarget: '루시안', mainDelta: 9, result: '차가운 문장이 겨우 틈을 메웠다.'),
       ],
     ),
-  ];
+    StoryBeat(
+      title: '6-1 사칭 대관식',
+      speaker: '나레이션',
+      line: '보랏빛 봉인 위조로 가짜 적통이 민심을 선점한다.',
+      backgroundAsset: 'assets/generated/bg_ballroom/001-luxurious-medieval-ballroom-interior-at-.png',
+      leftCharacter: '세레나',
+      rightCharacter: '엘리안',
+      choices: [
+        StoryChoice(label: '[세레나] 민회 연설', mainTarget: '세레나', mainDelta: 12, result: '군중의 시선이 되돌아왔다.'),
+        StoryChoice(label: '[엘리안] 대관식 봉쇄', mainTarget: '엘리안', mainDelta: 12, result: '왕관은 머리 위에 오르지 못했다.'),
+      ],
+    ),
+    StoryBeat(
+      title: '6-2 삼중 권력전',
+      speaker: '루시안',
+      line: '복식법정청·재무청·성직법정이 각자 다른 왕을 세우려 한다.',
+      backgroundAsset: 'assets/generated/bg_tower/001-mystic-mage-tower-observatory-at-midnigh.png',
+      leftCharacter: '루시안',
+      rightCharacter: '세레나',
+      choices: [
+        StoryChoice(label: '[루시안] 3기관 동시협상', mainTarget: '루시안', mainDelta: 12, result: '한밤의 합의문이 새벽을 바꿨다.'),
+        StoryChoice(label: '[세레나] 한 기관 희생', mainTarget: '세레나', mainDelta: 8, result: 'BAD_ENDING: 균형 붕괴로 내전이 조기 발화한다.'),
+      ],
+    ),
+    StoryBeat(
+      title: '6-3 반격의 직조',
+      speaker: '나레이션',
+      line: '길드-은등회-군수선을 한 줄로 엮어 반격을 시작한다.',
+      backgroundAsset: 'assets/generated/bg_castle/001-medieval-fantasy-royal-castle-courtyard-.png',
+      leftCharacter: '엘리안',
+      rightCharacter: '세레나',
+      choices: [
+        StoryChoice(label: '[엘리안] 군수선 보호', mainTarget: '엘리안', mainDelta: 11, result: '전선이 버텼다.'),
+        StoryChoice(label: '[세레나] 시장 봉쇄', mainTarget: '세레나', mainDelta: 11, result: '적의 금고가 먼저 무너졌다.'),
+      ],
+    ),
+    StoryBeat(
+      title: '7-1 공개재판 쇼',
+      speaker: '나레이션',
+      line: '대관식 전야, 판결보다 연출이 중요한 밤의 공판이 열린다.',
+      backgroundAsset: 'assets/generated/bg_ballroom/001-luxurious-medieval-ballroom-interior-at-.png',
+      leftCharacter: '세레나',
+      rightCharacter: '루시안',
+      choices: [
+        StoryChoice(label: '[세레나] 의전 역이용', mainTarget: '세레나', mainDelta: 12, result: '무대의 중심이 바뀌었다.'),
+        StoryChoice(label: '[루시안] 법리 반박', mainTarget: '루시안', mainDelta: 10, result: '새벽까지 판결이 미뤄졌다.'),
+      ],
+    ),
+    StoryBeat(
+      title: '7-2 프레임 전복',
+      speaker: '엘리안',
+      line: '여주는 의전·법·상징을 역이용해 정통성 프레임을 뒤집는다.',
+      backgroundAsset: 'assets/generated/bg_castle/001-medieval-fantasy-royal-castle-courtyard-.png',
+      leftCharacter: '엘리안',
+      rightCharacter: '세레나',
+      choices: [
+        StoryChoice(label: '[엘리안] 공동선언', mainTarget: '엘리안', mainDelta: 13, result: '거래가 아닌 선택으로 두 이름이 호명됐다.'),
+        StoryChoice(label: '[세레나] 표결선 장악', mainTarget: '세레나', mainDelta: 11, result: '표결판이 완전히 뒤집혔다.'),
+      ],
+    ),
+    StoryBeat(
+      title: '7-3 상호선택',
+      speaker: '나레이션',
+      line: '둘의 관계가 정치적 거래가 아닌 상호선택임을 선언한다.',
+      backgroundAsset: 'assets/generated/bg_ballroom/001-luxurious-medieval-ballroom-interior-at-.png',
+      leftCharacter: '엘리안',
+      rightCharacter: '루시안',
+      choices: [
+        StoryChoice(label: '[엘리안] 공개 고백문', mainTarget: '엘리안', mainDelta: 14, result: '왕국은 사랑을 조약처럼 읽었다.'),
+        StoryChoice(label: '[루시안] 비공개 서약', mainTarget: '루시안', mainDelta: 10, result: '진심은 남았지만 민심은 흔들렸다.'),
+      ],
+    ),
+    StoryBeat(
+      title: '8-1 봉인문서고',
+      speaker: '루시안',
+      line: '건국기 문서에서 불편한 진실이 드러난다.',
+      backgroundAsset: 'assets/generated/bg_tower/001-mystic-mage-tower-observatory-at-midnigh.png',
+      leftCharacter: '루시안',
+      rightCharacter: '세레나',
+      choices: [
+        StoryChoice(label: '[루시안] 원문 즉시공개', mainTarget: '루시안', mainDelta: 12, result: '진실이 폭풍처럼 번졌다.'),
+        StoryChoice(label: '[세레나] 단계적 공개', mainTarget: '세레나', mainDelta: 12, result: '내전 없이 진실을 퍼뜨렸다.'),
+      ],
+    ),
+    StoryBeat(
+      title: '8-2 순혈신화 붕괴',
+      speaker: '나레이션',
+      line: '왕국의 순혈 신화가 후대 조작으로 밝혀진다.',
+      backgroundAsset: 'assets/generated/bg_castle/001-medieval-fantasy-royal-castle-courtyard-.png',
+      leftCharacter: '엘리안',
+      rightCharacter: '세레나',
+      choices: [
+        StoryChoice(label: '[엘리안] 질서 우선', mainTarget: '엘리안', mainDelta: 11, result: '혼란은 줄었지만 불신은 남았다.'),
+        StoryChoice(label: '[세레나] 전면 공개', mainTarget: '세레나', mainDelta: 11, result: '민심은 흔들렸지만 조작은 끝났다.'),
+      ],
+    ),
+    StoryBeat(
+      title: '8-3 반동의 파고',
+      speaker: '나레이션',
+      line: '진실 공개의 반동이 수도를 덮친다.',
+      backgroundAsset: 'assets/generated/bg_tower/001-mystic-mage-tower-observatory-at-midnigh.png',
+      leftCharacter: '루시안',
+      rightCharacter: '엘리안',
+      choices: [
+        StoryChoice(label: '[루시안] 여론전 개입', mainTarget: '루시안', mainDelta: 12, result: '반동의 파고가 낮아졌다.'),
+        StoryChoice(label: '[엘리안] 무력 진압', mainTarget: '엘리안', mainDelta: 8, result: 'BAD_ENDING: 과잉진압으로 정통성은 회복되나 여주의 이상은 붕괴한다.'),
+      ],
+    ),
+    StoryBeat(
+      title: '9-1 이중 전선',
+      speaker: '나레이션',
+      line: '외침과 내란이 동시 발생한다. 전선과 수도를 동시에 운영해야 한다.',
+      backgroundAsset: 'assets/generated/bg_castle/001-medieval-fantasy-royal-castle-courtyard-.png',
+      leftCharacter: '엘리안',
+      rightCharacter: '세레나',
+      choices: [
+        StoryChoice(label: '[엘리안] 전선 우선', mainTarget: '엘리안', mainDelta: 13, result: '국경이 버텼다.'),
+        StoryChoice(label: '[세레나] 수도 보급 우선', mainTarget: '세레나', mainDelta: 13, result: '수도가 무너지지 않았다.'),
+      ],
+    ),
+    StoryBeat(
+      title: '9-2 은등회 총동원',
+      speaker: '세레나',
+      line: '여성 네트워크가 의료·보급·정보전의 핵심축으로 부상한다.',
+      backgroundAsset: 'assets/generated/bg_ballroom/001-luxurious-medieval-ballroom-interior-at-.png',
+      leftCharacter: '세레나',
+      rightCharacter: '루시안',
+      choices: [
+        StoryChoice(label: '[세레나] 의료망 확장', mainTarget: '세레나', mainDelta: 12, result: '사망률이 급감했다.'),
+        StoryChoice(label: '[루시안] 정보망 확장', mainTarget: '루시안', mainDelta: 12, result: '적의 이동이 먼저 읽혔다.'),
+      ],
+    ),
+    StoryBeat(
+      title: '9-3 선언식의 밤',
+      speaker: '나레이션',
+      line: '결혼식은 동원식이 아닌 새 질서 선언식으로 재설계된다.',
+      backgroundAsset: 'assets/generated/bg_ballroom/001-luxurious-medieval-ballroom-interior-at-.png',
+      leftCharacter: '엘리안',
+      rightCharacter: '세레나',
+      choices: [
+        StoryChoice(label: '[엘리안] 군사맹약 중심', mainTarget: '엘리안', mainDelta: 11, result: '전선의 신뢰를 확보했다.'),
+        StoryChoice(label: '[세레나] 시민계약 중심', mainTarget: '세레나', mainDelta: 11, result: '도시의 지지를 끌어냈다.'),
+      ],
+    ),
+    StoryBeat(
+      title: '10-1 새 규율 초안',
+      speaker: '루시안',
+      line: '혈통전용 복식법을 폐지하고 직능 기반 시민규율 초안을 공개한다.',
+      backgroundAsset: 'assets/generated/bg_castle/001-medieval-fantasy-royal-castle-courtyard-.png',
+      leftCharacter: '루시안',
+      rightCharacter: '세레나',
+      choices: [
+        StoryChoice(label: '[루시안] 증거재판 병행안', mainTarget: '루시안', mainDelta: 14, result: '법은 의식이 아니라 증거로 움직이기 시작했다.'),
+        StoryChoice(label: '[세레나] 합의재판 우선안', mainTarget: '세레나', mainDelta: 14, result: '갈등은 느리지만 덜 피 흘리며 정리됐다.'),
+      ],
+    ),
+    StoryBeat(
+      title: '10-2 왕관의 재정의',
+      speaker: '나레이션',
+      line: '왕관은 혈통 장식이 아니라 책임의 계약으로 재정의된다.',
+      backgroundAsset: 'assets/generated/bg_tower/001-mystic-mage-tower-observatory-at-midnigh.png',
+      leftCharacter: '엘리안',
+      rightCharacter: '루시안',
+      choices: [
+        StoryChoice(label: '[엘리안] 공동통치 선언', mainTarget: '엘리안', mainDelta: 14, result: '검은 더 이상 왕좌를 위해 들리지 않았다.'),
+        StoryChoice(label: '[루시안] 입헌평의 선언', mainTarget: '루시안', mainDelta: 14, result: '권력은 문장으로 분산됐다.'),
+      ],
+    ),
+    StoryBeat(
+      title: '10-3 새 규율의 여왕',
+      speaker: '나레이션',
+      line: '결혼은 해피엔딩이 아니라 공동통치 계약의 시작. 보랏빛 규율의 첫 장이 열린다.',
+      backgroundAsset: 'assets/generated/bg_ballroom/001-luxurious-medieval-ballroom-interior-at-.png',
+      leftCharacter: '엘리안',
+      rightCharacter: '세레나',
+      choices: [
+        StoryChoice(label: '[메인] 공동통치 계약 서명', mainTarget: '엘리안', mainDelta: 20, result: 'MAIN_HAPPY_ENDING: 은실로 짠 왕관 아래 새 규율의 시대가 시작된다.'),
+        StoryChoice(label: '[숨은] 진실 은폐 후 단기안정', mainTarget: '세레나', mainDelta: 8, result: 'BAD_ENDING: 평화는 왔지만 역사는 다시 왜곡된다.'),
+      ],
+    ),
+  ];];
 
   late List<int?> _storySelections;
   Map<int, int> _stepNodePick = {};
@@ -308,11 +616,20 @@ class _GameShellState extends State<GameShell> {
     if (raw != null) {
       final m = jsonDecode(raw) as Map<String, dynamic>;
       _gold = m['gold'] ?? _gold;
-      _storyIndex = m['storyIndex'] ?? _storyIndex;
+      _storyIndex = (m['storyIndex'] ?? _storyIndex) as int;
+      if (_storyIndex < 0) _storyIndex = 0;
+      if (_storyIndex >= _story.length) _storyIndex = _story.length - 1;
       _baseCharm = m['baseCharm'] ?? _baseCharm;
       _equippedOutfitId = m['equippedOutfitId'] ?? _equippedOutfitId;
       _endingCharacterName = m['endingCharacterName'] as String?;
-      _storySelections = ((m['storySelections'] as List<dynamic>?) ?? List.filled(_story.length, null)).map<int?>((e) => e == null ? null : e as int).toList();
+      final loadedSelections = ((m['storySelections'] as List<dynamic>?) ?? const [])
+          .map<int?>((e) => e == null ? null : e as int)
+          .toList();
+      _storySelections = List<int?>.filled(_story.length, null);
+      for (int i = 0; i < loadedSelections.length && i < _storySelections.length; i++) {
+        _storySelections[i] = loadedSelections[i];
+      }
+
       final stepPickRaw = (m['stepNodePick'] as Map<String, dynamic>? ?? {});
       _stepNodePick = stepPickRaw.map((k, v) => MapEntry(int.parse(k), v as int));
       _logs
@@ -1009,34 +1326,39 @@ class _GameShellState extends State<GameShell> {
   }
 
   Widget _branchRouteMap() {
-    // bottom -> top progression with multi-branch clickable nodes
+    // 30 nodes: 10 steps x 3 branches (bottom -> top)
     const viewH = 520.0;
-    const mapH = 940.0;
-    const laneX = [48.0, 168.0, 288.0];
+    const laneX = [42.0, 168.0, 294.0];
+    const steps = 10;
+    const stepGap = 210.0;
+    final mapH = 180 + (steps - 1) * stepGap;
 
-    final nodes = <Map<String, int>>[
-      {'id': 0, 'beat': 0, 'lane': 1, 'step': 0},
-      {'id': 1, 'beat': 1, 'lane': 0, 'step': 1},
-      {'id': 2, 'beat': 1, 'lane': 2, 'step': 1},
-      {'id': 3, 'beat': 2, 'lane': 0, 'step': 2},
-      {'id': 4, 'beat': 2, 'lane': 1, 'step': 2},
-      {'id': 5, 'beat': 2, 'lane': 2, 'step': 2},
-      {'id': 6, 'beat': 3, 'lane': 1, 'step': 3},
-      {'id': 7, 'beat': 3, 'lane': 2, 'step': 3},
-    ];
+    final nodes = <Map<String, int>>[];
+    for (int step = 0; step < steps; step++) {
+      for (int lane = 0; lane < 3; lane++) {
+        final id = step * 3 + lane;
+        nodes.add({'id': id, 'beat': id, 'lane': lane, 'step': step});
+      }
+    }
 
     Offset nodePos(Map<String, int> n) {
       final x = laneX[n['lane']!];
-      final y = mapH - 74 - (n['step']! * 230);
+      final y = mapH - 74 - (n['step']! * stepGap);
       return Offset(x, y);
     }
 
-    final links = [
-      [0, 1], [0, 2],
-      [1, 3], [1, 4],
-      [2, 4], [2, 5],
-      [3, 6], [4, 6], [4, 7], [5, 7],
-    ];
+    final links = <List<int>>[];
+    for (int step = 0; step < steps - 1; step++) {
+      for (int lane = 0; lane < 3; lane++) {
+        final fromId = step * 3 + lane;
+        for (int d in [-1, 0, 1]) {
+          final toLane = lane + d;
+          if (toLane < 0 || toLane > 2) continue;
+          final toId = (step + 1) * 3 + toLane;
+          links.add([fromId, toId]);
+        }
+      }
+    }
 
     bool isLocked(Map<String, int> n) {
       final step = n['step']!;
@@ -1047,9 +1369,7 @@ class _GameShellState extends State<GameShell> {
 
     return Container(
       height: viewH,
-      decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(14),
-      ),
+      decoration: BoxDecoration(borderRadius: BorderRadius.circular(14)),
       child: SingleChildScrollView(
         reverse: true,
         child: SizedBox(
@@ -1103,7 +1423,7 @@ class _GameShellState extends State<GameShell> {
                       ),
                       child: Text(
                         locked ? '×' : '${n['id']! + 1}',
-                        style: const TextStyle(color: Colors.white, fontSize: 11, fontWeight: FontWeight.bold),
+                        style: const TextStyle(color: Colors.white, fontSize: 10, fontWeight: FontWeight.bold),
                       ),
                     ),
                   ),
