@@ -211,6 +211,8 @@ class _GameShellState extends State<GameShell> {
 
   int _sceneKey = 0;
   int _animTick = 0;
+  String? _cutinCharacter;
+  int _cutinTicks = 0;
   TransitionPreset _transitionPreset = TransitionPreset.fade;
   String _cameraSeed = '0';
 
@@ -1529,6 +1531,10 @@ class _GameShellState extends State<GameShell> {
         }
       }
       _animTick += 1;
+      if (_cutinTicks > 0) {
+        _cutinTicks -= 1;
+        if (_cutinTicks == 0) _cutinCharacter = null;
+      }
       setState(() {});
     });
 
@@ -1591,9 +1597,36 @@ class _GameShellState extends State<GameShell> {
     });
   }
 
+  void _triggerCutInForWork() {
+    switch (_selectedWork) {
+      case WorkMiniGame.smithTiming:
+        _cutinCharacter = '엘리안';
+        break;
+      case WorkMiniGame.haggling:
+        _cutinCharacter = '세레나';
+        break;
+      case WorkMiniGame.herbSort:
+      case WorkMiniGame.gardenWalk:
+      case WorkMiniGame.dateDance:
+      case WorkMiniGame.courierRun:
+        _cutinCharacter = '루시안';
+        break;
+    }
+    _cutinTicks = 12;
+  }
+
+  String _cutinSheet(String name) {
+    if (name == '엘리안') return 'assets/ui/dot_elian_sheet.png';
+    if (name == '세레나') return 'assets/ui/dot_serena_sheet.png';
+    return 'assets/ui/dot_lucian_sheet.png';
+  }
+
   void _gainCombo(int scoreGain) {
     _combo += 1;
     _workScore += scoreGain + (_combo ~/ 3);
+    if (_combo > 0 && _combo % 3 == 0) {
+      _triggerCutInForWork();
+    }
   }
 
   void _resetCombo() {
@@ -3167,6 +3200,32 @@ class _GameShellState extends State<GameShell> {
                     ),
                   ),
                 ),
+                if (_cutinCharacter != null)
+                  Positioned(
+                    right: 12,
+                    top: 90,
+                    child: AnimatedSlide(
+                      duration: const Duration(milliseconds: 120),
+                      offset: _cutinTicks > 0 ? Offset.zero : const Offset(1, 0),
+                      child: Container(
+                        padding: const EdgeInsets.all(8),
+                        decoration: BoxDecoration(color: Colors.black.withOpacity(0.6), borderRadius: BorderRadius.circular(10), border: Border.all(color: const Color(0xFFE9D7A1))),
+                        child: Row(
+                          children: [
+                            _dotSprite(asset: _cutinSheet(_cutinCharacter!), row: 2, frame: _animTick % 4, scale: 1.6),
+                            const SizedBox(width: 6),
+                            Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(_cutinCharacter!, style: const TextStyle(color: Color(0xFFF6F1E8), fontWeight: FontWeight.w700)),
+                                const Text('좋아, 계속 가자!', style: TextStyle(color: Color(0xFFF6F1E8), fontSize: 11)),
+                              ],
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ),
                 Positioned(
                   left: 10,
                   right: 10,
