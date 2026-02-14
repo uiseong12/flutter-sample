@@ -921,59 +921,65 @@ class _GameShellState extends State<GameShell> {
         ClipRRect(
           borderRadius: BorderRadius.circular(14),
           child: SizedBox(
-            height: 210,
+            height: 640,
             child: Stack(
               children: [
-                AnimatedSwitcher(
-                  duration: const Duration(milliseconds: 350),
-                  child: SizedBox.expand(
-                    key: ValueKey(preview.backgroundAsset),
-                    child: Image.asset(preview.backgroundAsset, fit: BoxFit.cover),
+                Positioned.fill(
+                  child: AnimatedSwitcher(
+                    duration: const Duration(milliseconds: 360),
+                    child: SizedBox.expand(
+                      key: ValueKey(preview.backgroundAsset),
+                      child: Image.asset(preview.backgroundAsset, fit: BoxFit.cover),
+                    ),
                   ),
                 ),
-                Positioned.fill(child: Container(color: Colors.black.withOpacity(0.35))),
+                Positioned.fill(child: Container(color: Colors.black.withOpacity(0.38))),
+                Positioned(
+                  left: 12,
+                  right: 12,
+                  top: 12,
+                  child: Container(
+                    padding: const EdgeInsets.all(10),
+                    decoration: BoxDecoration(
+                      color: Colors.black.withOpacity(0.42),
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        const Text('스토리 진행도 (아래 → 위)', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 17)),
+                        const SizedBox(height: 4),
+                        Text('클리어: $cleared / ${_story.length}', style: const TextStyle(color: Colors.white70)),
+                        Text('현재: EP ${_storyIndex + 1}. ${preview.title}', style: const TextStyle(color: Colors.white70)),
+                        if (_endingCharacterName != null)
+                          Text('확정 엔딩: $_endingCharacterName', style: const TextStyle(color: Colors.amberAccent, fontWeight: FontWeight.bold)),
+                      ],
+                    ),
+                  ),
+                ),
+                Positioned(
+                  left: 0,
+                  right: 0,
+                  top: 92,
+                  bottom: 78,
+                  child: _branchRouteMap(),
+                ),
                 Positioned(
                   left: 12,
                   right: 12,
                   bottom: 12,
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text('EP ${_storyIndex + 1}. ${preview.title}', style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 17)),
-                      const SizedBox(height: 4),
-                      Text(preview.line, maxLines: 2, overflow: TextOverflow.ellipsis, style: const TextStyle(color: Colors.white70)),
-                    ],
+                  child: FilledButton(
+                    onPressed: () {
+                      _playClick();
+                      setState(() {
+                        _inStoryScene = true;
+                        _sceneKey += 1;
+                        _transitionPreset = TransitionPreset.fade;
+                      });
+                      _beginBeatLine();
+                    },
+                    child: Text(cleared == 0 ? '스토리 시작' : '이 스텝부터 진행'),
                   ),
-                ),
-              ],
-            ),
-          ),
-        ),
-        const SizedBox(height: 12),
-        Card(
-          child: Padding(
-            padding: const EdgeInsets.all(12),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                const Text('스토리 진행도 (아래 → 위)', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 17)),
-                const SizedBox(height: 6),
-                Text('클리어: $cleared / ${_story.length}'),
-                if (_endingCharacterName != null) Text('확정 엔딩: $_endingCharacterName', style: const TextStyle(fontWeight: FontWeight.bold)),
-                const SizedBox(height: 10),
-                _branchRouteMap(),
-                const SizedBox(height: 10),
-                FilledButton(
-                  onPressed: () {
-                    _playClick();
-                    setState(() {
-                      _inStoryScene = true;
-                      _sceneKey += 1;
-                      _transitionPreset = TransitionPreset.fade;
-                    });
-                    _beginBeatLine();
-                  },
-                  child: Text(cleared == 0 ? '스토리 시작' : '이 스텝부터 진행'),
                 ),
               ],
             ),
@@ -1024,7 +1030,6 @@ class _GameShellState extends State<GameShell> {
       height: viewH,
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(14),
-        color: const Color(0xFF0F2340),
       ),
       child: SingleChildScrollView(
         reverse: true,
