@@ -30,6 +30,7 @@ class StoryApp extends StatelessWidget {
 
 enum Expression { neutral, smile, angry, blush, sad }
 enum TransitionPreset { fade, slide, flash }
+enum WorkMiniGame { herbSort, smithTiming, haggling }
 
 class Character {
   Character({
@@ -162,8 +163,15 @@ class _GameShellState extends State<GameShell> {
   String _visibleLine = '';
   Timer? _typingTimer;
 
+  WorkMiniGame _selectedWork = WorkMiniGame.herbSort;
   int _workTimeLeft = 0;
   int _workScore = 0;
+  String _herbTarget = '라벤더';
+  double _smithMeter = 0.0;
+  bool _smithDirForward = true;
+  double _hagglingTarget = 52;
+  double _hagglingOffer = 52;
+  Timer? _workTimer;
 
   int _sceneKey = 0;
   TransitionPreset _transitionPreset = TransitionPreset.fade;
@@ -288,6 +296,7 @@ class _GameShellState extends State<GameShell> {
   @override
   void dispose() {
     _typingTimer?.cancel();
+    _workTimer?.cancel();
     super.dispose();
   }
 
@@ -500,30 +509,123 @@ class _GameShellState extends State<GameShell> {
     setState(() {});
   }
 
-  Future<void> _startWorkMiniGame() async {
-    _playClick();
-    _workTimeLeft = 10;
-    _workScore = 0;
-    setState(() {});
-
-    while (_workTimeLeft > 0) {
-      await Future.delayed(const Duration(seconds: 1));
-      if (!mounted || _menuIndex != 2) break;
-      _workTimeLeft -= 1;
-      setState(() {});
+  void _prepareWorkRound() {
+    switch (_selectedWork) {
+      case WorkMiniGame.herbSort:
+        const herbs = ['라벤더', '로즈마리', '박하', '세이지'];
+        _herbTarget = herbs[_random.nextInt(herbs.length)];
+        break;
+      case WorkMiniGame.smithTiming:
+        _smithMeter = _random.nextDouble();
+        _smithDirForward = _random.nextBool();
+        break;
+      case WorkMiniGame.haggling:
+        _hagglingTarget = 35 + _random.nextInt(31).toDouble();
+        _hagglingOffer = 20 + _random.nextInt(61).toDouble();
+        break;
     }
+  }
 
+  void _startWorkMiniGame() {
+    _playClick();
+    _workTimer?.cancel();
+    _workTimeLeft = 20;
+    _workScore = 0;
+    _prepareWorkRound();
+
+    _workTimer = Timer.periodic(const Duration(milliseconds: 120), (timer) {
+      if (!mounted || _menuIndex != 2) {
+        timer.cancel();
+        return;
+      }
+
+      if (_selectedWork == WorkMiniGame.smithTiming) {
+        final delta = 0.03;
+        if (_smithDirForward) {
+          _smithMeter += delta;
+          if (_smithMeter >= 1) {
+            _smithMeter = 1;
+            _smithDirForward = false;
+          }
+        } else {
+          _smithMeter -= delta;
+          if (_smithMeter <= 0) {
+            _smithMeter = 0;
+            _smithDirForward = true;
+          }
+        }
+      }
+
+      if (timer.tick % 8 == 0) {
+        _workTimeLeft -= 1;
+        if (_workTimeLeft <= 0) {
+          timer.cancel();
+          _finishWorkMiniGame();
+          return;
+        }
+      }
+      setState(() {});
+    });
+
+    setState(() {});
+  }
+
+  Future<void> _finishWorkMiniGame() async {
     if (!mounted) return;
-    final reward = 20 + (_workScore * 7);
+    final reward = 30 + (_workScore * 9);
     _gold += reward;
-    _logs.insert(0, '[아르바이트] 점수 $_workScore점, 골드 +$reward');
+    _logs.insert(0, '[아르바이트:${_selectedWork.name}] 점수 $_workScore, 골드 +$reward');
     _playReward();
     await _save();
-
     if (_menuIndex == 2) {
       ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('아르바이트 완료! +$reward G')));
       setState(() {});
     }
+  }
+
+  void _workActionHerb(String herb) {
+    if (_workTimeLeft <= 0) return;
+    if (herb == _herbTarget) {
+      _workScore += 2;
+      _playReward();
+    } else {
+      _workScore = max(0, _workScore - 1);
+      _playClick();
+    }
+    _prepareWorkRound();
+    setState(() {});
+  }
+
+  void _workActionSmith() {
+    if (_workTimeLeft <= 0) return;
+    final dist = (_smithMeter - 0.5).abs();
+    int gain;
+    if (dist < 0.07) {
+      gain = 4;
+    } else if (dist < 0.15) {
+      gain = 2;
+    } else {
+      gain = 1;
+    }
+    _workScore += gain;
+    _playClick();
+    setState(() {});
+  }
+
+  void _workActionHaggling() {
+    if (_workTimeLeft <= 0) return;
+    final diff = (_hagglingOffer - _hagglingTarget).abs();
+    if (diff <= 2) {
+      _workScore += 4;
+      _playReward();
+    } else if (diff <= 6) {
+      _workScore += 2;
+      _playClick();
+    } else {
+      _workScore = max(0, _workScore - 1);
+    }
+    _prepareWorkRound();
+    setState(() {});
   }
 
   Future<void> _dateRandom(Character target) async {
@@ -757,18 +859,19 @@ class _GameShellState extends State<GameShell> {
           ),
         ),
         const SizedBox(height: 10),
-        GridView.count(
-          crossAxisCount: 2,
-          crossAxisSpacing: 10,
-          mainAxisSpacing: 10,
-          shrinkWrap: true,
-          physics: const NeverScrollableScrollPhysics(),
-          children: [
-            _menuCard('스토리', Icons.auto_stories, Colors.purple, () => setState(() => _menuIndex = 1)),
-            _menuCard('아르바이트', Icons.construction, Colors.blue, () => setState(() => _menuIndex = 2)),
-            _menuCard('상점', Icons.store, Colors.orange, () => setState(() => _menuIndex = 3)),
-            _menuCard('데이트', Icons.favorite, Colors.pink, () => setState(() => _menuIndex = 4)),
-          ],
+        Card(
+          child: Padding(
+            padding: const EdgeInsets.all(12),
+            child: Column(
+              children: [
+                const Text('현재 장착 전신 프리뷰', style: TextStyle(fontWeight: FontWeight.bold)),
+                const SizedBox(height: 8),
+                Center(child: _fullBodySprite(_playerAvatar, width: 200)),
+                const SizedBox(height: 8),
+                const Text('하단 메뉴(스토리/아르바이트/상점/데이트)로 이동하세요.'),
+              ],
+            ),
+          ),
         ),
       ],
     );
@@ -1145,25 +1248,97 @@ class _GameShellState extends State<GameShell> {
   }
 
   Widget _workPage() {
-    return Center(
-      child: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            const Text('아르바이트 미니게임', style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
-            const SizedBox(height: 8),
-            const Text('10초 동안 버튼을 최대한 많이 클릭해서 재화를 획득하세요.'),
-            const SizedBox(height: 14),
-            Text('남은 시간: $_workTimeLeft초'),
-            Text('점수: $_workScore'),
-            const SizedBox(height: 12),
-            FilledButton(onPressed: _workTimeLeft > 0 ? () => setState(() => _workScore += 1) : null, child: const Text('작업! (+1점)')),
-            const SizedBox(height: 10),
-            OutlinedButton(onPressed: _workTimeLeft > 0 ? null : _startWorkMiniGame, child: const Text('아르바이트 시작')),
+    const herbs = ['라벤더', '로즈마리', '박하', '세이지'];
+
+    Widget gameBody;
+    if (_selectedWork == WorkMiniGame.herbSort) {
+      gameBody = Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text('지시된 약초를 고르세요: $_herbTarget', style: const TextStyle(fontWeight: FontWeight.w700)),
+          const SizedBox(height: 8),
+          Wrap(
+            spacing: 8,
+            runSpacing: 8,
+            children: herbs
+                .map((h) => OutlinedButton(onPressed: _workTimeLeft > 0 ? () => _workActionHerb(h) : null, child: Text(h)))
+                .toList(),
+          ),
+        ],
+      );
+    } else if (_selectedWork == WorkMiniGame.smithTiming) {
+      gameBody = Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Text('대장간 단조: 중앙(황금 구간)에 맞춰 타격!', style: TextStyle(fontWeight: FontWeight.w700)),
+          const SizedBox(height: 10),
+          Stack(
+            children: [
+              Container(height: 20, decoration: BoxDecoration(color: Colors.grey.shade300, borderRadius: BorderRadius.circular(10))),
+              Positioned(left: 140, child: Container(width: 40, height: 20, decoration: BoxDecoration(color: Colors.amber.shade300, borderRadius: BorderRadius.circular(8)))),
+              Positioned(left: _smithMeter * 320, child: Container(width: 8, height: 20, color: Colors.redAccent)),
+            ],
+          ),
+          const SizedBox(height: 10),
+          FilledButton(onPressed: _workTimeLeft > 0 ? _workActionSmith : null, child: const Text('망치 내리치기')),
+        ],
+      );
+    } else {
+      gameBody = Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text('시장 흥정: 목표 ${_hagglingTarget.toStringAsFixed(0)}G 근처로 제시', style: const TextStyle(fontWeight: FontWeight.w700)),
+          const SizedBox(height: 8),
+          Slider(
+            min: 20,
+            max: 80,
+            divisions: 60,
+            value: _hagglingOffer,
+            label: '${_hagglingOffer.toStringAsFixed(0)}G',
+            onChanged: _workTimeLeft > 0 ? (v) => setState(() => _hagglingOffer = v) : null,
+          ),
+          Text('현재 제시가: ${_hagglingOffer.toStringAsFixed(0)}G'),
+          const SizedBox(height: 8),
+          FilledButton(onPressed: _workTimeLeft > 0 ? _workActionHaggling : null, child: const Text('흥정 제시')),
+        ],
+      );
+    }
+
+    return ListView(
+      padding: const EdgeInsets.all(14),
+      children: [
+        const Text('중세 아르바이트 미니게임', style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
+        const SizedBox(height: 8),
+        SegmentedButton<WorkMiniGame>(
+          segments: const [
+            ButtonSegment(value: WorkMiniGame.herbSort, label: Text('약초 분류'), icon: Icon(Icons.spa)),
+            ButtonSegment(value: WorkMiniGame.smithTiming, label: Text('대장간 단조'), icon: Icon(Icons.hardware)),
+            ButtonSegment(value: WorkMiniGame.haggling, label: Text('시장 흥정'), icon: Icon(Icons.payments)),
           ],
+          selected: {_selectedWork},
+          onSelectionChanged: (s) {
+            _playClick();
+            setState(() => _selectedWork = s.first);
+            if (_workTimeLeft > 0) _prepareWorkRound();
+          },
         ),
-      ),
+        const SizedBox(height: 10),
+        Card(
+          child: Padding(
+            padding: const EdgeInsets.all(12),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text('남은 시간: $_workTimeLeft초  |  점수: $_workScore'),
+                const SizedBox(height: 10),
+                gameBody,
+                const SizedBox(height: 10),
+                OutlinedButton(onPressed: _workTimeLeft > 0 ? null : _startWorkMiniGame, child: const Text('아르바이트 시작')),
+              ],
+            ),
+          ),
+        ),
+      ],
     );
   }
 
