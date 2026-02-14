@@ -30,6 +30,7 @@ class Character {
     required this.title,
     required this.description,
     required this.favoriteGift,
+    required this.imageUrl,
     this.affection = 30,
     this.dates = 0,
     this.gifts = 0,
@@ -39,6 +40,7 @@ class Character {
   final String title;
   final String description;
   final String favoriteGift;
+  final String imageUrl;
   int affection;
   int dates;
   int gifts;
@@ -48,6 +50,7 @@ class Character {
         'title': title,
         'description': description,
         'favoriteGift': favoriteGift,
+        'imageUrl': imageUrl,
         'affection': affection,
         'dates': dates,
         'gifts': gifts,
@@ -59,6 +62,7 @@ class Character {
       title: json['title'] as String,
       description: json['description'] as String,
       favoriteGift: json['favoriteGift'] as String,
+      imageUrl: json['imageUrl'] as String? ?? '',
       affection: json['affection'] as int? ?? 30,
       dates: json['dates'] as int? ?? 0,
       gifts: json['gifts'] as int? ?? 0,
@@ -135,12 +139,14 @@ class _HomePageState extends State<HomePage> {
       title: '왕실 근위대장',
       description: '원칙주의자지만 주인공 앞에서는 묘하게 다정해지는 기사.',
       favoriteGift: '은빛 브로치',
+      imageUrl: 'https://api.dicebear.com/9.x/adventurer/png?seed=Elian&backgroundColor=fde68a',
     ),
     Character(
       name: '루시안',
       title: '궁정 마법사',
       description: '차분하고 냉정하지만, 주인공의 재능에 깊은 관심을 보인다.',
       favoriteGift: '고대 마도서 조각',
+      imageUrl: 'https://api.dicebear.com/9.x/adventurer/png?seed=Lucian&backgroundColor=c4b5fd',
     ),
   ];
 
@@ -161,6 +167,7 @@ class _HomePageState extends State<HomePage> {
             title: c.title,
             description: c.description,
             favoriteGift: c.favoriteGift,
+            imageUrl: c.imageUrl,
             affection: c.affection,
             dates: c.dates,
             gifts: c.gifts,
@@ -199,7 +206,22 @@ class _HomePageState extends State<HomePage> {
           .toList();
 
       if (savedCharacters.length == _characters.length) {
-        _characters = savedCharacters;
+        _characters = savedCharacters
+            .map((s) {
+              if (s.imageUrl.isNotEmpty) return s;
+              final fallback = _defaultCharacters.firstWhere((d) => d.name == s.name);
+              return Character(
+                name: s.name,
+                title: s.title,
+                description: s.description,
+                favoriteGift: s.favoriteGift,
+                imageUrl: fallback.imageUrl,
+                affection: s.affection,
+                dates: s.dates,
+                gifts: s.gifts,
+              );
+            })
+            .toList();
       }
     } catch (_) {
       // ignore broken save data
@@ -276,6 +298,7 @@ class _HomePageState extends State<HomePage> {
               title: c.title,
               description: c.description,
               favoriteGift: c.favoriteGift,
+              imageUrl: c.imageUrl,
               affection: c.affection,
               dates: c.dates,
               gifts: c.gifts,
@@ -408,8 +431,24 @@ class _HomePageState extends State<HomePage> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text('${c.name} · ${c.title}', style: Theme.of(context).textTheme.titleMedium),
-                const SizedBox(height: 6),
+                Row(
+                  children: [
+                    CircleAvatar(
+                      radius: 28,
+                      backgroundColor: Theme.of(context).colorScheme.secondaryContainer,
+                      backgroundImage: c.imageUrl.isNotEmpty ? NetworkImage(c.imageUrl) : null,
+                      child: c.imageUrl.isEmpty ? const Icon(Icons.person) : null,
+                    ),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: Text(
+                        '${c.name} · ${c.title}',
+                        style: Theme.of(context).textTheme.titleMedium,
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 10),
                 Text(c.description),
                 const SizedBox(height: 10),
                 LinearProgressIndicator(value: c.affection / 100),
