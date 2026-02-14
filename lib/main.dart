@@ -2683,7 +2683,21 @@ class _GameShellState extends State<GameShell> {
                   bottom: 78,
                   child: _branchRouteMap(),
                 ),
-                const SizedBox.shrink(),
+                Positioned(
+                  right: 12,
+                  bottom: 12,
+                  child: SizedBox(
+                    width: 150,
+                    child: _sealPrimaryButton('선택 노드 시작', () {
+                      setState(() {
+                        _inStoryScene = true;
+                        _sceneKey += 1;
+                        _transitionPreset = TransitionPreset.fade;
+                      });
+                      _beginBeatLine();
+                    }),
+                  ),
+                ),
               ],
             ),
           ),
