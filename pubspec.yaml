@@ -9,6 +9,7 @@ dependencies:
   shared_preferences: ^2.2.3
   flutter_svg: ^2.0.10+1
   flame: ^1.21.0
+  flame_tiled: ^2.0.3
 
 flutter:
   uses-material-design: true
@@ -22,6 +23,7 @@ flutter:
     - assets/story_events.json
     - assets/art/
     - assets/ui/
+    - assets/minigame/
     - assets/generated/bg_castle/001-medieval-fantasy-royal-castle-courtyard-.png
     - assets/generated/bg_ballroom/001-luxurious-medieval-ballroom-interior-at-.png
     - assets/generated/bg_tower/001-mystic-mage-tower-observatory-at-midnigh.png
