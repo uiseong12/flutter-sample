@@ -141,6 +141,7 @@ class _GameShellState extends State<GameShell> {
   int _baseCharm = 12;
   bool _loaded = false;
   bool _inStoryScene = false;
+  String? _tapPulseName;
 
   int _workTimeLeft = 0;
   int _workScore = 0;
@@ -461,9 +462,24 @@ class _GameShellState extends State<GameShell> {
           ),
         ],
       ),
-      body: IndexedStack(
-        index: _menuIndex,
-        children: [_homePage(), _storyRootPage(), _workPage(), _shopPage(), _datePage(), _logPage()],
+      body: AnimatedSwitcher(
+        duration: const Duration(milliseconds: 260),
+        switchInCurve: Curves.easeOut,
+        switchOutCurve: Curves.easeIn,
+        transitionBuilder: (child, animation) {
+          final fade = CurvedAnimation(parent: animation, curve: Curves.easeInOut);
+          return FadeTransition(
+            opacity: fade,
+            child: ScaleTransition(
+              scale: Tween<double>(begin: 0.985, end: 1).animate(fade),
+              child: child,
+            ),
+          );
+        },
+        child: KeyedSubtree(
+          key: ValueKey(_menuIndex),
+          child: _buildMenuPage(_menuIndex),
+        ),
       ),
       bottomNavigationBar: NavigationBar(
         selectedIndex: _menuIndex,
@@ -563,8 +579,40 @@ class _GameShellState extends State<GameShell> {
     );
   }
 
+  Widget _buildMenuPage(int index) {
+    switch (index) {
+      case 0:
+        return _homePage();
+      case 1:
+        return _storyRootPage();
+      case 2:
+        return _workPage();
+      case 3:
+        return _shopPage();
+      case 4:
+        return _datePage();
+      case 5:
+      default:
+        return _logPage();
+    }
+  }
+
   Widget _storyRootPage() {
-    return _inStoryScene ? _storyScenePage() : _storyProgressPage();
+    return AnimatedSwitcher(
+      duration: const Duration(milliseconds: 280),
+      transitionBuilder: (child, animation) {
+        return FadeTransition(
+          opacity: animation,
+          child: SlideTransition(
+            position: Tween<Offset>(begin: const Offset(0.02, 0), end: Offset.zero).animate(animation),
+            child: child,
+          ),
+        );
+      },
+      child: _inStoryScene
+          ? KeyedSubtree(key: const ValueKey('story_scene'), child: _storyScenePage())
+          : KeyedSubtree(key: const ValueKey('story_map'), child: _storyProgressPage()),
+    );
   }
 
   Widget _storyProgressPage() {
@@ -704,7 +752,15 @@ class _GameShellState extends State<GameShell> {
 
     return Stack(
       children: [
-        Positioned.fill(child: SvgPicture.asset(beat.backgroundAsset, fit: BoxFit.cover)),
+        Positioned.fill(
+          child: AnimatedSwitcher(
+            duration: const Duration(milliseconds: 320),
+            child: SizedBox.expand(
+              key: ValueKey(beat.backgroundAsset),
+              child: SvgPicture.asset(beat.backgroundAsset, fit: BoxFit.cover),
+            ),
+          ),
+        ),
         Positioned.fill(child: Container(color: Colors.black.withOpacity(0.32))),
         Positioned(
           top: 10,
@@ -716,42 +772,53 @@ class _GameShellState extends State<GameShell> {
             label: const Text('스토리 맵'),
           ),
         ),
-        Positioned(left: 8, bottom: 130, child: _animatedCharacterCard(left, visible: beat.showLeft)),
-        Positioned(right: 8, bottom: 130, child: _animatedCharacterCard(right, visible: beat.showRight)),
+        Positioned(left: 8, bottom: 130, child: _animatedCharacterCard(left, visible: beat.showLeft, fromLeft: true)),
+        Positioned(right: 8, bottom: 130, child: _animatedCharacterCard(right, visible: beat.showRight, fromLeft: false)),
         Positioned(left: 0, right: 0, bottom: 0, child: _dialogWindow(beat)),
       ],
     );
   }
 
-  Widget _animatedCharacterCard(Character c, {required bool visible}) {
+  Widget _animatedCharacterCard(Character c, {required bool visible, required bool fromLeft}) {
+    final pulsing = _tapPulseName == c.name;
+
     return AnimatedSlide(
-      duration: const Duration(milliseconds: 350),
-      offset: visible ? Offset.zero : const Offset(0, 0.12),
+      duration: const Duration(milliseconds: 380),
+      curve: Curves.easeOutCubic,
+      offset: visible ? Offset.zero : Offset(fromLeft ? -0.2 : 0.2, 0.1),
       child: AnimatedOpacity(
-        duration: const Duration(milliseconds: 280),
+        duration: const Duration(milliseconds: 300),
         opacity: visible ? 1 : 0,
-        child: GestureDetector(
-          onTap: () async {
-            if (!visible || _endingCharacterName != null) return;
-            await _addAffection(c, 1, '[상호작용]');
-            await _save();
-            if (mounted) setState(() {});
-          },
-          child: Container(
-            width: 210,
-            height: 330,
-            padding: const EdgeInsets.all(8),
-            decoration: BoxDecoration(
-              color: Colors.black.withOpacity(0.36),
-              borderRadius: BorderRadius.circular(14),
-              border: Border.all(color: Colors.white24),
-            ),
-            child: Column(
-              children: [
-                Expanded(child: _fullBodySprite(c.fullBodyAsset, width: 170)),
-                Text(c.name, style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
-                Text('❤ ${c.affection}', style: const TextStyle(color: Colors.white70)),
-              ],
+        child: AnimatedScale(
+          duration: const Duration(milliseconds: 170),
+          scale: pulsing ? 1.06 : 1,
+          child: GestureDetector(
+            onTap: () async {
+              if (!visible || _endingCharacterName != null) return;
+              setState(() => _tapPulseName = c.name);
+              await Future.delayed(const Duration(milliseconds: 120));
+              if (!mounted) return;
+              setState(() => _tapPulseName = null);
+              await _addAffection(c, 1, '[상호작용]');
+              await _save();
+              if (mounted) setState(() {});
+            },
+            child: Container(
+              width: 210,
+              height: 330,
+              padding: const EdgeInsets.all(8),
+              decoration: BoxDecoration(
+                color: Colors.black.withOpacity(0.36),
+                borderRadius: BorderRadius.circular(14),
+                border: Border.all(color: Colors.white24),
+              ),
+              child: Column(
+                children: [
+                  Expanded(child: _fullBodySprite(c.fullBodyAsset, width: 170)),
+                  Text(c.name, style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+                  Text('❤ ${c.affection}', style: const TextStyle(color: Colors.white70)),
+                ],
+              ),
             ),
           ),
         ),
@@ -760,31 +827,35 @@ class _GameShellState extends State<GameShell> {
   }
 
   Widget _dialogWindow(StoryBeat beat) {
-    return Container(
-      padding: const EdgeInsets.fromLTRB(14, 10, 14, 14),
-      color: Colors.black.withOpacity(0.78),
-      child: SafeArea(
-        top: false,
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Text('${beat.speaker} · ${beat.title}', style: const TextStyle(color: Colors.amber, fontWeight: FontWeight.w700)),
-            const SizedBox(height: 6),
-            Text(beat.line, style: const TextStyle(color: Colors.white, fontSize: 15)),
-            const SizedBox(height: 10),
-            Wrap(
-              spacing: 8,
-              runSpacing: 8,
-              children: List.generate(
-                beat.choices.length,
-                (i) => ElevatedButton(
-                  onPressed: _endingCharacterName != null ? null : () => _pickStoryChoice(beat.choices[i], i),
-                  child: Text(beat.choices[i].label),
+    return AnimatedSwitcher(
+      duration: const Duration(milliseconds: 260),
+      child: Container(
+        key: ValueKey('dialog_${_storyIndex}_$_inStoryScene'),
+        padding: const EdgeInsets.fromLTRB(14, 10, 14, 14),
+        color: Colors.black.withOpacity(0.78),
+        child: SafeArea(
+          top: false,
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text('${beat.speaker} · ${beat.title}', style: const TextStyle(color: Colors.amber, fontWeight: FontWeight.w700)),
+              const SizedBox(height: 6),
+              Text(beat.line, style: const TextStyle(color: Colors.white, fontSize: 15)),
+              const SizedBox(height: 10),
+              Wrap(
+                spacing: 8,
+                runSpacing: 8,
+                children: List.generate(
+                  beat.choices.length,
+                  (i) => ElevatedButton(
+                    onPressed: _endingCharacterName != null ? null : () => _pickStoryChoice(beat.choices[i], i),
+                    child: Text(beat.choices[i].label),
+                  ),
                 ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );
