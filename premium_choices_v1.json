@@ -1,0 +1,49 @@
+{
+  "meta": {
+    "gameId": "violet_codex",
+    "version": "1.0.0",
+    "schema": "unlock-v1"
+  },
+  "currencies": {
+    "gold": { "type": "soft" },
+    "silk": { "type": "rare" },
+    "sealShard": { "type": "premium" },
+    "choiceToken": { "type": "premium" }
+  },
+  "premiumChoices": [
+    {"id":"A1","node":5,"target":"knight","targetName":"엘리안","title":"갑옷 끈을 직접 매어준다","scene":"가까운 거리, 손 떨림, 숨 멈추는 연출","effectText":"호감 +6, touch_trust=true","affectionAdd":6,"setFlags":{"touch_trust":true}},
+    {"id":"A2","node":10,"target":"knight","targetName":"엘리안","title":"그의 방에서 잠시 무너진다","scene":"침묵 → 어깨를 빌려주는 장면","effectText":"감시도 -5, 호감 +8","affectionAdd":8,"statDelta":{"surveillance":-5}},
+    {"id":"A3","node":15,"target":"knight","targetName":"엘리안","title":"내가 널 선택할게","scene":"명예보다 너를 확인하는 반 고백","effectText":"신뢰→결속 전환 완화 플래그","affectionAdd":5,"setFlags":{"knight_bond_eased":true}},
+    {"id":"A4","node":20,"target":"knight","targetName":"엘리안","title":"그가 대신 증거를 던진다","scene":"공개적으로 함께 불타는 선택","effectText":"증거 보존, 군사신뢰 +5, 호감 +4","affectionAdd":4,"statDelta":{"military":5},"preserveEvidence":true},
+    {"id":"A5","node":25,"target":"knight","targetName":"엘리안","title":"서약서를 함께 쓴다","scene":"규율 문구를 함께 고쳐쓰는 장면","effectText":"진엔딩 키아이템 oath_draft","grantItem":"oath_draft","setFlags":{"oath_draft":true}},
+
+    {"id":"B1","node":3,"target":"guildMaster","targetName":"세레나","title":"손장부를 함께 읽는다","scene":"같은 줄을 짚으며 손끝이 스치는 장면","effectText":"ledger_fragment+1, 호감 +5","affectionAdd":5,"grantItem":"ledger_fragment"},
+    {"id":"B2","node":7,"target":"guildMaster","targetName":"세레나","title":"가짜를 숨기고 맡긴다","scene":"‘날 믿어?’ 신뢰 테스트","effectText":"trusted_secret=true, 경제 +4, 감시 +3","setFlags":{"trusted_secret":true},"statDelta":{"economy":4,"surveillance":3}},
+    {"id":"B3","node":12,"target":"guildMaster","targetName":"세레나","title":"그가 손해를 감수하고 내 편에 선다","scene":"‘돈보다 비싼 게 있다’","effectText":"경제 +8, 관계 가속","affectionAdd":5,"statDelta":{"economy":8},"setFlags":{"guild_trust_accel":true}},
+    {"id":"B4","node":18,"target":"guildMaster","targetName":"세레나","title":"무도회 함정 연출","scene":"손잡고 회전, 질투 반응","effectText":"정통성 +5, 호감 +7, rival_jealous=true","affectionAdd":7,"statDelta":{"legitimacy":5},"setFlags":{"rival_jealous":true}},
+    {"id":"B5","node":29,"target":"guildMaster","targetName":"세레나","title":"마지막 줄을 이름으로 채운다","scene":"서명 직전 손 떨림","effectText":"진엔딩 보정 +1, 토큰 1개 환급","setFlags":{"true_ending_bonus":true},"statDelta":{"publicTrust":2}},
+
+    {"id":"C1","node":6,"target":"abbess","targetName":"루시안","title":"밤의 약방에서 단둘이","scene":"약 냄새와 손목을 잡아주는 장면","effectText":"민심 +5, 호감 +6, healed=true","affectionAdd":6,"statDelta":{"publicTrust":5},"setFlags":{"healed":true}},
+    {"id":"C2","node":11,"target":"abbess","targetName":"루시안","title":"숨긴 문서를 나에게만 보여준다","scene":"‘널 믿는 이유’를 말해주는 장면","effectText":"archive_hint 획득, 관계 가속","grantItem":"archive_hint","setFlags":{"abbess_trust_accel":true}},
+    {"id":"C3","node":14,"target":"abbess","targetName":"루시안","title":"사람 앞에서 맹세한다","scene":"신앙 vs 인간의 선택","effectText":"민심 +8, 정통성 +2, 감시 +2","statDelta":{"publicTrust":8,"legitimacy":2,"surveillance":2}},
+    {"id":"C4","node":21,"target":"abbess","targetName":"루시안","title":"자원자 명단을 함께 쓴다","scene":"손을 맞잡고 같은 편을 확인","effectText":"의료보급 플래그, 전쟁난이도 완화","setFlags":{"medical_supply":true}},
+    {"id":"C5","node":27,"target":"abbess","targetName":"루시안","title":"상처를 줄이는 문장으로 진실 공개","scene":"‘줄이지 않는 진실은 폭력’","effectText":"개혁 엔딩 루트 해금","setFlags":{"reform_route_unlocked":true}},
+
+    {"id":"D1","node":2,"target":"rival","targetName":"세레나","title":"사람들 없는 복도에서만 싸운다","scene":"눈빛 싸움 뒤 짧은 정적","effectText":"감시 -3, saved_face=true","statDelta":{"surveillance":-3},"setFlags":{"saved_face":true}},
+    {"id":"D2","node":8,"target":"rival","targetName":"세레나","title":"그녀의 브로치를 빌린다","scene":"의전의 보호와 질투 유발","effectText":"정통성 +7, 호감 +6","affectionAdd":6,"statDelta":{"legitimacy":7}},
+    {"id":"D3","node":13,"target":"rival","targetName":"세레나","title":"동맹 서약을 춤으로","scene":"손등 키스로 맺는 의전 서약","effectText":"호의→신뢰 전환 가능","setFlags":{"rival_trust_unlock":true}},
+    {"id":"D4","node":19,"target":"rival","targetName":"세레나","title":"머리 장식을 직접 고쳐준다","scene":"‘너는 무너지면 안 돼’","effectText":"감시 -5, 호감 +7","affectionAdd":7,"statDelta":{"surveillance":-5}},
+    {"id":"D5","node":30,"target":"rival","targetName":"세레나","title":"공식 호칭 대신 이름을 부른다","scene":"적대의 끝, 인정의 시작","effectText":"라이벌 연인 엔딩 해금","setFlags":{"rival_lover_unlock":true}}
+  ],
+  "ads": {
+    "placements": [
+      {"id":"after_node_clear_bonus","type":"rewarded","cooldownSec":60,"dailyLimit":10},
+      {"id":"after_minigame_double","type":"rewarded","cooldownSec":90,"dailyLimit":8},
+      {"id":"premium_token_daily","type":"rewarded","dailyLimit":3}
+    ]
+  },
+  "uxCopy": {
+    "resultRewardLine": "짧게 보고, 다음 선택을 더 깊게.",
+    "premiumAltLine": "광고 1회 = 프리미엄 선택지 1회권 조각"
+  }
+}

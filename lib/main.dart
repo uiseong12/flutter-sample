@@ -32,6 +32,7 @@ enum Expression { neutral, smile, angry, blush, sad }
 enum TransitionPreset { fade, slide, flash }
 enum WorkMiniGame { herbSort, smithTiming, haggling }
 enum RelationshipState { strange, favorable, trust, shaken, bond, alliedLovers, oath }
+enum ChoiceKind { free, condition, premium }
 
 class UnlockDecision {
   const UnlockDecision({required this.unlocked, required this.reason});
@@ -79,6 +80,7 @@ class StoryChoice {
     required this.result,
     this.sideTarget,
     this.sideDelta = 0,
+    this.kind = ChoiceKind.free,
   });
 
   final String label;
@@ -87,6 +89,7 @@ class StoryChoice {
   final String result;
   final String? sideTarget;
   final int sideDelta;
+  final ChoiceKind kind;
 }
 
 class StoryBeat {
@@ -225,6 +228,8 @@ class _GameShellState extends State<GameShell> {
   Map<String, dynamic> _unlockRules = {};
   Map<String, dynamic> _endingRules = {};
   Map<String, dynamic> _statBalanceTable = {};
+  Map<String, dynamic> _premiumCatalog = {};
+  final Map<String, int> _dailyAdViews = {};
 
   final List<Character> _characters = [
     Character(
@@ -1029,6 +1034,9 @@ class _GameShellState extends State<GameShell> {
     try {
       _statBalanceTable = jsonDecode(await rootBundle.loadString('stat_balance_table.json')) as Map<String, dynamic>;
     } catch (_) {}
+    try {
+      _premiumCatalog = jsonDecode(await rootBundle.loadString('premium_choices_v1.json')) as Map<String, dynamic>;
+    } catch (_) {}
   }
 
   Future<void> _load() async {
@@ -1090,6 +1098,10 @@ class _GameShellState extends State<GameShell> {
       _costumeTags
         ..clear()
         ..addAll((m['costumeTags'] as List<dynamic>? ?? []).map((e) => e.toString()));
+      final adRaw = (m['dailyAdViews'] as Map<String, dynamic>? ?? {});
+      _dailyAdViews
+        ..clear()
+        ..addAll(adRaw.map((k, v) => MapEntry(k, v as int)));
     }
 
     _lockRouteAtNode15IfNeeded();
@@ -1127,12 +1139,29 @@ class _GameShellState extends State<GameShell> {
         'keyFlags': _keyFlags,
         'evidenceOwned': _evidenceOwned.toList(),
         'costumeTags': _costumeTags.toList(),
+        'dailyAdViews': _dailyAdViews,
       }),
     );
   }
 
   void _playClick() => SystemSound.play(SystemSoundType.click);
   void _playReward() => SystemSound.play(SystemSoundType.alert);
+
+  String get _todayKey {
+    final now = DateTime.now();
+    return '${now.year}-${now.month.toString().padLeft(2, '0')}-${now.day.toString().padLeft(2, '0')}';
+  }
+
+  int _adViewCount(String placement) => _dailyAdViews['${_todayKey}_$placement'] ?? 0;
+
+  Future<bool> _consumeAdView(String placement, int limitPerDay) async {
+    final key = '${_todayKey}_$placement';
+    final current = _dailyAdViews[key] ?? 0;
+    if (current >= limitPerDay) return false;
+    _dailyAdViews[key] = current + 1;
+    await _save();
+    return true;
+  }
 
   int _scaledGain(int base) => base + (_totalCharm ~/ 5);
 
@@ -1272,7 +1301,35 @@ class _GameShellState extends State<GameShell> {
     await _save();
 
     if (!mounted) return;
-    ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(choice.result)));
+    await showDialog(
+      context: context,
+      builder: (_) => AlertDialog(
+        title: const Text('결과'),
+        content: Text('${choice.result}\n\n획득: 금화 +${10 + (_totalCharm ~/ 2)} / 민심 +1'),
+        actions: [
+          TextButton(onPressed: () => Navigator.pop(context), child: const Text('다음 노드로')),
+          TextButton(
+            onPressed: () async {
+              Navigator.pop(context);
+              final ok = await _consumeAdView('after_node_clear_bonus', 10);
+              if (!ok || !mounted) return;
+              _gold += 80;
+              _logs.insert(0, '[광고 보상] 노드 클리어 추가 보상 수령');
+              ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('30초 시청 보상: 금화+80 / 실크+1')));
+              setState(() {});
+            },
+            child: const Text('보상 추가 받기(광고)'),
+          ),
+          TextButton(
+            onPressed: () async {
+              Navigator.pop(context);
+              await _watchRewardAdSkeleton(placement: 'premium_token_daily');
+            },
+            child: const Text('프리미엄 토큰 받기(광고)'),
+          ),
+        ],
+      ),
+    );
     setState(() {});
   }
 
@@ -1459,14 +1516,161 @@ class _GameShellState extends State<GameShell> {
     setState(() {});
   }
 
-  Future<void> _watchRewardAdSkeleton() async {
+  List<Map<String, dynamic>> _premiumSamplesForNode(int nodeNumber) {
+    final all = (_premiumCatalog['premiumChoices'] as List<dynamic>? ?? []).cast<Map<String, dynamic>>();
+    return all.where((e) => (e['node'] as int? ?? -1) == nodeNumber).toList();
+  }
+
+  String _choiceKindLabel(ChoiceKind kind) {
+    switch (kind) {
+      case ChoiceKind.free:
+        return '무료';
+      case ChoiceKind.condition:
+        return '조건';
+      case ChoiceKind.premium:
+        return '프리미엄';
+    }
+  }
+
+  Future<void> _watchRewardAdSkeleton({String placement = 'premium_token_daily'}) async {
+    final limit = placement == 'premium_token_daily' ? 3 : 10;
+    final ok = await _consumeAdView(placement, limit);
+    if (!ok) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('오늘 광고 시청 한도 도달 ($limit회)')));
+      return;
+    }
     _playReward();
     _premiumTokens += 1;
-    _logs.insert(0, '[광고 보상] 프리미엄 토큰 +1');
+    _logs.insert(0, '[광고 보상:$placement] 프리미엄 토큰 +1');
     await _save();
     if (!mounted) return;
     ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('보상 광고 시청(시뮬레이션): 프리미엄 토큰 +1')));
     setState(() {});
+  }
+
+  Future<void> _applyPremiumSample(Map<String, dynamic> sample) async {
+    final targetName = sample['targetName']?.toString() ?? _story[_storyIndex].leftCharacter;
+    final target = _characterByName(targetName);
+    _premiumTokens = max(0, _premiumTokens - 1);
+
+    final affinity = sample['affectionAdd'] as int? ?? 0;
+    if (affinity != 0) {
+      await _addAffection(target, affinity, '[프리미엄]');
+    }
+
+    final statDelta = <String, int>{};
+    final stats = (sample['statDelta'] as Map<String, dynamic>? ?? {});
+    for (final e in stats.entries) {
+      statDelta[e.key] = e.value as int;
+    }
+    if (statDelta.isNotEmpty) {
+      _applyPoliticalDelta(statDelta, '프리미엄 샘플');
+    }
+
+    final setFlags = (sample['setFlags'] as Map<String, dynamic>? ?? {});
+    for (final e in setFlags.entries) {
+      _keyFlags[e.key] = e.value == true;
+    }
+
+    if ((sample['preserveEvidence'] as bool? ?? false) && _evidenceOwned.isNotEmpty) {
+      _logs.insert(0, '[프리미엄] 증거 카드 보존 효과 발동');
+    }
+
+    if ((sample['grantItem'] as String?) != null) {
+      _evidenceOwned.add(sample['grantItem'].toString());
+      _logs.insert(0, '[프리미엄] 아이템 획득: ${sample['grantItem']}');
+    }
+    if (sample['id'] == 'B5') {
+      _premiumTokens += 1;
+      _logs.insert(0, '[프리미엄] 완주 보상: 토큰 1개 환급');
+    }
+
+    _refreshRelationshipStateFor(target, source: '프리미엄 샘플');
+    await _save();
+
+    if (!mounted) return;
+    showDialog(
+      context: context,
+      builder: (_) => AlertDialog(
+        title: Text('프리미엄 장면 · ${sample['title']}'),
+        content: Text('${sample['scene']}\n\n효과: ${sample['effectText']}'),
+        actions: [TextButton(onPressed: () => Navigator.pop(context), child: const Text('확인'))],
+      ),
+    );
+    setState(() {});
+  }
+
+  Future<void> _openPremiumChoiceFlow(StoryBeat beat) async {
+    final node = _storyIndex + 1;
+    final samples = _premiumSamplesForNode(node);
+    if (samples.isEmpty) {
+      await _usePremiumChoice(beat);
+      return;
+    }
+
+    final picked = await showModalBottomSheet<Map<String, dynamic>>(
+      context: context,
+      backgroundColor: const Color(0xFF191624),
+      showDragHandle: true,
+      builder: (_) => SafeArea(
+        child: ListView(
+          padding: const EdgeInsets.all(12),
+          children: [
+            const Text('프리미엄 선택지', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 16)),
+            const SizedBox(height: 6),
+            const Text('감정씬 확장/관계 전환 보정/편의 효과 중 하나를 제공합니다.', style: TextStyle(color: Colors.white70, fontSize: 12)),
+            const SizedBox(height: 10),
+            ...samples.map(
+              (s) => Card(
+                color: const Color(0xFF2A2340),
+                child: ListTile(
+                  title: Text(s['title'].toString(), style: const TextStyle(color: Colors.white)),
+                  subtitle: Text(s['scene'].toString(), style: const TextStyle(color: Colors.white70)),
+                  trailing: const Icon(Icons.arrow_forward_ios, size: 14, color: Colors.white70),
+                  onTap: () => Navigator.pop(context, s),
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+    if (picked == null || !mounted) return;
+
+    final open = await showDialog<String>(
+      context: context,
+      builder: (_) => AlertDialog(
+        title: const Text('프리미엄 선택지'),
+        content: const Text('이 선택은 감정씬(추가 대사+보이스)로 확장됩니다.'),
+        actions: [
+          TextButton(onPressed: () => Navigator.pop(context, 'later'), child: const Text('다음에')),
+          TextButton(onPressed: () => Navigator.pop(context, 'ad'), child: const Text('광고 보고 열기')),
+          FilledButton(onPressed: () => Navigator.pop(context, 'token'), child: const Text('토큰 1개 사용')),
+        ],
+      ),
+    );
+    if (open == null || open == 'later') return;
+    if (open == 'ad') {
+      final ok = await _consumeAdView('premium_open', 10);
+      if (!ok) {
+        if (!mounted) return;
+        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('오늘 프리미엄 광고 개방 한도 도달')));
+        return;
+      }
+    } else if (_premiumTokens <= 0) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('토큰이 부족합니다. 광고로 먼저 획득하세요.')));
+      return;
+    }
+
+    if (open == 'token') {
+      await _applyPremiumSample(picked);
+    } else {
+      final clone = Map<String, dynamic>.from(picked);
+      clone['affectionAdd'] = (clone['affectionAdd'] as int? ?? 0) - 1;
+      await _applyPremiumSample(clone);
+    }
   }
 
   Future<void> _usePremiumChoice(StoryBeat beat) async {
@@ -1479,6 +1683,7 @@ class _GameShellState extends State<GameShell> {
       mainTarget: target.name,
       mainDelta: 16,
       result: '프리미엄 선택으로 감정과 정치의 결속이 크게 강화되었다.',
+      kind: ChoiceKind.premium,
     );
     _premiumTokens -= 1;
     await _pickStoryChoice(synthetic, 99);
@@ -1631,10 +1836,12 @@ class _GameShellState extends State<GameShell> {
         destinations: const [
           NavigationDestination(icon: Icon(Icons.home), label: '홈'),
           NavigationDestination(icon: Icon(Icons.auto_stories), label: '스토리'),
-          NavigationDestination(icon: Icon(Icons.construction), label: '아르바이트'),
-          NavigationDestination(icon: Icon(Icons.store), label: '상점'),
           NavigationDestination(icon: Icon(Icons.favorite), label: '데이트'),
-          NavigationDestination(icon: Icon(Icons.history), label: '로그'),
+          NavigationDestination(icon: Icon(Icons.construction), label: '아르바이트'),
+          NavigationDestination(icon: Icon(Icons.store), label: '제작/상점'),
+          NavigationDestination(icon: Icon(Icons.receipt_long), label: '장부'),
+          NavigationDestination(icon: Icon(Icons.collections_bookmark), label: '도감'),
+          NavigationDestination(icon: Icon(Icons.settings), label: '설정'),
         ],
       ),
     );
@@ -1647,14 +1854,18 @@ class _GameShellState extends State<GameShell> {
       case 1:
         return _storyRootPage();
       case 2:
-        return _workPage();
-      case 3:
-        return _shopPage();
-      case 4:
         return _datePage();
+      case 3:
+        return _workPage();
+      case 4:
+        return _shopPage();
       case 5:
+        return _ledgerPage();
+      case 6:
+        return _codexPage();
+      case 7:
       default:
-        return _logPage();
+        return _settingsPage();
     }
   }
 
@@ -1677,6 +1888,25 @@ class _GameShellState extends State<GameShell> {
             child: SizedBox(
               key: ValueKey(_playerAvatar),
               child: _fullBodySprite(_playerAvatar, width: 250),
+            ),
+          ),
+        ),
+
+        Positioned(
+          top: 16,
+          left: 12,
+          child: Container(
+            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+            decoration: BoxDecoration(
+              color: Colors.black.withOpacity(0.45),
+              borderRadius: BorderRadius.circular(10),
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text('금화 $_gold  ·  실크 ${_evidenceOwned.length}  ·  토큰 $_premiumTokens', style: const TextStyle(color: Colors.white70, fontSize: 12)),
+                const Text('오늘 AP 12/12', style: TextStyle(color: Colors.lightGreenAccent, fontSize: 12)),
+              ],
             ),
           ),
         ),
@@ -1745,6 +1975,39 @@ class _GameShellState extends State<GameShell> {
                       )
                       .toList(),
                 ),
+              ),
+            ),
+          ),
+        ),
+
+        Positioned(
+          left: 12,
+          right: 12,
+          bottom: 70,
+          child: Card(
+            color: Colors.black.withOpacity(0.56),
+            child: Padding(
+              padding: const EdgeInsets.all(10),
+              child: Row(
+                children: [
+                  const Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text('오늘의 추천', style: TextStyle(color: Colors.amber, fontWeight: FontWeight.bold)),
+                        SizedBox(height: 2),
+                        Text('• 추천 데이트: 신뢰 + 관계 진전\n• 추천 알바: 골드/재료 수급', style: TextStyle(color: Colors.white70, fontSize: 12)),
+                      ],
+                    ),
+                  ),
+                  FilledButton(
+                    onPressed: () {
+                      _playClick();
+                      setState(() => _menuIndex = 1);
+                    },
+                    child: const Text('다음 노드'),
+                  ),
+                ],
               ),
             ),
           ),
@@ -1838,6 +2101,8 @@ class _GameShellState extends State<GameShell> {
                         Text('현재: EP ${_storyIndex + 1}. ${preview.title}', style: const TextStyle(color: Colors.white70)),
                         if (_endingCharacterName != null)
                           Text('확정 엔딩: $_endingCharacterName', style: const TextStyle(color: Colors.amberAccent, fontWeight: FontWeight.bold)),
+                        const SizedBox(height: 4),
+                        const Text('아이콘: 💔감정 · ⚖️재판 · 👗의전 · 🔍조사 (노드 길게 눌러 프리뷰)', style: TextStyle(color: Colors.white60, fontSize: 11)),
                       ],
                     ),
                   ),
@@ -1871,6 +2136,45 @@ class _GameShellState extends State<GameShell> {
           ),
         ),
       ],
+    );
+  }
+
+  IconData _nodeTypeIcon(int beat) {
+    if (beat % 5 == 0) return Icons.gavel; // ⚖️ 재판
+    if (beat % 5 == 1) return Icons.heart_broken; // 💔 감정
+    if (beat % 5 == 2) return Icons.checkroom; // 👗 의전
+    if (beat % 5 == 3) return Icons.search; // 🔍 조사
+    return Icons.auto_awesome;
+  }
+
+  String _nodeTypeLabel(int beat) {
+    if (beat % 5 == 0) return '재판 분기';
+    if (beat % 5 == 1) return '감정 분기';
+    if (beat % 5 == 2) return '의전 체크';
+    if (beat % 5 == 3) return '조사 노드';
+    return '스토리 노드';
+  }
+
+  Future<void> _showNodePreview(int beat) async {
+    final b = _story[beat];
+    await showModalBottomSheet(
+      context: context,
+      showDragHandle: true,
+      builder: (_) => Padding(
+        padding: const EdgeInsets.all(14),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text('EP ${beat + 1}. ${b.title}', style: const TextStyle(fontWeight: FontWeight.bold)),
+            const SizedBox(height: 6),
+            Text('유형: ${_nodeTypeLabel(beat)} · 예상 6~8분'),
+            const SizedBox(height: 6),
+            const Text('필요 조건: 이전 노드 클리어'),
+            Text('추천 의상 태그: ${beat % 3 == 0 ? '왕실색' : beat % 3 == 1 ? '은등회' : '길드'}'),
+          ],
+        ),
+      ),
     );
   }
 
@@ -1938,6 +2242,7 @@ class _GameShellState extends State<GameShell> {
                         _lockRouteAtNode15IfNeeded();
                       });
                     },
+                    onLongPress: () => _showNodePreview(beat),
                     child: AnimatedContainer(
                       duration: const Duration(milliseconds: 180),
                       width: 34,
@@ -1949,7 +2254,13 @@ class _GameShellState extends State<GameShell> {
                         border: Border.all(color: Colors.white70),
                         boxShadow: selected ? [const BoxShadow(color: Colors.amberAccent, blurRadius: 8)] : null,
                       ),
-                      child: Text('${n['id']! + 1}', style: const TextStyle(color: Colors.white, fontSize: 10, fontWeight: FontWeight.bold)),
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Icon(_nodeTypeIcon(beat), color: Colors.white, size: 12),
+                          Text('${n['id']! + 1}', style: const TextStyle(color: Colors.white, fontSize: 9, fontWeight: FontWeight.bold)),
+                        ],
+                      ),
                     ),
                   ),
                 );
@@ -2125,6 +2436,15 @@ class _GameShellState extends State<GameShell> {
                 ),
                 const SizedBox(height: 6),
                 Text(_visibleLine, style: const TextStyle(color: Colors.white, fontSize: 15)),
+                const SizedBox(height: 8),
+                LinearProgressIndicator(
+                  value: (_characterByName(beat.leftCharacter).affection / 100).clamp(0, 1),
+                  minHeight: 6,
+                  backgroundColor: Colors.white24,
+                  valueColor: const AlwaysStoppedAnimation(Colors.pinkAccent),
+                ),
+                const SizedBox(height: 2),
+                const Text('감정 게이지', style: TextStyle(color: Colors.white54, fontSize: 11)),
                 const SizedBox(height: 10),
                 if (_lineCompleted)
                   Column(
@@ -2138,9 +2458,25 @@ class _GameShellState extends State<GameShell> {
                           (i) {
                             final choice = beat.choices[i];
                             final routeLocked = _isChoiceBlockedByRouteLock(choice);
-                            return ElevatedButton(
-                              onPressed: (_endingCharacterName != null || routeLocked) ? null : () => _pickStoryChoice(choice, i),
-                              child: Text(choice.label),
+                            final kind = i == beat.choices.length - 1 ? ChoiceKind.condition : ChoiceKind.free;
+                            return ElevatedButton.icon(
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: kind == ChoiceKind.free ? null : Colors.indigo.withOpacity(0.72),
+                              ),
+                              onPressed: (_endingCharacterName != null || routeLocked) ? null : () => _pickStoryChoice(
+                                StoryChoice(
+                                  label: choice.label,
+                                  mainTarget: choice.mainTarget,
+                                  mainDelta: choice.mainDelta,
+                                  result: choice.result,
+                                  sideTarget: choice.sideTarget,
+                                  sideDelta: choice.sideDelta,
+                                  kind: kind,
+                                ),
+                                i,
+                              ),
+                              icon: Icon(kind == ChoiceKind.free ? Icons.radio_button_unchecked : Icons.key, size: 16),
+                              label: Text('[${_choiceKindLabel(kind)}] ${choice.label}'),
                             );
                           },
                         ),
@@ -2204,9 +2540,10 @@ class _GameShellState extends State<GameShell> {
                             label: const Text('보상 광고(+1 토큰)'),
                           ),
                           FilledButton.icon(
-                            onPressed: (_premiumTokens > 0 && _endingCharacterName == null) ? () => _usePremiumChoice(beat) : null,
+                            style: FilledButton.styleFrom(backgroundColor: const Color(0xFF6A4BFF)),
+                            onPressed: _endingCharacterName == null ? () => _openPremiumChoiceFlow(beat) : null,
                             icon: const Icon(Icons.stars),
-                            label: Text('프리미엄 선택 (1 토큰, 보유: $_premiumTokens)'),
+                            label: Text('프리미엄 선택지 (추가 장면, 보유 토큰: $_premiumTokens)'),
                           ),
                         ],
                       ),
@@ -2388,13 +2725,72 @@ class _GameShellState extends State<GameShell> {
     );
   }
 
-  Widget _logPage() {
-    if (_logs.isEmpty) return const Center(child: Text('아직 기록이 없습니다.'));
-    return ListView.separated(
+  Widget _ledgerPage() {
+    return ListView(
       padding: const EdgeInsets.all(12),
-      itemBuilder: (_, i) => Text(_logs[i]),
-      separatorBuilder: (_, __) => const Divider(),
-      itemCount: _logs.length,
+      children: [
+        const Text('장부', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+        const SizedBox(height: 8),
+        ..._politicalStats.entries.map((e) => Padding(
+              padding: const EdgeInsets.only(bottom: 8),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text('${e.key} · ${e.value}'),
+                  const SizedBox(height: 4),
+                  LinearProgressIndicator(value: e.value / 100, minHeight: 8),
+                ],
+              ),
+            )),
+        const SizedBox(height: 10),
+        const Text('증거 카드', style: TextStyle(fontWeight: FontWeight.bold)),
+        Wrap(spacing: 6, runSpacing: 6, children: _evidenceOwned.map((e) => Chip(label: Text(e))).toList()),
+        const SizedBox(height: 10),
+        const Text('최근 로그(5개)', style: TextStyle(fontWeight: FontWeight.bold)),
+        const SizedBox(height: 6),
+        ..._logs.take(5).map((e) => Text('• $e')),
+      ],
+    );
+  }
+
+  Widget _codexPage() {
+    final unlocked = _evidenceOwned.length + _keyFlags.values.where((e) => e).length;
+    return ListView(
+      padding: const EdgeInsets.all(12),
+      children: [
+        const Text('도감', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+        const SizedBox(height: 8),
+        ListTile(title: const Text('보이스'), subtitle: Text('해금 ${_keyFlags.values.where((e) => e).length}/20')),
+        ListTile(title: const Text('CG'), subtitle: Text('해금 ${_evidenceOwned.length}/30')),
+        ListTile(title: const Text('엔딩'), subtitle: Text(_endingRuleId == null ? '실루엣 상태' : '최근 해금: $_endingRuleId')),
+        ListTile(title: const Text('POV'), subtitle: Text('해금 진행도 $unlocked/40')),
+      ],
+    );
+  }
+
+  Widget _settingsPage() {
+    return ListView(
+      padding: const EdgeInsets.all(12),
+      children: [
+        const Text('설정', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+        SwitchListTile(
+          value: _autoPlay,
+          onChanged: (v) => setState(() => _autoPlay = v),
+          title: const Text('오토 플레이'),
+        ),
+        SwitchListTile(
+          value: _skipTyping,
+          onChanged: (v) {
+            setState(() => _skipTyping = v);
+            _beginBeatLine();
+          },
+          title: const Text('타이핑 스킵'),
+        ),
+        ListTile(
+          title: const Text('광고/과금 원칙'),
+          subtitle: const Text('감정씬 직전·직후 강제 광고 없음\n보상형 광고 중심으로 노출'),
+        ),
+      ],
     );
   }
 }
