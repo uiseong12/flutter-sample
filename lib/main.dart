@@ -212,6 +212,7 @@ class _GameShellState extends State<GameShell> {
   int _sceneKey = 0;
   int _animTick = 0;
   String? _cutinCharacter;
+  String _cutinLine = '좋아, 계속 가자!';
   int _cutinTicks = 0;
   TransitionPreset _transitionPreset = TransitionPreset.fade;
   String _cameraSeed = '0';
@@ -1598,6 +1599,12 @@ class _GameShellState extends State<GameShell> {
   }
 
   void _triggerCutInForWork() {
+    const lines = {
+      '엘리안': ['좋아, 계속 가자!', '완벽한 타이밍이다.', '네 손끝이 전장을 바꾼다.', '멈추지 마, 지금 흐름 좋다.', '훌륭해. 다음도 그렇게.'],
+      '루시안': ['좋아, 계속 가자!', '방금 선택, 아주 정확했어.', '흐름이 우리 편이야.', '계산보다 감각이 빨라.', '지금 리듬을 유지해.'],
+      '세레나': ['좋아, 계속 가자!', '협상은 지금부터가 진짜야.', '아름답게 압도해 줘.', '좋아, 상대가 흔들리고 있어.', '한 수 위라는 걸 보여줘.'],
+    };
+
     switch (_selectedWork) {
       case WorkMiniGame.smithTiming:
         _cutinCharacter = '엘리안';
@@ -1612,6 +1619,9 @@ class _GameShellState extends State<GameShell> {
         _cutinCharacter = '루시안';
         break;
     }
+
+    final pool = lines[_cutinCharacter!]!;
+    _cutinLine = pool[_random.nextInt(pool.length)];
     _cutinTicks = 12;
   }
 
@@ -3218,7 +3228,7 @@ class _GameShellState extends State<GameShell> {
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
                                 Text(_cutinCharacter!, style: const TextStyle(color: Color(0xFFF6F1E8), fontWeight: FontWeight.w700)),
-                                const Text('좋아, 계속 가자!', style: TextStyle(color: Color(0xFFF6F1E8), fontSize: 11)),
+                                Text(_cutinLine, style: const TextStyle(color: Color(0xFFF6F1E8), fontSize: 11)),
                               ],
                             ),
                           ],
