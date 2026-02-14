@@ -582,7 +582,7 @@ class _GameShellState extends State<GameShell> {
         StoryChoice(label: '[숨은] 진실 은폐 후 단기안정', mainTarget: '세레나', mainDelta: 8, result: 'BAD_ENDING: 평화는 왔지만 역사는 다시 왜곡된다.'),
       ],
     ),
-  ];];
+  ];
 
   late List<int?> _storySelections;
   Map<int, int> _stepNodePick = {};
