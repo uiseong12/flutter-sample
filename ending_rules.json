@@ -1,0 +1,17 @@
+{
+  "endings": [
+    {"id": "co_rule_1", "type": "공동통치", "requires": {"legitimacy": 60, "military": 60}},
+    {"id": "co_rule_2", "type": "공동통치", "requires": {"legitimacy": 55, "military": 65}},
+    {"id": "co_rule_3", "type": "공동통치", "requires": {"legitimacy": 65, "military": 55}},
+    {"id": "revolution_1", "type": "혁명", "requires": {"publicTrust": 75, "legitimacy": 40}},
+    {"id": "revolution_2", "type": "혁명", "requires": {"publicTrust": 80, "economy": 45}},
+    {"id": "compromise_1", "type": "타협", "requires": {"legitimacy": 50, "economy": 50, "military": 50}},
+    {"id": "compromise_2", "type": "타협", "requires": {"economy": 65, "publicTrust": 55}},
+    {"id": "compromise_3", "type": "타협", "requires": {"legitimacy": 55, "publicTrust": 55}},
+    {"id": "bad_exile", "type": "배드", "trigger": "node10_total_below_80"},
+    {"id": "bad_execution", "type": "배드", "trigger": "surveillance_100"},
+    {"id": "bad_puppet", "type": "배드", "trigger": "guild_hostile_and_military_low"},
+    {"id": "true_silver_queen", "type": "진엔딩", "requires": {"legitimacy": 70, "economy": 70, "publicTrust": 70, "military": 70, "surveillanceMax": 80, "recipeUnlocked": true}}
+  ],
+  "priority": ["bad_execution", "bad_exile", "true_silver_queen", "co_rule_1", "co_rule_2", "co_rule_3", "revolution_1", "revolution_2", "compromise_1", "compromise_2", "compromise_3", "bad_puppet"]
+}

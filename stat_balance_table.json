@@ -1,0 +1,24 @@
+{
+  "ranges": {
+    "legitimacy": [0, 100],
+    "economy": [0, 100],
+    "publicTrust": [0, 100],
+    "military": [0, 100],
+    "surveillance": [0, 100]
+  },
+  "perNode": {
+    "normalChoice": [-5, 5],
+    "majorChoice": [-15, 15],
+    "miniGame": [3, 8]
+  },
+  "equipmentEffectsExamples": [
+    {"item": "왕실색 실 자수", "effects": {"legitimacy": 3, "publicTrust": -2}},
+    {"item": "은등회 직물", "effects": {"publicTrust": 4}},
+    {"item": "길드 직조 실크", "effects": {"economy": 3}},
+    {"item": "규율 위반 장식", "effects": {"surveillance": 12}}
+  ],
+  "failStates": [
+    {"name": "공개 망신 추방", "condition": "surveillance >= 100"},
+    {"name": "첫 공판 붕괴", "condition": "node10 gate total < 80"}
+  ]
+}
