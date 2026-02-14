@@ -14,3 +14,4 @@ flutter:
   assets:
     - assets/story_events.json
     - assets/art/
+    - assets/generated/

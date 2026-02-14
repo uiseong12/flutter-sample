@@ -1,7 +1,9 @@
+import 'dart:async';
 import 'dart:convert';
 import 'dart:math';
 
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -25,6 +27,9 @@ class StoryApp extends StatelessWidget {
     );
   }
 }
+
+enum Expression { neutral, smile, angry, blush, sad }
+enum TransitionPreset { fade, slide, flash }
 
 class Character {
   Character({
@@ -124,6 +129,15 @@ class OutfitItem {
   final int charmBonus;
 }
 
+class _Sparkle {
+  _Sparkle({required this.id, required this.x, required this.y, required this.icon, required this.color});
+  final int id;
+  final double x;
+  final double y;
+  final IconData icon;
+  final Color color;
+}
+
 class GameShell extends StatefulWidget {
   const GameShell({super.key});
 
@@ -132,7 +146,7 @@ class GameShell extends StatefulWidget {
 }
 
 class _GameShellState extends State<GameShell> {
-  static const _saveKey = 'vn_save_v6';
+  static const _saveKey = 'vn_save_v7';
   final Random _random = Random();
 
   int _menuIndex = 0;
@@ -141,39 +155,52 @@ class _GameShellState extends State<GameShell> {
   int _baseCharm = 12;
   bool _loaded = false;
   bool _inStoryScene = false;
-  String? _tapPulseName;
+
+  bool _autoPlay = false;
+  bool _skipTyping = false;
+  bool _lineCompleted = true;
+  String _visibleLine = '';
+  Timer? _typingTimer;
 
   int _workTimeLeft = 0;
   int _workScore = 0;
 
+  int _sceneKey = 0;
+  TransitionPreset _transitionPreset = TransitionPreset.fade;
+  String _cameraSeed = '0';
+
   String _equippedOutfitId = 'default';
   String? _endingCharacterName;
   final List<String> _logs = [];
+  final List<_Sparkle> _sparkles = [];
+  final Map<String, int> _lastDelta = {};
+
+  final Map<String, Expression> _expressions = {};
 
   final List<Character> _characters = [
     Character(
       name: '엘리안',
       role: '왕실 근위대장',
-      fullBodyAsset: 'assets/art/char_elian.svg',
+      fullBodyAsset: 'assets/generated/elian/001-full-body-handsome-male-knight-romance-w.png',
       description: '엄격하지만 당신 앞에서는 무너지는 기사.',
     ),
     Character(
       name: '루시안',
       role: '궁정 마도학자',
-      fullBodyAsset: 'assets/art/char_lucian.svg',
+      fullBodyAsset: 'assets/generated/lucian/001-full-body-beautiful-male-mage-scholar-ro.png',
       description: '이성과 감정 사이에서 흔들리는 전략가.',
     ),
     Character(
       name: '세레나',
       role: '귀족 외교관',
-      fullBodyAsset: 'assets/art/char_serena.svg',
+      fullBodyAsset: 'assets/generated/serena/001-full-body-elegant-female-diplomat-romanc.png',
       description: '우아한 미소 뒤에 칼날을 숨긴 외교가.',
       affection: 26,
     ),
   ];
 
   final List<OutfitItem> _outfits = [
-    OutfitItem(id: 'default', name: '수수한 여행복', price: 0, charmBonus: 0, avatarAsset: 'assets/art/player_default.svg'),
+    OutfitItem(id: 'default', name: '수수한 여행복', price: 0, charmBonus: 0, avatarAsset: 'assets/generated/heroine/001-full-body-2d-romance-webtoon-style-heroi.png'),
     OutfitItem(id: 'noble_dress', name: '귀족 연회 드레스', price: 220, charmBonus: 4, avatarAsset: 'assets/art/player_noble.svg'),
     OutfitItem(id: 'ranger_look', name: '숲의 레인저 복장', price: 180, charmBonus: 3, avatarAsset: 'assets/art/player_ranger.svg'),
     OutfitItem(id: 'moon_gown', name: '월광 궁정 예복', price: 380, charmBonus: 7, avatarAsset: 'assets/art/player_moon.svg'),
@@ -190,7 +217,7 @@ class _GameShellState extends State<GameShell> {
       title: '왕궁 입성',
       speaker: '나레이션',
       line: '붉은 노을이 성벽을 물들였다. 첫 선택이 권력과 사랑의 균형을 만든다.',
-      backgroundAsset: 'assets/art/story_castle.svg',
+      backgroundAsset: 'assets/generated/bg_castle/001-medieval-fantasy-royal-castle-courtyard-.png',
       leftCharacter: '엘리안',
       rightCharacter: '루시안',
       showLeft: false,
@@ -204,39 +231,35 @@ class _GameShellState extends State<GameShell> {
       title: '가면무도회',
       speaker: '세레나',
       line: '당신이 누구와 춤을 추는지, 그 장면은 곧 정치적 선언이 된다.',
-      backgroundAsset: 'assets/art/story_ballroom.svg',
+      backgroundAsset: 'assets/generated/bg_ballroom/001-luxurious-medieval-ballroom-interior-at-.png',
       leftCharacter: '세레나',
       rightCharacter: '엘리안',
-      showLeft: true,
-      showRight: true,
       choices: [
         StoryChoice(label: '[세레나] 외교 연합을 제안한다', mainTarget: '세레나', mainDelta: 11, sideTarget: '엘리안', sideDelta: -1, result: '세레나는 당신에게만 비밀을 공유했다.'),
-        StoryChoice(label: '[엘리안] 시민 앞에서 함께 춤춘다', mainTarget: '엘리안', mainDelta: 9, sideTarget: '세레나', sideDelta: 1, result: '엘리안의 눈빛이 흔들렸다. 더 이상 상관과 부하가 아니었다.'),
+        StoryChoice(label: '[엘리안] 시민 앞에서 함께 춤춘다', mainTarget: '엘리안', mainDelta: 9, sideTarget: '세레나', sideDelta: 1, result: '엘리안의 눈빛이 흔들렸다.'),
       ],
     ),
     StoryBeat(
       title: '마탑의 밤',
       speaker: '루시안',
       line: '금지된 결계는 누군가의 미래를 살리고, 또 누군가의 신념을 부순다.',
-      backgroundAsset: 'assets/art/story_tower.svg',
+      backgroundAsset: 'assets/generated/bg_tower/001-mystic-mage-tower-observatory-at-midnigh.png',
       leftCharacter: '루시안',
       rightCharacter: '세레나',
       showLeft: true,
       showRight: false,
       choices: [
-        StoryChoice(label: '[루시안] 실험을 허가하고 끝까지 함께한다', mainTarget: '루시안', mainDelta: 12, sideTarget: '엘리안', sideDelta: -2, result: '루시안은 처음으로 당신 앞에서 감정을 숨기지 않았다.'),
-        StoryChoice(label: '[세레나] 시민 안전을 우선해 실험을 중지시킨다', mainTarget: '세레나', mainDelta: 10, sideTarget: '루시안', sideDelta: -2, result: '세레나는 당신의 결단에 진심 어린 존경을 보냈다.'),
+        StoryChoice(label: '[루시안] 실험을 허가하고 끝까지 함께한다', mainTarget: '루시안', mainDelta: 12, sideTarget: '엘리안', sideDelta: -2, result: '루시안은 감정을 숨기지 않았다.'),
+        StoryChoice(label: '[세레나] 시민 안전을 우선해 실험을 중지시킨다', mainTarget: '세레나', mainDelta: 10, sideTarget: '루시안', sideDelta: -2, result: '세레나는 당신의 결단에 존경을 보냈다.'),
       ],
     ),
     StoryBeat(
       title: '결전 전야',
       speaker: '나레이션',
       line: '전쟁의 북소리가 다가온다. 마지막 밤, 누구의 손을 잡을 것인가.',
-      backgroundAsset: 'assets/art/story_castle.svg',
+      backgroundAsset: 'assets/generated/bg_castle/001-medieval-fantasy-royal-castle-courtyard-.png',
       leftCharacter: '엘리안',
       rightCharacter: '루시안',
-      showLeft: true,
-      showRight: true,
       choices: [
         StoryChoice(label: '[엘리안] 성벽 순찰을 함께하며 마음을 고백한다', mainTarget: '엘리안', mainDelta: 14, sideTarget: '루시안', sideDelta: -2, result: '엘리안은 당신의 손을 놓지 않았다.'),
         StoryChoice(label: '[루시안] 마탑 옥상에서 새벽까지 대화한다', mainTarget: '루시안', mainDelta: 14, sideTarget: '세레나', sideDelta: -1, result: '루시안은 당신에게만 약점을 보였다.'),
@@ -256,7 +279,16 @@ class _GameShellState extends State<GameShell> {
   void initState() {
     super.initState();
     _storySelections = List<int?>.filled(_story.length, null);
+    for (final c in _characters) {
+      _expressions[c.name] = Expression.neutral;
+    }
     _load();
+  }
+
+  @override
+  void dispose() {
+    _typingTimer?.cancel();
+    super.dispose();
   }
 
   Future<void> _load() async {
@@ -269,9 +301,7 @@ class _GameShellState extends State<GameShell> {
       _baseCharm = m['baseCharm'] ?? _baseCharm;
       _equippedOutfitId = m['equippedOutfitId'] ?? _equippedOutfitId;
       _endingCharacterName = m['endingCharacterName'] as String?;
-      _storySelections = ((m['storySelections'] as List<dynamic>?) ?? List.filled(_story.length, null))
-          .map<int?>((e) => e == null ? null : e as int)
-          .toList();
+      _storySelections = ((m['storySelections'] as List<dynamic>?) ?? List.filled(_story.length, null)).map<int?>((e) => e == null ? null : e as int).toList();
       _logs
         ..clear()
         ..addAll((m['logs'] as List<dynamic>? ?? []).map((e) => e.toString()));
@@ -283,6 +313,8 @@ class _GameShellState extends State<GameShell> {
         }
       }
     }
+
+    _beginBeatLine();
 
     if (mounted) {
       setState(() {
@@ -309,12 +341,53 @@ class _GameShellState extends State<GameShell> {
     );
   }
 
+  void _playClick() => SystemSound.play(SystemSoundType.click);
+  void _playReward() => SystemSound.play(SystemSoundType.alert);
+
   int _scaledGain(int base) => base + (_totalCharm ~/ 5);
+
+  void _setExpression(String name, Expression expression) {
+    _expressions[name] = expression;
+  }
+
+  void _beginBeatLine() {
+    _typingTimer?.cancel();
+    final line = _story[_storyIndex].line;
+    if (_skipTyping) {
+      setState(() {
+        _visibleLine = line;
+        _lineCompleted = true;
+      });
+      return;
+    }
+
+    setState(() {
+      _visibleLine = '';
+      _lineCompleted = false;
+    });
+
+    int i = 0;
+    final ms = _autoPlay ? 12 : 22;
+    _typingTimer = Timer.periodic(Duration(milliseconds: ms), (t) {
+      if (!mounted) {
+        t.cancel();
+        return;
+      }
+      if (i >= line.length) {
+        t.cancel();
+        setState(() => _lineCompleted = true);
+        return;
+      }
+      i += 1;
+      setState(() => _visibleLine = line.substring(0, i));
+    });
+  }
 
   Future<void> _checkEndingIfNeeded(Character c) async {
     if (_endingCharacterName != null || c.affection < 100) return;
     _endingCharacterName = c.name;
     _logs.insert(0, '[엔딩] ${c.name} 루트 확정 (최초 100 달성)');
+    _playReward();
     await _save();
 
     if (!mounted) return;
@@ -324,37 +397,76 @@ class _GameShellState extends State<GameShell> {
       builder: (_) => AlertDialog(
         title: const Text('엔딩 확정'),
         content: Text('${c.name}의 호감도가 가장 먼저 100에 도달했습니다.\n\n${c.name} 엔딩 루트가 확정됩니다.'),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text('확인'),
-          )
-        ],
+        actions: [TextButton(onPressed: () => Navigator.pop(context), child: const Text('확인'))],
       ),
     );
   }
 
   Future<void> _addAffection(Character target, int delta, String logPrefix) async {
     target.affection = (target.affection + delta).clamp(0, 100);
+    _lastDelta[target.name] = delta;
     _logs.insert(0, '$logPrefix ${target.name} +$delta');
+    _triggerSparkles(target.name, positive: delta >= 0);
     await _checkEndingIfNeeded(target);
+
+    Future.delayed(const Duration(milliseconds: 900), () {
+      if (!mounted) return;
+      setState(() {
+        _lastDelta.remove(target.name);
+      });
+    });
+  }
+
+  void _triggerSparkles(String targetName, {required bool positive}) {
+    final leftName = _story[_storyIndex].leftCharacter;
+    final isLeft = targetName == leftName;
+    for (int i = 0; i < 5; i++) {
+      _sparkles.add(
+        _Sparkle(
+          id: DateTime.now().microsecondsSinceEpoch + i,
+          x: (isLeft ? 130 : 760) + _random.nextDouble() * 90,
+          y: 240 + _random.nextDouble() * 140,
+          icon: positive ? Icons.auto_awesome : Icons.flash_on,
+          color: positive ? Colors.pinkAccent : Colors.lightBlueAccent,
+        ),
+      );
+    }
+    setState(() {});
+
+    Future.delayed(const Duration(milliseconds: 520), () {
+      if (!mounted) return;
+      setState(() {
+        _sparkles.clear();
+      });
+    });
   }
 
   Future<void> _pickStoryChoice(StoryChoice choice, int choiceIndex) async {
     if (_endingCharacterName != null) return;
+    _playClick();
 
     _storySelections[_storyIndex] = choiceIndex;
 
     final main = _characterByName(choice.mainTarget);
     await _addAffection(main, _scaledGain(choice.mainDelta), '[스토리]');
+    _setExpression(main.name, Expression.smile);
 
     if (choice.sideTarget != null) {
       final side = _characterByName(choice.sideTarget!);
       side.affection = (side.affection + choice.sideDelta).clamp(0, 100);
+      _setExpression(side.name, choice.sideDelta < 0 ? Expression.angry : Expression.neutral);
     }
 
     _logs.insert(0, '[대사] ${choice.result}');
-    if (_storyIndex < _story.length - 1) _storyIndex += 1;
+
+    if (_storyIndex < _story.length - 1) {
+      _storyIndex += 1;
+      _sceneKey += 1;
+      _cameraSeed = '${_random.nextDouble()}';
+      _transitionPreset = choice.sideDelta < 0 ? TransitionPreset.flash : TransitionPreset.slide;
+    }
+
+    _beginBeatLine();
     await _save();
 
     if (!mounted) return;
@@ -367,8 +479,10 @@ class _GameShellState extends State<GameShell> {
       ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('골드가 부족합니다.')));
       return;
     }
+    _playClick();
     _gold -= item.price;
     await _addAffection(target, _scaledGain(item.affectionBoost), '[상점] ${item.name} 선물 ->');
+    _setExpression(target.name, Expression.blush);
     await _save();
     setState(() {});
   }
@@ -378,6 +492,7 @@ class _GameShellState extends State<GameShell> {
       ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('골드가 부족합니다.')));
       return;
     }
+    _playClick();
     _gold -= item.price;
     _equippedOutfitId = item.id;
     _logs.insert(0, '[장착] ${item.name} 착용 (매력 +${item.charmBonus})');
@@ -386,6 +501,7 @@ class _GameShellState extends State<GameShell> {
   }
 
   Future<void> _startWorkMiniGame() async {
+    _playClick();
     _workTimeLeft = 10;
     _workScore = 0;
     setState(() {});
@@ -401,6 +517,7 @@ class _GameShellState extends State<GameShell> {
     final reward = 20 + (_workScore * 7);
     _gold += reward;
     _logs.insert(0, '[아르바이트] 점수 $_workScore점, 골드 +$reward');
+    _playReward();
     await _save();
 
     if (_menuIndex == 2) {
@@ -421,7 +538,9 @@ class _GameShellState extends State<GameShell> {
 
     final picked = events[_random.nextInt(events.length)];
     final gain = _scaledGain(6 + _random.nextInt(6));
+    _playReward();
     await _addAffection(target, gain, '[데이트]');
+    _setExpression(target.name, Expression.blush);
     _logs.insert(0, '[상황] $picked');
     await _save();
 
@@ -437,11 +556,79 @@ class _GameShellState extends State<GameShell> {
     setState(() {});
   }
 
-  Widget _fullBodySprite(String asset, {double width = 220}) {
-    return SizedBox(width: width, height: width * 1.45, child: SvgPicture.asset(asset, fit: BoxFit.contain));
+  Color _moodOverlay() {
+    if (_endingCharacterName != null) return Colors.pink.withOpacity(0.14);
+    final selected = _storySelections[_storyIndex];
+    if (selected == null) return Colors.black.withOpacity(0.30);
+    final target = _story[_storyIndex].choices[selected].mainTarget;
+    if (target == '엘리안') return Colors.orange.withOpacity(0.10);
+    if (target == '루시안') return Colors.blue.withOpacity(0.13);
+    return Colors.purple.withOpacity(0.12);
   }
 
-  Widget _statChip(String label, String value) => Chip(label: Text('$label $value'), visualDensity: VisualDensity.compact);
+  Widget _fullBodySprite(String asset, {double width = 220}) {
+    final isSvg = asset.endsWith('.svg');
+    return SizedBox(
+      width: width,
+      height: width * 1.45,
+      child: isSvg ? SvgPicture.asset(asset, fit: BoxFit.contain) : Image.asset(asset, fit: BoxFit.contain),
+    );
+  }
+
+  Widget _characterImageWithExpression(Character c, {double width = 170}) {
+    final exp = _expressions[c.name] ?? Expression.neutral;
+    ColorFilter? filter;
+    switch (exp) {
+      case Expression.smile:
+        filter = const ColorFilter.mode(Color(0x14FFD54F), BlendMode.overlay);
+        break;
+      case Expression.angry:
+        filter = const ColorFilter.mode(Color(0x26FF5252), BlendMode.overlay);
+        break;
+      case Expression.blush:
+        filter = const ColorFilter.mode(Color(0x22F06292), BlendMode.overlay);
+        break;
+      case Expression.sad:
+        filter = const ColorFilter.mode(Color(0x2A90CAF9), BlendMode.overlay);
+        break;
+      case Expression.neutral:
+        filter = null;
+        break;
+    }
+
+    final sprite = _fullBodySprite(c.fullBodyAsset, width: width);
+    return filter == null ? sprite : ColorFiltered(colorFilter: filter, child: sprite);
+  }
+
+  Widget _deltaBadge(String name) {
+    final delta = _lastDelta[name];
+    if (delta == null) return const SizedBox.shrink();
+    return AnimatedSwitcher(
+      duration: const Duration(milliseconds: 180),
+      child: Text(
+        key: ValueKey(delta),
+        delta >= 0 ? '+$delta' : '$delta',
+        style: TextStyle(color: delta >= 0 ? Colors.lightGreenAccent : Colors.redAccent, fontWeight: FontWeight.bold),
+      ),
+    );
+  }
+
+  Widget _objectivePanel() {
+    return Container(
+      padding: const EdgeInsets.all(10),
+      decoration: BoxDecoration(color: Colors.black.withOpacity(0.42), borderRadius: BorderRadius.circular(10)),
+      child: const Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Text('목표', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+          SizedBox(height: 3),
+          Text('1) 호감도 100 선점', style: TextStyle(color: Colors.white70, fontSize: 12)),
+          Text('2) 분기 루트 개방', style: TextStyle(color: Colors.white70, fontSize: 12)),
+        ],
+      ),
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -464,26 +651,18 @@ class _GameShellState extends State<GameShell> {
       ),
       body: AnimatedSwitcher(
         duration: const Duration(milliseconds: 260),
-        switchInCurve: Curves.easeOut,
-        switchOutCurve: Curves.easeIn,
-        transitionBuilder: (child, animation) {
-          final fade = CurvedAnimation(parent: animation, curve: Curves.easeInOut);
-          return FadeTransition(
-            opacity: fade,
-            child: ScaleTransition(
-              scale: Tween<double>(begin: 0.985, end: 1).animate(fade),
-              child: child,
-            ),
-          );
-        },
-        child: KeyedSubtree(
-          key: ValueKey(_menuIndex),
-          child: _buildMenuPage(_menuIndex),
+        transitionBuilder: (child, animation) => FadeTransition(
+          opacity: animation,
+          child: ScaleTransition(scale: Tween<double>(begin: 0.985, end: 1).animate(animation), child: child),
         ),
+        child: KeyedSubtree(key: ValueKey(_menuIndex), child: _buildMenuPage(_menuIndex)),
       ),
       bottomNavigationBar: NavigationBar(
         selectedIndex: _menuIndex,
-        onDestinationSelected: (v) => setState(() => _menuIndex = v),
+        onDestinationSelected: (v) {
+          _playClick();
+          setState(() => _menuIndex = v);
+        },
         destinations: const [
           NavigationDestination(icon: Icon(Icons.home), label: '홈'),
           NavigationDestination(icon: Icon(Icons.auto_stories), label: '스토리'),
@@ -492,89 +671,6 @@ class _GameShellState extends State<GameShell> {
           NavigationDestination(icon: Icon(Icons.favorite), label: '데이트'),
           NavigationDestination(icon: Icon(Icons.history), label: '로그'),
         ],
-      ),
-    );
-  }
-
-  Widget _homePage() {
-    final outfit = _outfits.firstWhere((e) => e.id == _equippedOutfitId);
-    return ListView(
-      padding: const EdgeInsets.all(14),
-      children: [
-        Container(
-          height: 280,
-          decoration: BoxDecoration(borderRadius: BorderRadius.circular(16)),
-          child: ClipRRect(
-            borderRadius: BorderRadius.circular(16),
-            child: Stack(
-              children: [
-                Positioned.fill(child: SvgPicture.asset('assets/art/home_bg.svg', fit: BoxFit.cover)),
-                Positioned.fill(child: Container(color: Colors.black.withOpacity(0.28))),
-                Positioned(left: 12, bottom: 0, child: _fullBodySprite(_playerAvatar, width: 180)),
-                Positioned(
-                  right: 14,
-                  top: 20,
-                  child: Container(
-                    width: 220,
-                    padding: const EdgeInsets.all(12),
-                    decoration: BoxDecoration(color: Colors.black.withOpacity(0.5), borderRadius: BorderRadius.circular(12)),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        const Text('주인공 상태', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 17)),
-                        const SizedBox(height: 6),
-                        Text('착용: ${outfit.name}', style: const TextStyle(color: Colors.white70)),
-                        Text('총 매력: $_totalCharm', style: const TextStyle(color: Colors.white70)),
-                        const Text('엔딩 조건: 호감도 100 선점', style: TextStyle(color: Colors.white70)),
-                      ],
-                    ),
-                  ),
-                )
-              ],
-            ),
-          ),
-        ),
-        const SizedBox(height: 12),
-        GridView.count(
-          crossAxisCount: 2,
-          crossAxisSpacing: 10,
-          mainAxisSpacing: 10,
-          shrinkWrap: true,
-          physics: const NeverScrollableScrollPhysics(),
-          children: [
-            _menuCard('스토리', Icons.auto_stories, Colors.purple, () => setState(() => _menuIndex = 1)),
-            _menuCard('아르바이트', Icons.construction, Colors.blue, () => setState(() => _menuIndex = 2)),
-            _menuCard('상점', Icons.store, Colors.orange, () => setState(() => _menuIndex = 3)),
-            _menuCard('데이트', Icons.favorite, Colors.pink, () => setState(() => _menuIndex = 4)),
-          ],
-        ),
-        const SizedBox(height: 10),
-        Wrap(
-          spacing: 8,
-          runSpacing: 4,
-          children: [
-            _statChip('💰', '$_gold'),
-            _statChip('⭐', '진행 ${_storySelections.where((e) => e != null).length}/${_story.length}'),
-            ..._characters.map((c) => _statChip(c.name, '${c.affection}')),
-          ],
-        )
-      ],
-    );
-  }
-
-  Widget _menuCard(String title, IconData icon, Color color, VoidCallback onTap) {
-    return InkWell(
-      onTap: onTap,
-      child: Container(
-        decoration: BoxDecoration(borderRadius: BorderRadius.circular(14), gradient: LinearGradient(colors: [color.withOpacity(0.85), color.withOpacity(0.5)])),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Icon(icon, size: 34, color: Colors.white),
-            const SizedBox(height: 8),
-            Text(title, style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
-          ],
-        ),
       ),
     );
   }
@@ -597,18 +693,111 @@ class _GameShellState extends State<GameShell> {
     }
   }
 
+  Widget _homePage() {
+    final outfit = _outfits.firstWhere((e) => e.id == _equippedOutfitId);
+    return ListView(
+      padding: const EdgeInsets.all(14),
+      children: [
+        Container(
+          height: 290,
+          decoration: BoxDecoration(borderRadius: BorderRadius.circular(16)),
+          child: ClipRRect(
+            borderRadius: BorderRadius.circular(16),
+            child: Stack(
+              children: [
+                Positioned.fill(child: Image.asset('assets/generated/bg_castle/001-medieval-fantasy-royal-castle-courtyard-.png', fit: BoxFit.cover)),
+                Positioned.fill(child: Container(color: Colors.black.withOpacity(0.28))),
+                Positioned(left: 12, bottom: 0, child: _fullBodySprite(_playerAvatar, width: 180)),
+                Positioned(
+                  right: 14,
+                  top: 20,
+                  child: Container(
+                    width: 235,
+                    padding: const EdgeInsets.all(12),
+                    decoration: BoxDecoration(color: Colors.black.withOpacity(0.5), borderRadius: BorderRadius.circular(12)),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        const Text('주인공 상태', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 17)),
+                        const SizedBox(height: 6),
+                        Text('착용: ${outfit.name}', style: const TextStyle(color: Colors.white70)),
+                        Text('총 매력: $_totalCharm', style: const TextStyle(color: Colors.white70)),
+                        const Text('엔딩 조건: 호감도 100 선점', style: TextStyle(color: Colors.white70)),
+                      ],
+                    ),
+                  ),
+                )
+              ],
+            ),
+          ),
+        ),
+        const SizedBox(height: 10),
+        Card(
+          child: Padding(
+            padding: const EdgeInsets.all(10),
+            child: Column(
+              children: _characters
+                  .map(
+                    (c) => Padding(
+                      padding: const EdgeInsets.only(bottom: 8),
+                      child: Row(
+                        children: [
+                          SizedBox(width: 30, child: Text(c.name, style: const TextStyle(fontWeight: FontWeight.bold))),
+                          const SizedBox(width: 6),
+                          Expanded(child: LinearProgressIndicator(value: c.affection / 100, minHeight: 8)),
+                          const SizedBox(width: 8),
+                          SizedBox(width: 30, child: Text('${c.affection}')),
+                          SizedBox(width: 30, child: _deltaBadge(c.name)),
+                        ],
+                      ),
+                    ),
+                  )
+                  .toList(),
+            ),
+          ),
+        ),
+        const SizedBox(height: 10),
+        GridView.count(
+          crossAxisCount: 2,
+          crossAxisSpacing: 10,
+          mainAxisSpacing: 10,
+          shrinkWrap: true,
+          physics: const NeverScrollableScrollPhysics(),
+          children: [
+            _menuCard('스토리', Icons.auto_stories, Colors.purple, () => setState(() => _menuIndex = 1)),
+            _menuCard('아르바이트', Icons.construction, Colors.blue, () => setState(() => _menuIndex = 2)),
+            _menuCard('상점', Icons.store, Colors.orange, () => setState(() => _menuIndex = 3)),
+            _menuCard('데이트', Icons.favorite, Colors.pink, () => setState(() => _menuIndex = 4)),
+          ],
+        ),
+      ],
+    );
+  }
+
+  Widget _menuCard(String title, IconData icon, Color color, VoidCallback onTap) {
+    return InkWell(
+      onTap: () {
+        _playClick();
+        onTap();
+      },
+      child: Container(
+        decoration: BoxDecoration(borderRadius: BorderRadius.circular(14), gradient: LinearGradient(colors: [color.withOpacity(0.85), color.withOpacity(0.5)])),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(icon, size: 34, color: Colors.white),
+            const SizedBox(height: 8),
+            Text(title, style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+          ],
+        ),
+      ),
+    );
+  }
+
   Widget _storyRootPage() {
     return AnimatedSwitcher(
       duration: const Duration(milliseconds: 280),
-      transitionBuilder: (child, animation) {
-        return FadeTransition(
-          opacity: animation,
-          child: SlideTransition(
-            position: Tween<Offset>(begin: const Offset(0.02, 0), end: Offset.zero).animate(animation),
-            child: child,
-          ),
-        );
-      },
+      transitionBuilder: (child, animation) => FadeTransition(opacity: animation, child: child),
       child: _inStoryScene
           ? KeyedSubtree(key: const ValueKey('story_scene'), child: _storyScenePage())
           : KeyedSubtree(key: const ValueKey('story_map'), child: _storyProgressPage()),
@@ -632,7 +821,7 @@ class _GameShellState extends State<GameShell> {
                   duration: const Duration(milliseconds: 350),
                   child: SizedBox.expand(
                     key: ValueKey(preview.backgroundAsset),
-                    child: SvgPicture.asset(preview.backgroundAsset, fit: BoxFit.cover),
+                    child: Image.asset(preview.backgroundAsset, fit: BoxFit.cover),
                   ),
                 ),
                 Positioned.fill(child: Container(color: Colors.black.withOpacity(0.35))),
@@ -663,13 +852,20 @@ class _GameShellState extends State<GameShell> {
                 const Text('스토리 진행도 (아래 → 위)', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 17)),
                 const SizedBox(height: 6),
                 Text('클리어: $cleared / ${_story.length}'),
-                if (_endingCharacterName != null)
-                  Text('확정 엔딩: $_endingCharacterName', style: const TextStyle(fontWeight: FontWeight.bold)),
+                if (_endingCharacterName != null) Text('확정 엔딩: $_endingCharacterName', style: const TextStyle(fontWeight: FontWeight.bold)),
                 const SizedBox(height: 10),
                 _verticalRouteMap(),
                 const SizedBox(height: 10),
                 FilledButton(
-                  onPressed: () => setState(() => _inStoryScene = true),
+                  onPressed: () {
+                    _playClick();
+                    setState(() {
+                      _inStoryScene = true;
+                      _sceneKey += 1;
+                      _transitionPreset = TransitionPreset.fade;
+                    });
+                    _beginBeatLine();
+                  },
                   child: Text(cleared == 0 ? '스토리 시작' : '이 스텝부터 진행'),
                 ),
               ],
@@ -683,7 +879,7 @@ class _GameShellState extends State<GameShell> {
   Widget _verticalRouteMap() {
     return Column(
       children: List.generate(_story.length, (revIndex) {
-        final i = _story.length - 1 - revIndex; // 아래가 시작, 위가 최신
+        final i = _story.length - 1 - revIndex;
         final beat = _story[i];
         final done = _storySelections[i] != null;
         final selected = i == _storyIndex;
@@ -692,7 +888,10 @@ class _GameShellState extends State<GameShell> {
         return Column(
           children: [
             InkWell(
-              onTap: () => setState(() => _storyIndex = i),
+              onTap: () {
+                _playClick();
+                setState(() => _storyIndex = i);
+              },
               borderRadius: BorderRadius.circular(12),
               child: Container(
                 padding: const EdgeInsets.all(10),
@@ -732,13 +931,7 @@ class _GameShellState extends State<GameShell> {
                 ),
               ),
             ),
-            if (revIndex != _story.length - 1)
-              Container(
-                width: 2,
-                height: 18,
-                color: Colors.grey.shade400,
-                margin: const EdgeInsets.symmetric(vertical: 4),
-              ),
+            if (revIndex != _story.length - 1) Container(width: 2, height: 18, color: Colors.grey.shade400, margin: const EdgeInsets.symmetric(vertical: 4)),
           ],
         );
       }),
@@ -750,75 +943,111 @@ class _GameShellState extends State<GameShell> {
     final left = _characterByName(beat.leftCharacter);
     final right = _characterByName(beat.rightCharacter);
 
+    Widget transitionBuilder(Widget child, Animation<double> animation) {
+      switch (_transitionPreset) {
+        case TransitionPreset.slide:
+          return FadeTransition(
+            opacity: animation,
+            child: SlideTransition(position: Tween<Offset>(begin: const Offset(0.03, 0), end: Offset.zero).animate(animation), child: child),
+          );
+        case TransitionPreset.flash:
+          return FadeTransition(
+            opacity: animation,
+            child: TweenAnimationBuilder<double>(
+              tween: Tween(begin: 1.14, end: 1),
+              duration: const Duration(milliseconds: 210),
+              builder: (_, v, c) => ColorFiltered(colorFilter: ColorFilter.mode(Colors.white.withOpacity(v - 1), BlendMode.screen), child: c),
+              child: child,
+            ),
+          );
+        case TransitionPreset.fade:
+          return FadeTransition(opacity: animation, child: child);
+      }
+    }
+
     return Stack(
       children: [
-        Positioned.fill(
-          child: AnimatedSwitcher(
-            duration: const Duration(milliseconds: 320),
-            child: SizedBox.expand(
-              key: ValueKey(beat.backgroundAsset),
-              child: SvgPicture.asset(beat.backgroundAsset, fit: BoxFit.cover),
+        AnimatedSwitcher(
+          duration: const Duration(milliseconds: 320),
+          transitionBuilder: transitionBuilder,
+          child: KeyedSubtree(
+            key: ValueKey(_sceneKey),
+            child: Stack(
+              children: [
+                Positioned.fill(
+                  child: TweenAnimationBuilder<double>(
+                    tween: Tween(begin: 1.08, end: 1),
+                    duration: const Duration(milliseconds: 900),
+                    curve: Curves.easeOut,
+                    builder: (_, scale, __) => Transform.scale(
+                      scale: scale,
+                      alignment: Alignment.center,
+                      child: Transform.translate(
+                        offset: Offset((_cameraSeed.hashCode % 8) - 4, 0),
+                        child: Image.asset(beat.backgroundAsset, fit: BoxFit.cover),
+                      ),
+                    ),
+                  ),
+                ),
+                Positioned.fill(child: Container(color: _moodOverlay())),
+                Positioned(top: 10, left: 10, child: OutlinedButton.icon(
+                  style: OutlinedButton.styleFrom(backgroundColor: Colors.black.withOpacity(0.4), foregroundColor: Colors.white),
+                  onPressed: () => setState(() => _inStoryScene = false),
+                  icon: const Icon(Icons.arrow_back),
+                  label: const Text('스토리 맵'),
+                )),
+                Positioned(top: 10, right: 10, child: _objectivePanel()),
+                Positioned(left: 8, bottom: 130, child: _animatedCharacterCard(left, visible: beat.showLeft, fromLeft: true)),
+                Positioned(right: 8, bottom: 130, child: _animatedCharacterCard(right, visible: beat.showRight, fromLeft: false)),
+                Positioned(left: 0, right: 0, bottom: 0, child: _dialogWindow(beat)),
+              ],
             ),
           ),
         ),
-        Positioned.fill(child: Container(color: Colors.black.withOpacity(0.32))),
-        Positioned(
-          top: 10,
-          left: 10,
-          child: OutlinedButton.icon(
-            style: OutlinedButton.styleFrom(backgroundColor: Colors.black.withOpacity(0.4), foregroundColor: Colors.white),
-            onPressed: () => setState(() => _inStoryScene = false),
-            icon: const Icon(Icons.arrow_back),
-            label: const Text('스토리 맵'),
-          ),
-        ),
-        Positioned(left: 8, bottom: 130, child: _animatedCharacterCard(left, visible: beat.showLeft, fromLeft: true)),
-        Positioned(right: 8, bottom: 130, child: _animatedCharacterCard(right, visible: beat.showRight, fromLeft: false)),
-        Positioned(left: 0, right: 0, bottom: 0, child: _dialogWindow(beat)),
+        ..._sparkles.map((s) => Positioned(
+              left: s.x,
+              top: s.y,
+              child: TweenAnimationBuilder<double>(
+                tween: Tween(begin: 0.4, end: 1),
+                duration: const Duration(milliseconds: 450),
+                builder: (_, v, __) => Opacity(opacity: 1 - (v - 0.4), child: Transform.scale(scale: v, child: Icon(s.icon, color: s.color, size: 18))),
+              ),
+            )),
       ],
     );
   }
 
   Widget _animatedCharacterCard(Character c, {required bool visible, required bool fromLeft}) {
-    final pulsing = _tapPulseName == c.name;
-
     return AnimatedSlide(
       duration: const Duration(milliseconds: 380),
       curve: Curves.easeOutCubic,
-      offset: visible ? Offset.zero : Offset(fromLeft ? -0.2 : 0.2, 0.1),
+      offset: visible ? Offset.zero : Offset(fromLeft ? -0.18 : 0.18, 0.10),
       child: AnimatedOpacity(
-        duration: const Duration(milliseconds: 300),
+        duration: const Duration(milliseconds: 290),
         opacity: visible ? 1 : 0,
-        child: AnimatedScale(
-          duration: const Duration(milliseconds: 170),
-          scale: pulsing ? 1.06 : 1,
-          child: GestureDetector(
-            onTap: () async {
-              if (!visible || _endingCharacterName != null) return;
-              setState(() => _tapPulseName = c.name);
-              await Future.delayed(const Duration(milliseconds: 120));
-              if (!mounted) return;
-              setState(() => _tapPulseName = null);
-              await _addAffection(c, 1, '[상호작용]');
-              await _save();
-              if (mounted) setState(() {});
-            },
-            child: Container(
-              width: 210,
-              height: 330,
-              padding: const EdgeInsets.all(8),
-              decoration: BoxDecoration(
-                color: Colors.black.withOpacity(0.36),
-                borderRadius: BorderRadius.circular(14),
-                border: Border.all(color: Colors.white24),
-              ),
-              child: Column(
-                children: [
-                  Expanded(child: _fullBodySprite(c.fullBodyAsset, width: 170)),
-                  Text(c.name, style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+        child: GestureDetector(
+          onTap: () async {
+            if (!visible || _endingCharacterName != null) return;
+            _playClick();
+            await _addAffection(c, 1, '[상호작용]');
+            await _save();
+            if (mounted) setState(() {});
+          },
+          child: Container(
+            width: 210,
+            height: 330,
+            padding: const EdgeInsets.all(8),
+            decoration: BoxDecoration(color: Colors.black.withOpacity(0.36), borderRadius: BorderRadius.circular(14), border: Border.all(color: Colors.white24)),
+            child: Column(
+              children: [
+                Expanded(child: _characterImageWithExpression(c, width: 170)),
+                Text(c.name, style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+                Row(mainAxisAlignment: MainAxisAlignment.center, children: [
                   Text('❤ ${c.affection}', style: const TextStyle(color: Colors.white70)),
-                ],
-              ),
+                  const SizedBox(width: 8),
+                  _deltaBadge(c.name),
+                ]),
+              ],
             ),
           ),
         ),
@@ -827,34 +1056,69 @@ class _GameShellState extends State<GameShell> {
   }
 
   Widget _dialogWindow(StoryBeat beat) {
-    return AnimatedSwitcher(
-      duration: const Duration(milliseconds: 260),
-      child: Container(
-        key: ValueKey('dialog_${_storyIndex}_$_inStoryScene'),
-        padding: const EdgeInsets.fromLTRB(14, 10, 14, 14),
-        color: Colors.black.withOpacity(0.78),
-        child: SafeArea(
-          top: false,
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Text('${beat.speaker} · ${beat.title}', style: const TextStyle(color: Colors.amber, fontWeight: FontWeight.w700)),
-              const SizedBox(height: 6),
-              Text(beat.line, style: const TextStyle(color: Colors.white, fontSize: 15)),
-              const SizedBox(height: 10),
-              Wrap(
-                spacing: 8,
-                runSpacing: 8,
-                children: List.generate(
-                  beat.choices.length,
-                  (i) => ElevatedButton(
-                    onPressed: _endingCharacterName != null ? null : () => _pickStoryChoice(beat.choices[i], i),
-                    child: Text(beat.choices[i].label),
-                  ),
+    return GestureDetector(
+      onTap: () {
+        if (_lineCompleted) return;
+        _typingTimer?.cancel();
+        setState(() {
+          _visibleLine = beat.line;
+          _lineCompleted = true;
+        });
+      },
+      child: AnimatedSwitcher(
+        duration: const Duration(milliseconds: 260),
+        child: Container(
+          key: ValueKey('dialog_${_storyIndex}_$_lineCompleted'),
+          padding: const EdgeInsets.fromLTRB(14, 10, 14, 14),
+          color: Colors.black.withOpacity(0.78),
+          child: SafeArea(
+            top: false,
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Row(
+                  children: [
+                    Expanded(child: Text('${beat.speaker} · ${beat.title}', style: const TextStyle(color: Colors.amber, fontWeight: FontWeight.w700))),
+                    IconButton(
+                      onPressed: () {
+                        _playClick();
+                        setState(() => _autoPlay = !_autoPlay);
+                        _beginBeatLine();
+                      },
+                      icon: Icon(Icons.play_circle_fill, color: _autoPlay ? Colors.greenAccent : Colors.white54),
+                      tooltip: '오토',
+                    ),
+                    IconButton(
+                      onPressed: () {
+                        _playClick();
+                        setState(() => _skipTyping = !_skipTyping);
+                        _beginBeatLine();
+                      },
+                      icon: Icon(Icons.fast_forward, color: _skipTyping ? Colors.greenAccent : Colors.white54),
+                      tooltip: '스킵',
+                    ),
+                  ],
                 ),
-              ),
-            ],
+                const SizedBox(height: 6),
+                Text(_visibleLine, style: const TextStyle(color: Colors.white, fontSize: 15)),
+                const SizedBox(height: 10),
+                if (_lineCompleted)
+                  Wrap(
+                    spacing: 8,
+                    runSpacing: 8,
+                    children: List.generate(
+                      beat.choices.length,
+                      (i) => ElevatedButton(
+                        onPressed: _endingCharacterName != null ? null : () => _pickStoryChoice(beat.choices[i], i),
+                        child: Text(beat.choices[i].label),
+                      ),
+                    ),
+                  )
+                else
+                  const Text('탭하여 대사 넘기기', style: TextStyle(color: Colors.white54, fontSize: 12)),
+              ],
+            ),
           ),
         ),
       ),
@@ -888,11 +1152,11 @@ class _GameShellState extends State<GameShell> {
     return ListView(
       padding: const EdgeInsets.all(12),
       children: [
-        const Text('의상 상점 (착용 시 전신 외형/매력 변화)', style: TextStyle(fontWeight: FontWeight.bold)),
+        const Text('의상 상점 (착용 시 외형/매력 변화)', style: TextStyle(fontWeight: FontWeight.bold)),
         const SizedBox(height: 8),
         ..._outfits.map((o) => Card(
               child: ListTile(
-                leading: SizedBox(width: 42, height: 52, child: SvgPicture.asset(o.avatarAsset)),
+                leading: SizedBox(width: 42, height: 52, child: _fullBodySprite(o.avatarAsset, width: 34)),
                 title: Text('${o.name}  (+${o.charmBonus} 매력)'),
                 subtitle: Text(o.price == 0 ? '기본 의상' : '${o.price} G'),
                 trailing: FilledButton(
@@ -900,6 +1164,7 @@ class _GameShellState extends State<GameShell> {
                       ? null
                       : () {
                           if (o.price == 0) {
+                            _playClick();
                             setState(() => _equippedOutfitId = o.id);
                             _save();
                           } else {
@@ -924,9 +1189,7 @@ class _GameShellState extends State<GameShell> {
                     const SizedBox(height: 8),
                     Wrap(
                       spacing: 6,
-                      children: _characters
-                          .map((c) => OutlinedButton(onPressed: () => _buyGift(item, c), child: Text('${c.name}에게 선물')))
-                          .toList(),
+                      children: _characters.map((c) => OutlinedButton(onPressed: () => _buyGift(item, c), child: Text('${c.name}에게 선물'))).toList(),
                     ),
                   ],
                 ),
@@ -946,7 +1209,7 @@ class _GameShellState extends State<GameShell> {
         const SizedBox(height: 8),
         ..._characters.map((c) => Card(
               child: ListTile(
-                leading: SizedBox(width: 40, height: 54, child: SvgPicture.asset(c.fullBodyAsset)),
+                leading: SizedBox(width: 40, height: 54, child: _characterImageWithExpression(c, width: 36)),
                 title: Text('${c.name} (${c.role})'),
                 subtitle: Text('호감도 ${c.affection}'),
                 trailing: FilledButton(onPressed: () => _dateRandom(c), child: const Text('데이트')),
