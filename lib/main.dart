@@ -2942,8 +2942,8 @@ class _GameShellState extends State<GameShell> {
   Widget _branchRouteMap() {
     // 30-stage vertical route with in-between branch-like lane changes
     const viewH = 520.0;
-    const stepGap = 122.0;
-    const laneX = [48.0, 168.0, 288.0];
+    const stepGap = 126.0;
+    const laneX = [34.0, 174.0, 314.0];
 
     final lanePattern = [1, 0, 2, 1, 2, 0, 1, 2, 1, 0, 2, 1, 0, 1, 2, 1, 2, 0, 1, 0, 2, 1, 2, 1, 0, 1, 2, 0, 1, 2];
     final totalSteps = _story.length; // 30
@@ -2963,8 +2963,14 @@ class _GameShellState extends State<GameShell> {
     final links = <List<int>>[];
     for (int i = 0; i < totalSteps - 1; i++) {
       links.add([i, i + 1]);
-      // light branch-looking side links
-      if (i % 5 == 2 && i + 2 < totalSteps) links.add([i, i + 2]);
+      // 보조 분기선은 겹침이 적은 구간에만 제한적으로 추가
+      if (i % 6 == 2 && i + 2 < totalSteps) {
+        final laneA = nodes[i]['lane']!;
+        final laneB = nodes[i + 2]['lane']!;
+        if ((laneA - laneB).abs() <= 1) {
+          links.add([i, i + 2]);
+        }
+      }
     }
 
     return Container(
@@ -4228,7 +4234,8 @@ class _RouteLinkPainter extends CustomPainter {
       final p1 = nodePos(a) + const Offset(17, 17);
       final p2 = nodePos(b) + const Offset(17, 17);
       final seed = ((a['id'] ?? 0) * 31 + (b['id'] ?? 0) * 17) % 7;
-      final wobble = 10.0 + seed * 2.0;
+      final isSkipLink = ((b['id'] ?? 0) - (a['id'] ?? 0)) > 1;
+      final wobble = isSkipLink ? (5.0 + seed * 0.8) : (8.0 + seed * 1.2);
 
       final cp1 = Offset((p1.dx * 0.70 + p2.dx * 0.30) + (seed.isEven ? wobble : -wobble), (p1.dy * 0.70 + p2.dy * 0.30));
       final cp2 = Offset((p1.dx * 0.30 + p2.dx * 0.70) + (seed.isEven ? -wobble : wobble), (p1.dy * 0.30 + p2.dy * 0.70));
@@ -4238,7 +4245,7 @@ class _RouteLinkPainter extends CustomPainter {
         ..cubicTo(cp1.dx, cp1.dy, cp2.dx, cp2.dy, p2.dx, p2.dy);
 
       final isActive = (a['beat'] == selectedBeat) || (b['beat'] == selectedBeat);
-      _drawDashedPath(canvas, path, isActive ? active : base, dash: 4.5, gap: 6.0);
+      _drawDashedPath(canvas, path, isActive ? active : base, dash: 3.8, gap: 7.2);
     }
   }
 
