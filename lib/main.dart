@@ -3096,8 +3096,7 @@ class _GameShellState extends State<GameShell> {
 
   Widget _storyScenePage() {
     final beat = _story[_storyIndex];
-    final left = _characterByName(beat.leftCharacter);
-    final right = _characterByName(beat.rightCharacter);
+    final speakerChar = _speakerCharacterForBeat(beat);
 
     Widget transitionBuilder(Widget child, Animation<double> animation) {
       switch (_transitionPreset) {
@@ -3154,8 +3153,12 @@ class _GameShellState extends State<GameShell> {
                 )),
                 Positioned(top: 54, left: 10, child: _missionConditionPanel()),
                 Positioned(top: 10, right: 10, child: _objectivePanel()),
-                Positioned(left: 8, bottom: 130, child: _animatedCharacterCard(left, visible: beat.showLeft, fromLeft: true)),
-                Positioned(right: 8, bottom: 130, child: _animatedCharacterCard(right, visible: beat.showRight, fromLeft: false)),
+                Positioned(
+                  left: 0,
+                  right: 0,
+                  bottom: 128,
+                  child: Center(child: _centerSpeakerPortrait(speakerChar)),
+                ),
                 Positioned(left: 0, right: 0, bottom: 0, child: _dialogWindow(beat)),
               ],
             ),
@@ -3174,38 +3177,34 @@ class _GameShellState extends State<GameShell> {
     );
   }
 
-  Widget _animatedCharacterCard(Character c, {required bool visible, required bool fromLeft}) {
-    return AnimatedSlide(
-      duration: const Duration(milliseconds: 380),
-      curve: Curves.easeOutCubic,
-      offset: visible ? Offset.zero : Offset(fromLeft ? -0.18 : 0.18, 0.10),
-      child: AnimatedOpacity(
-        duration: const Duration(milliseconds: 290),
-        opacity: visible ? 1 : 0,
-        child: GestureDetector(
-          onTap: () async {
-            if (!visible || _endingCharacterName != null) return;
-            _playClick();
-            await _addAffection(c, 1, '[상호작용]');
-            await _save();
-            if (mounted) setState(() {});
-          },
-          child: Container(
-            width: 210,
-            height: 330,
-            padding: const EdgeInsets.all(8),
-            decoration: BoxDecoration(color: Colors.black.withOpacity(0.36), borderRadius: BorderRadius.circular(14), border: Border.all(color: Colors.white24)),
-            child: Column(
-              children: [
-                Expanded(child: _characterImageWithExpression(c, width: 170)),
-                Text(c.name, style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
-                Row(mainAxisAlignment: MainAxisAlignment.center, children: [
-                  Text('❤ ${c.affection}', style: const TextStyle(color: Colors.white70)),
-                  const SizedBox(width: 8),
-                  _deltaBadge(c.name),
-                ]),
-              ],
-            ),
+  Character _speakerCharacterForBeat(StoryBeat beat) {
+    final speaker = _currentSpeaker();
+    for (final c in _characters) {
+      if (speaker.contains(c.name)) return c;
+    }
+    return _characterByName(beat.leftCharacter);
+  }
+
+  Widget _centerSpeakerPortrait(Character c) {
+    return GestureDetector(
+      onTap: () async {
+        if (_endingCharacterName != null) return;
+        _playClick();
+        await _addAffection(c, 1, '[상호작용]');
+        await _save();
+        if (mounted) setState(() {});
+      },
+      child: Container(
+        width: 320,
+        height: 430,
+        alignment: Alignment.center,
+        child: ClipRRect(
+          borderRadius: BorderRadius.circular(12),
+          child: Align(
+            alignment: const Alignment(0, -0.25),
+            widthFactor: 1,
+            heightFactor: 0.62,
+            child: _characterImageWithExpression(c, width: 360),
           ),
         ),
       ),
