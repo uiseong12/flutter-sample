@@ -212,7 +212,6 @@ class _GameShellState extends State<GameShell> {
   Set<String> _gardenThorns = <String>{};
 
   Timer? _workTimer;
-  DotFlameGame? _flameGame;
 
   int _sceneKey = 0;
   int _animTick = 0;
@@ -1454,7 +1453,13 @@ class _GameShellState extends State<GameShell> {
   }
 
   void _startFlameGame() {
-    _flameGame = DotFlameGame(
+    setState(() {
+      _workTimeLeft = 20;
+      _workScore = 0;
+      _combo = 0;
+    });
+
+    final game = DotFlameGame(
       mode: _toFlameMode(_selectedWork),
       durationSec: 20,
       onTick: (s) {
@@ -1469,21 +1474,47 @@ class _GameShellState extends State<GameShell> {
         if (!mounted) return;
         setState(() => _combo = c);
       },
-      onFail: () {
-        _flashFail();
-      },
+      onFail: _flashFail,
       onDone: (score, combo) async {
         if (!mounted) return;
         _workScore = score;
         _combo = combo;
+        Navigator.of(context).pop();
         await _finishWorkMiniGame();
       },
     );
-    setState(() {
-      _workTimeLeft = 20;
-      _workScore = 0;
-      _combo = 0;
-    });
+
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (_) => Scaffold(
+        backgroundColor: Colors.black,
+        body: SafeArea(
+          child: Stack(
+            children: [
+              Positioned.fill(child: GameWidget(game: game)),
+              Positioned(
+                top: 10,
+                left: 10,
+                child: Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                  decoration: BoxDecoration(color: Colors.black.withOpacity(0.55), borderRadius: BorderRadius.circular(8)),
+                  child: Text('⏱ $_workTimeLeft  점수 $_workScore  콤보 x$_combo', style: const TextStyle(color: Colors.white)),
+                ),
+              ),
+              Positioned(
+                top: 10,
+                right: 10,
+                child: IconButton(
+                  onPressed: () => Navigator.pop(context),
+                  icon: const Icon(Icons.close, color: Colors.white),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
   }
 
   void _prepareWorkRound() {
@@ -3292,13 +3323,11 @@ class _GameShellState extends State<GameShell> {
                   bottom: 74,
                   child: ClipRRect(
                     borderRadius: BorderRadius.circular(10),
-                    child: _flameGame == null
-                        ? Container(
-                            color: Colors.black.withOpacity(0.35),
-                            alignment: Alignment.center,
-                            child: const Text('플레이 시작을 누르면 Flame 캔버스가 실행됩니다', style: TextStyle(color: Color(0xFFF6F1E8))),
-                          )
-                        : GameWidget(game: _flameGame!),
+                    child: Container(
+                      color: Colors.black.withOpacity(0.35),
+                      alignment: Alignment.center,
+                      child: const Text('플레이 시작 시 전체화면 Flame 캔버스로 전환됩니다', style: TextStyle(color: Color(0xFFF6F1E8))),
+                    ),
                   ),
                 ),
                 if (_cutinCharacter != null)

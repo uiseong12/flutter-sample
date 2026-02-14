@@ -84,7 +84,7 @@ class DotFlameGame extends FlameGame {
   }
 
   Future<void> _loadTiledMap(String mapName) async {
-    final tiled = await TiledComponent.load('$mapName.tmx', Vector2.all(32));
+    final tiled = await TiledComponent.load('minigame/$mapName.tmx', Vector2.all(32));
     _world.add(tiled);
   }
 
