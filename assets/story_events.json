@@ -1,0 +1,56 @@
+[
+  {
+    "title": "성벽 아래의 첫 만남",
+    "description": "여주인공은 몰래 성을 빠져나와 시장 조사를 하던 중 두 남자와 조우한다.",
+    "choices": [
+      {
+        "label": "엘리안에게 검술 시범을 요청한다",
+        "result": "엘리안은 미소를 숨기지 못했다.",
+        "target": "엘리안",
+        "affectionDelta": 12
+      },
+      {
+        "label": "루시안에게 별점술을 부탁한다",
+        "result": "루시안은 조용히 별의 의미를 읽어주었다.",
+        "target": "루시안",
+        "affectionDelta": 12
+      }
+    ]
+  },
+  {
+    "title": "수확제의 소란",
+    "description": "축제 도중 소동이 벌어지고, 누구와 함께 해결할지 선택해야 한다.",
+    "choices": [
+      {
+        "label": "엘리안과 함께 시민들을 대피시킨다",
+        "result": "엘리안은 당신의 용기를 인정했다.",
+        "target": "엘리안",
+        "affectionDelta": 10
+      },
+      {
+        "label": "루시안과 함께 마법 결계를 펼친다",
+        "result": "루시안은 당신과의 호흡에 감탄했다.",
+        "target": "루시안",
+        "affectionDelta": 10
+      }
+    ]
+  },
+  {
+    "title": "비밀 정원에서의 고백",
+    "description": "달빛 아래, 진심을 전할 기회가 찾아온다.",
+    "choices": [
+      {
+        "label": "엘리안에게 마음을 보여준다",
+        "result": "엘리안은 맹세처럼 당신의 손에 입맞췄다.",
+        "target": "엘리안",
+        "affectionDelta": 15
+      },
+      {
+        "label": "루시안에게 약속의 마법을 제안한다",
+        "result": "루시안은 처음으로 감정을 숨기지 못했다.",
+        "target": "루시안",
+        "affectionDelta": 15
+      }
+    ]
+  }
+]

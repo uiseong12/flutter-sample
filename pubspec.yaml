@@ -1,0 +1,14 @@
+name: flutter_sample
+description: Medieval story dating MVP
+environment:
+  sdk: ">=3.3.0 <4.0.0"
+
+dependencies:
+  flutter:
+    sdk: flutter
+  shared_preferences: ^2.2.3
+
+flutter:
+  uses-material-design: true
+  assets:
+    - assets/story_events.json
