@@ -1,0 +1,11 @@
+name: flutter_sample
+description: Medieval story dating MVP
+environment:
+  sdk: ">=3.3.0 <4.0.0"
+
+dependencies:
+  flutter:
+    sdk: flutter
+
+flutter:
+  uses-material-design: true
