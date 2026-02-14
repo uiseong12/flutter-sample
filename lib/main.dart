@@ -854,7 +854,7 @@ class _GameShellState extends State<GameShell> {
                 Text('클리어: $cleared / ${_story.length}'),
                 if (_endingCharacterName != null) Text('확정 엔딩: $_endingCharacterName', style: const TextStyle(fontWeight: FontWeight.bold)),
                 const SizedBox(height: 10),
-                _verticalRouteMap(),
+                _branchRouteMap(),
                 const SizedBox(height: 10),
                 FilledButton(
                   onPressed: () {
@@ -876,65 +876,84 @@ class _GameShellState extends State<GameShell> {
     );
   }
 
-  Widget _verticalRouteMap() {
-    return Column(
-      children: List.generate(_story.length, (revIndex) {
-        final i = _story.length - 1 - revIndex;
-        final beat = _story[i];
-        final done = _storySelections[i] != null;
-        final selected = i == _storyIndex;
-        final picked = _storySelections[i];
+  Widget _branchRouteMap() {
+    // bottom -> top progression with multi-branch clickable nodes
+    const mapH = 520.0;
+    const laneX = [48.0, 168.0, 288.0];
 
-        return Column(
-          children: [
-            InkWell(
-              onTap: () {
-                _playClick();
-                setState(() => _storyIndex = i);
-              },
-              borderRadius: BorderRadius.circular(12),
-              child: Container(
-                padding: const EdgeInsets.all(10),
-                decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(12),
-                  border: Border.all(color: selected ? Colors.pink : Colors.grey.shade300, width: selected ? 2 : 1),
-                  color: selected ? Colors.pink.withOpacity(0.08) : Colors.white,
-                ),
-                child: Row(
-                  children: [
-                    Container(
-                      width: 24,
-                      height: 24,
-                      alignment: Alignment.center,
-                      decoration: BoxDecoration(
-                        color: done ? Colors.pink : Colors.white,
-                        border: Border.all(color: Colors.pink),
-                        shape: BoxShape.circle,
-                      ),
-                      child: Text(done ? '●' : '○', style: TextStyle(color: done ? Colors.white : Colors.pink, fontSize: 12)),
-                    ),
-                    const SizedBox(width: 10),
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text('EP ${i + 1}. ${beat.title}', style: const TextStyle(fontWeight: FontWeight.w700)),
-                          const SizedBox(height: 2),
-                          if (picked == null)
-                            const Text('선택 전', style: TextStyle(color: Colors.grey))
-                          else
-                            Text('선택 루트: ${beat.choices[picked].label}', style: const TextStyle(color: Colors.teal, fontSize: 12)),
-                        ],
-                      ),
-                    ),
-                  ],
-                ),
+    final nodes = <Map<String, int>>[
+      {'id': 0, 'beat': 0, 'lane': 1, 'step': 0},
+      {'id': 1, 'beat': 1, 'lane': 0, 'step': 1},
+      {'id': 2, 'beat': 1, 'lane': 2, 'step': 1},
+      {'id': 3, 'beat': 2, 'lane': 0, 'step': 2},
+      {'id': 4, 'beat': 2, 'lane': 1, 'step': 2},
+      {'id': 5, 'beat': 2, 'lane': 2, 'step': 2},
+      {'id': 6, 'beat': 3, 'lane': 1, 'step': 3},
+      {'id': 7, 'beat': 3, 'lane': 2, 'step': 3},
+    ];
+
+    Offset nodePos(Map<String, int> n) {
+      final x = laneX[n['lane']!];
+      final y = mapH - 54 - (n['step']! * 130);
+      return Offset(x, y);
+    }
+
+    final links = [
+      [0, 1], [0, 2],
+      [1, 3], [1, 4],
+      [2, 4], [2, 5],
+      [3, 6], [4, 6], [4, 7], [5, 7],
+    ];
+
+    return Container(
+      height: mapH,
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(14),
+        color: const Color(0xFF0F2340),
+      ),
+      child: Stack(
+        children: [
+          Positioned.fill(
+            child: CustomPaint(
+              painter: _RouteLinkPainter(
+                nodes: nodes,
+                links: links,
+                nodePos: nodePos,
+                selectedBeat: _storyIndex,
               ),
             ),
-            if (revIndex != _story.length - 1) Container(width: 2, height: 18, color: Colors.grey.shade400, margin: const EdgeInsets.symmetric(vertical: 4)),
-          ],
-        );
-      }),
+          ),
+          ...nodes.map((n) {
+            final beat = n['beat']!;
+            final pos = nodePos(n);
+            final done = _storySelections[beat] != null;
+            final selected = beat == _storyIndex;
+            return Positioned(
+              left: pos.dx,
+              top: pos.dy,
+              child: GestureDetector(
+                onTap: () {
+                  _playClick();
+                  setState(() => _storyIndex = beat);
+                },
+                child: AnimatedContainer(
+                  duration: const Duration(milliseconds: 180),
+                  width: 34,
+                  height: 34,
+                  alignment: Alignment.center,
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    color: selected ? Colors.amber : (done ? const Color(0xFF8A6B4D) : const Color(0xFF364A66)),
+                    border: Border.all(color: Colors.white70),
+                    boxShadow: selected ? [const BoxShadow(color: Colors.amberAccent, blurRadius: 8)] : null,
+                  ),
+                  child: Text('${n['id']! + 1}', style: const TextStyle(color: Colors.white, fontSize: 11, fontWeight: FontWeight.bold)),
+                ),
+              ),
+            );
+          }),
+        ],
+      ),
     );
   }
 
@@ -1227,5 +1246,54 @@ class _GameShellState extends State<GameShell> {
       separatorBuilder: (_, __) => const Divider(),
       itemCount: _logs.length,
     );
+  }
+}
+
+class _RouteLinkPainter extends CustomPainter {
+  _RouteLinkPainter({
+    required this.nodes,
+    required this.links,
+    required this.nodePos,
+    required this.selectedBeat,
+  });
+
+  final List<Map<String, int>> nodes;
+  final List<List<int>> links;
+  final Offset Function(Map<String, int>) nodePos;
+  final int selectedBeat;
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final base = Paint()
+      ..color = const Color(0x66C0B090)
+      ..strokeWidth = 2
+      ..style = PaintingStyle.stroke;
+
+    final active = Paint()
+      ..color = const Color(0xCCFFE08A)
+      ..strokeWidth = 2.8
+      ..style = PaintingStyle.stroke;
+
+    Map<String, int> byId(int id) => nodes.firstWhere((e) => e['id'] == id);
+
+    for (final l in links) {
+      final a = byId(l[0]);
+      final b = byId(l[1]);
+      final p1 = nodePos(a) + const Offset(17, 17);
+      final p2 = nodePos(b) + const Offset(17, 17);
+      final cp = Offset((p1.dx + p2.dx) / 2, p1.dy - 22);
+
+      final path = Path()
+        ..moveTo(p1.dx, p1.dy)
+        ..quadraticBezierTo(cp.dx, cp.dy, p2.dx, p2.dy);
+
+      final isActive = (a['beat'] == selectedBeat) || (b['beat'] == selectedBeat);
+      canvas.drawPath(path, isActive ? active : base);
+    }
+  }
+
+  @override
+  bool shouldRepaint(covariant _RouteLinkPainter oldDelegate) {
+    return oldDelegate.selectedBeat != selectedBeat;
   }
 }

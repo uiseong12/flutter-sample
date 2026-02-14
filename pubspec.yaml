@@ -14,4 +14,13 @@ flutter:
   assets:
     - assets/story_events.json
     - assets/art/
-    - assets/generated/
+    - assets/generated/bg_castle/001-medieval-fantasy-royal-castle-courtyard-.png
+    - assets/generated/bg_ballroom/001-luxurious-medieval-ballroom-interior-at-.png
+    - assets/generated/bg_tower/001-mystic-mage-tower-observatory-at-midnigh.png
+    - assets/generated/heroine/001-full-body-2d-romance-webtoon-style-heroi.png
+    - assets/generated/elian/001-full-body-handsome-male-knight-romance-w.png
+    - assets/generated/lucian/001-full-body-beautiful-male-mage-scholar-ro.png
+    - assets/generated/serena/001-full-body-elegant-female-diplomat-romanc.png
+    - assets/generated/outfit_noble/001-full-body-female-protagonist-romance-web.png
+    - assets/generated/outfit_ranger/001-full-body-female-protagonist-romance-web.png
+    - assets/generated/outfit_moon/001-full-body-female-protagonist-romance-web.png
