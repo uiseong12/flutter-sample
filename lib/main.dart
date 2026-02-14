@@ -321,7 +321,10 @@ class _GameShellState extends State<GameShell> {
       }
     }
     if (mounted) {
-      setState(() => _loaded = true);
+      setState(() {
+        _menuIndex = 0; // 앱 접속 시 항상 홈(메인) 화면부터 시작
+        _loaded = true;
+      });
     }
   }
 
