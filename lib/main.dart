@@ -231,6 +231,8 @@ class _GameShellState extends State<GameShell> {
   final List<_Sparkle> _sparkles = [];
   final Map<String, int> _lastDelta = {};
   final Map<String, String> _dateModeByCharacter = {};
+  final Map<int, List<Map<String, String>>> _nodeDialogues = {};
+  int _nodeDialogueIndex = 0;
 
   final Map<String, Expression> _expressions = {};
   final Map<String, RelationshipState> _relationshipStates = {};
@@ -1072,6 +1074,24 @@ class _GameShellState extends State<GameShell> {
     try {
       _unlockContentSchema = jsonDecode(await rootBundle.loadString('unlock_content_schema_v1.json')) as Map<String, dynamic>;
     } catch (_) {}
+    try {
+      final m = jsonDecode(await rootBundle.loadString('story_dialogues_30.json')) as Map<String, dynamic>;
+      final nodes = (m['nodes'] as List<dynamic>? ?? []);
+      _nodeDialogues.clear();
+      for (final n in nodes) {
+        final map = n as Map<String, dynamic>;
+        final id = map['node'] as int?;
+        if (id == null) continue;
+        final lines = (map['lines'] as List<dynamic>? ?? []).map((e) {
+          final l = e as Map<String, dynamic>;
+          return {
+            'speaker': l['speaker']?.toString() ?? '나',
+            'line': l['line']?.toString() ?? '',
+          };
+        }).toList();
+        _nodeDialogues[id] = lines;
+      }
+    } catch (_) {}
   }
 
   Future<void> _load() async {
@@ -1146,6 +1166,7 @@ class _GameShellState extends State<GameShell> {
     }
 
     _lockRouteAtNode15IfNeeded();
+    _nodeDialogueIndex = 0;
     _beginBeatLine();
 
     if (mounted) {
@@ -1211,9 +1232,53 @@ class _GameShellState extends State<GameShell> {
     _expressions[name] = expression;
   }
 
+  List<Map<String, String>> _currentDialogueLines() {
+    final lines = _nodeDialogues[_storyIndex + 1];
+    if (lines == null || lines.isEmpty) {
+      final b = _story[_storyIndex];
+      return [
+        {'speaker': b.speaker, 'line': b.line}
+      ];
+    }
+    return lines;
+  }
+
+  String _currentSpeaker() {
+    final lines = _currentDialogueLines();
+    final i = _nodeDialogueIndex.clamp(0, lines.length - 1);
+    return lines[i]['speaker'] ?? _story[_storyIndex].speaker;
+  }
+
+  String _sceneBackgroundAssetForNode(int index) {
+    const pack = [
+      'assets/generated/bg_storypack/bg_corridor.png',
+      'assets/generated/bg_storypack/bg_archive.png',
+      'assets/generated/bg_storypack/bg_courtyard_rain.png',
+      'assets/generated/bg_storypack/bg_ledger_room.png',
+      'assets/generated/bg_storypack/bg_infirmary_dawn.png',
+      'assets/generated/bg_storypack/bg_tribunal_hall.png',
+    ];
+    return pack[index % pack.length];
+  }
+
+  bool _hasNextDialogueLine() {
+    final lines = _currentDialogueLines();
+    return _nodeDialogueIndex < lines.length - 1;
+  }
+
+  void _nextDialogueLine() {
+    if (!_hasNextDialogueLine()) return;
+    setState(() {
+      _nodeDialogueIndex += 1;
+    });
+    _beginBeatLine();
+  }
+
   void _beginBeatLine() {
     _typingTimer?.cancel();
-    final line = _story[_storyIndex].line;
+    final lines = _currentDialogueLines();
+    final idx = _nodeDialogueIndex.clamp(0, lines.length - 1);
+    final line = lines[idx]['line'] ?? _story[_storyIndex].line;
     if (_skipTyping) {
       setState(() {
         _visibleLine = line;
@@ -1330,6 +1395,7 @@ class _GameShellState extends State<GameShell> {
 
     if (_storyIndex < _story.length - 1) {
       _storyIndex += 1;
+      _nodeDialogueIndex = 0;
       _sceneKey += 1;
       _cameraSeed = '${_random.nextDouble()}';
       _transitionPreset = choice.sideDelta < 0 ? TransitionPreset.flash : TransitionPreset.slide;
@@ -2641,8 +2707,8 @@ class _GameShellState extends State<GameShell> {
                   child: AnimatedSwitcher(
                     duration: const Duration(milliseconds: 360),
                     child: SizedBox.expand(
-                      key: ValueKey(preview.backgroundAsset),
-                      child: Image.asset(preview.backgroundAsset, fit: BoxFit.cover),
+                      key: ValueKey(_sceneBackgroundAssetForNode(_storyIndex)),
+                      child: Image.asset(_sceneBackgroundAssetForNode(_storyIndex), fit: BoxFit.cover),
                     ),
                   ),
                 ),
@@ -2820,6 +2886,7 @@ class _GameShellState extends State<GameShell> {
                           _playClick();
                           setState(() {
                             _storyIndex = beat;
+                            _nodeDialogueIndex = 0;
                             _lockRouteAtNode15IfNeeded();
                           });
                         },
@@ -2925,7 +2992,7 @@ class _GameShellState extends State<GameShell> {
                       alignment: Alignment.center,
                       child: Transform.translate(
                         offset: Offset((_cameraSeed.hashCode % 8) - 4, 0),
-                        child: Image.asset(beat.backgroundAsset, fit: BoxFit.cover),
+                        child: Image.asset(_sceneBackgroundAssetForNode(_storyIndex), fit: BoxFit.cover),
                       ),
                     ),
                   ),
@@ -3020,7 +3087,7 @@ class _GameShellState extends State<GameShell> {
               children: [
                 Row(
                   children: [
-                    Expanded(child: Text('${beat.speaker} · ${beat.title}', style: const TextStyle(color: Colors.amber, fontWeight: FontWeight.w700))),
+                    Expanded(child: Text('${_currentSpeaker()} · ${beat.title}', style: const TextStyle(color: Colors.amber, fontWeight: FontWeight.w700))),
                     IconButton(
                       onPressed: () {
                         _playClick();
@@ -3057,7 +3124,13 @@ class _GameShellState extends State<GameShell> {
                   Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Wrap(
+                      if (_hasNextDialogueLine())
+                        Padding(
+                          padding: const EdgeInsets.only(bottom: 10),
+                          child: _sealPrimaryButton('다음 대사', _nextDialogueLine),
+                        ),
+                      if (!_hasNextDialogueLine())
+                        Wrap(
                         spacing: 8,
                         runSpacing: 8,
                         children: List.generate(
