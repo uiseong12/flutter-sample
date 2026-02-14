@@ -210,6 +210,7 @@ class _GameShellState extends State<GameShell> {
   Timer? _workTimer;
 
   int _sceneKey = 0;
+  int _animTick = 0;
   TransitionPreset _transitionPreset = TransitionPreset.fade;
   String _cameraSeed = '0';
 
@@ -1527,6 +1528,7 @@ class _GameShellState extends State<GameShell> {
           return;
         }
       }
+      _animTick += 1;
       setState(() {});
     });
 
@@ -3007,6 +3009,66 @@ class _GameShellState extends State<GameShell> {
     );
   }
 
+  Widget _dotSprite({
+    required String asset,
+    required int row,
+    required int frame,
+    int frameWidth = 32,
+    int frameHeight = 48,
+    double scale = 1.8,
+  }) {
+    final w = frameWidth * scale;
+    final h = frameHeight * scale;
+    return SizedBox(
+      width: w,
+      height: h,
+      child: ClipRect(
+        child: Transform.translate(
+          offset: Offset(-frame * w, -row * h),
+          child: Image.asset(
+            asset,
+            width: frameWidth * 4 * scale,
+            height: frameHeight * 4 * scale,
+            fit: BoxFit.fill,
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _workActorOverlay(BoxConstraints c) {
+    final frame = _animTick % 4;
+    int heroRow = 0;
+    if (_failFlash) {
+      heroRow = 3;
+    } else if (_combo >= 2) {
+      heroRow = 2;
+    } else if (_workTimeLeft > 0) {
+      heroRow = 1;
+    }
+
+    if (_selectedWork == WorkMiniGame.herbSort || _selectedWork == WorkMiniGame.courierRun || _selectedWork == WorkMiniGame.gardenWalk) {
+      final tile = min(c.maxWidth, c.maxHeight) / 7;
+      final p = _selectedWork == WorkMiniGame.herbSort ? _herbPos : (_selectedWork == WorkMiniGame.courierRun ? _courierPos : _gardenPos);
+      return Positioned(
+        left: p.x * tile + tile * 0.15,
+        top: p.y * tile + tile * 0.05,
+        child: _dotSprite(asset: 'assets/ui/dot_hero_sheet.png', row: heroRow, frame: frame, scale: tile / 32 * 1.15),
+      );
+    }
+
+    if (_selectedWork == WorkMiniGame.haggling) {
+      return Stack(
+        children: [
+          Positioned(left: 18, bottom: 10, child: _dotSprite(asset: 'assets/ui/dot_hero_sheet.png', row: heroRow, frame: frame, scale: 2.0)),
+          Positioned(right: 18, bottom: 10, child: _dotSprite(asset: 'assets/ui/dot_npc_merchant_sheet.png', row: _combo >= 2 ? 1 : 0, frame: frame, scale: 2.0)),
+        ],
+      );
+    }
+
+    return Positioned(left: c.maxWidth * 0.45, bottom: 16, child: _dotSprite(asset: 'assets/ui/dot_hero_sheet.png', row: heroRow, frame: frame, scale: 2.0));
+  }
+
   Widget _workTab(String label, WorkMiniGame game) {
     final selected = _selectedWork == game;
     return InkWell(
@@ -3078,21 +3140,30 @@ class _GameShellState extends State<GameShell> {
                   left: 10,
                   right: 10,
                   bottom: 74,
-                  child: CustomPaint(
-                    painter: _MiniGamePainter(
-                      mode: _selectedWork,
-                      herbGrid: _herbGrid,
-                      herbPos: _herbPos,
-                      courierPos: _courierPos,
-                      courierDocs: _courierDocs,
-                      guards: _guards,
-                      gardenPos: _gardenPos,
-                      gardenHearts: _gardenHearts,
-                      gardenThorns: _gardenThorns,
-                      smithMeter: _smithMeter,
-                      marketCursor: _marketCursor,
-                      hagglingTarget: _hagglingTarget,
-                      danceNeed: _danceNeed,
+                  child: LayoutBuilder(
+                    builder: (_, constraints) => Stack(
+                      children: [
+                        Positioned.fill(
+                          child: CustomPaint(
+                            painter: _MiniGamePainter(
+                              mode: _selectedWork,
+                              herbGrid: _herbGrid,
+                              herbPos: _herbPos,
+                              courierPos: _courierPos,
+                              courierDocs: _courierDocs,
+                              guards: _guards,
+                              gardenPos: _gardenPos,
+                              gardenHearts: _gardenHearts,
+                              gardenThorns: _gardenThorns,
+                              smithMeter: _smithMeter,
+                              marketCursor: _marketCursor,
+                              hagglingTarget: _hagglingTarget,
+                              danceNeed: _danceNeed,
+                            ),
+                          ),
+                        ),
+                        _workActorOverlay(constraints),
+                      ],
                     ),
                   ),
                 ),
