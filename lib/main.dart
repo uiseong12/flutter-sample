@@ -2995,6 +2995,31 @@ class _GameShellState extends State<GameShell> {
     );
   }
 
+  Widget _missionConditionPanel() {
+    final unlock = _evaluateUnlockRule('knight_pov_1');
+    final template = _evaluateTemplateRule('normal', [
+      {'type': 'affectionThreshold', 'target': 'knight', 'value': 40},
+      {'type': 'politicalStatThreshold', 'stat': 'military', 'value': 35},
+      {'type': 'flagTrue', 'flag': 'publicly_supported_me'},
+    ]);
+    final ok = unlock.unlocked && template.unlocked;
+
+    return Container(
+      width: 320,
+      padding: const EdgeInsets.all(8),
+      decoration: BoxDecoration(color: Colors.black.withOpacity(0.45), borderRadius: BorderRadius.circular(8), border: Border.all(color: Colors.white24)),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Text('조건 선택 미션', style: TextStyle(color: Colors.amberAccent, fontWeight: FontWeight.w700, fontSize: 12)),
+          const SizedBox(height: 4),
+          Text(ok ? '충족: 기사 시점 분기 가능' : '미충족: 호감도·정치수치·플래그 확인', style: TextStyle(color: ok ? Colors.lightGreenAccent : Colors.orangeAccent, fontSize: 11)),
+          if (!ok) Text('${unlock.reason} ${template.reason}'.trim(), style: const TextStyle(color: Colors.white70, fontSize: 10)),
+        ],
+      ),
+    );
+  }
+
   Widget _storyScenePage() {
     final beat = _story[_storyIndex];
     final left = _characterByName(beat.leftCharacter);
@@ -3053,6 +3078,7 @@ class _GameShellState extends State<GameShell> {
                   icon: const Icon(Icons.arrow_back),
                   label: const Text('스토리 맵'),
                 )),
+                Positioned(top: 54, left: 10, child: _missionConditionPanel()),
                 Positioned(top: 10, right: 10, child: _objectivePanel()),
                 Positioned(left: 8, bottom: 130, child: _animatedCharacterCard(left, visible: beat.showLeft, fromLeft: true)),
                 Positioned(right: 8, bottom: 130, child: _animatedCharacterCard(right, visible: beat.showRight, fromLeft: false)),
@@ -3155,191 +3181,137 @@ class _GameShellState extends State<GameShell> {
         }
         _nextDialogueLine();
       },
-      child: AnimatedSwitcher(
-        duration: const Duration(milliseconds: 260),
-        child: Container(
-          key: ValueKey('dialog_${_storyIndex}_$_lineCompleted'),
-          padding: const EdgeInsets.fromLTRB(14, 10, 14, 14),
-          color: Colors.black.withOpacity(0.78),
-          child: SafeArea(
-            top: false,
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Row(
-                  children: [
-                    Expanded(child: Text('${_currentSpeaker()} · ${beat.title}', style: const TextStyle(color: Colors.amber, fontWeight: FontWeight.w700))),
-                    IconButton(
-                      onPressed: () {
-                        _playClick();
-                        setState(() => _autoPlay = !_autoPlay);
-                        _beginBeatLine();
-                      },
-                      icon: Icon(Icons.play_circle_fill, color: _autoPlay ? Colors.greenAccent : Colors.white54),
-                      tooltip: '오토',
-                    ),
-                    IconButton(
-                      onPressed: () {
-                        _playClick();
-                        setState(() => _skipTyping = !_skipTyping);
-                        _beginBeatLine();
-                      },
-                      icon: Icon(Icons.fast_forward, color: _skipTyping ? Colors.greenAccent : Colors.white54),
-                      tooltip: '스킵',
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 6),
-                Text(_visibleLine, style: const TextStyle(color: Colors.white, fontSize: 15)),
-                const SizedBox(height: 8),
-                LinearProgressIndicator(
-                  value: (_characterByName(beat.leftCharacter).affection / 100).clamp(0, 1),
-                  minHeight: 6,
-                  backgroundColor: Colors.white24,
-                  valueColor: const AlwaysStoppedAnimation(Colors.pinkAccent),
-                ),
-                const SizedBox(height: 2),
-                const Text('감정 게이지', style: TextStyle(color: Colors.white54, fontSize: 11)),
-                const SizedBox(height: 10),
-                if (_lineCompleted)
-                  Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      if (_hasNextDialogueLine() && !_isCheckpointPending())
-                        const Padding(
-                          padding: EdgeInsets.only(bottom: 10),
-                          child: Text('click', style: TextStyle(color: Colors.white60, fontSize: 12)),
-                        ),
-                      if (_isCheckpointPending())
-                        _checkpointChoicePanel(),
-                      if (!_hasNextDialogueLine() && !_isCheckpointPending())
-                        Wrap(
-                        spacing: 8,
-                        runSpacing: 8,
-                        children: List.generate(
-                          beat.choices.length,
-                          (i) {
-                            final choice = beat.choices[i];
-                            final routeLocked = _isChoiceBlockedByRouteLock(choice);
-                            final kind = i == beat.choices.length - 1 ? ChoiceKind.condition : ChoiceKind.free;
-                            final premiumSample = _premiumSampleForChoice(_storyIndex + 1, choice, choiceIndex: i);
-                            return Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                ElevatedButton.icon(
-                                  style: ElevatedButton.styleFrom(
-                                    backgroundColor: kind == ChoiceKind.free ? null : Colors.indigo.withOpacity(0.72),
-                                  ),
-                                  onPressed: (_endingCharacterName != null || routeLocked)
-                                      ? null
-                                      : () => _pickStoryChoice(
-                                            StoryChoice(
-                                              label: choice.label,
-                                              mainTarget: choice.mainTarget,
-                                              mainDelta: choice.mainDelta,
-                                              result: choice.result,
-                                              sideTarget: choice.sideTarget,
-                                              sideDelta: choice.sideDelta,
-                                              kind: kind,
-                                            ),
-                                            i,
-                                          ),
-                                  icon: Icon(kind == ChoiceKind.free ? Icons.radio_button_unchecked : Icons.key, size: 16),
-                                  label: Text('[${_choiceKindLabel(kind)}] ${choice.label}'),
-                                ),
-                                if (premiumSample != null)
-                                  Padding(
-                                    padding: const EdgeInsets.only(top: 4),
-                                    child: OutlinedButton.icon(
-                                      style: OutlinedButton.styleFrom(
-                                        foregroundColor: const Color(0xFFC3B3FF),
-                                        side: const BorderSide(color: Color(0xFF7E67FF)),
-                                      ),
-                                      onPressed: (_endingCharacterName != null || routeLocked)
-                                          ? null
-                                          : () => _openAttachedPremiumForChoice(beat, choice, i, premiumSample),
-                                      icon: const Icon(Icons.auto_awesome, size: 16),
-                                      label: Text('[프리미엄] 추가 장면 · ${premiumSample['title']}'),
-                                    ),
-                                  ),
-                              ],
-                            );
-                          },
-                        ),
-                      ),
-                      if (_lockedRouteCharacterName != null && _storyIndex >= 14)
-                        Padding(
-                          padding: const EdgeInsets.only(top: 6),
-                          child: Text(
-                            '루트 잠금 활성: $_lockedRouteCharacterName',
-                            style: const TextStyle(color: Colors.amberAccent, fontSize: 12),
-                          ),
-                        ),
-                      const SizedBox(height: 10),
-                      const Text('조건 선택 슬롯', style: TextStyle(color: Colors.white70, fontSize: 12)),
-                      const SizedBox(height: 4),
-                      Builder(
-                        builder: (_) {
-                          final unlock = _evaluateUnlockRule('knight_pov_1');
-                          final template = _evaluateTemplateRule('normal', [
-                            {'type': 'affectionThreshold', 'target': 'knight', 'value': 40},
-                            {'type': 'politicalStatThreshold', 'stat': 'military', 'value': 35},
-                            {'type': 'flagTrue', 'flag': 'publicly_supported_me'},
-                          ]);
-                          final combinedUnlocked = unlock.unlocked && template.unlocked;
-                          return Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              OutlinedButton(
-                                onPressed: combinedUnlocked && _endingCharacterName == null
-                                    ? () {
-                                        final choice = StoryChoice(
-                                          label: '[조건] 기사 시점 개방',
-                                          mainTarget: '엘리안',
-                                          mainDelta: 10,
-                                          result: '조건 분기: 기사 시점 단서가 해금되어 전황 판단이 유리해졌다.',
-                                        );
-                                        _pickStoryChoice(choice, 88);
-                                      }
-                                    : null,
-                                child: const Text('[조건] 기사 시점 분기'),
+      child: Container(
+        key: ValueKey('dialog_fixed_${_storyIndex}_${_nodeDialogueIndex}_$_lineCompleted'),
+        height: 290,
+        padding: const EdgeInsets.fromLTRB(14, 10, 14, 14),
+        color: Colors.black.withOpacity(0.78),
+        child: SafeArea(
+          top: false,
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                children: [
+                  Expanded(child: Text('${_currentSpeaker()} · ${beat.title}', style: const TextStyle(color: Colors.amber, fontWeight: FontWeight.w700))),
+                  IconButton(
+                    onPressed: () {
+                      _playClick();
+                      setState(() => _autoPlay = !_autoPlay);
+                      _beginBeatLine();
+                    },
+                    icon: Icon(Icons.play_circle_fill, color: _autoPlay ? Colors.greenAccent : Colors.white54),
+                    tooltip: '오토',
+                  ),
+                  IconButton(
+                    onPressed: () {
+                      _playClick();
+                      setState(() => _skipTyping = !_skipTyping);
+                      _beginBeatLine();
+                    },
+                    icon: Icon(Icons.fast_forward, color: _skipTyping ? Colors.greenAccent : Colors.white54),
+                    tooltip: '스킵',
+                  ),
+                ],
+              ),
+              const SizedBox(height: 6),
+              SizedBox(height: 72, child: Text(_visibleLine, style: const TextStyle(color: Colors.white, fontSize: 15))),
+              const SizedBox(height: 6),
+              LinearProgressIndicator(
+                value: (_characterByName(beat.leftCharacter).affection / 100).clamp(0, 1),
+                minHeight: 6,
+                backgroundColor: Colors.white24,
+                valueColor: const AlwaysStoppedAnimation(Colors.pinkAccent),
+              ),
+              const SizedBox(height: 2),
+              const Text('감정 게이지', style: TextStyle(color: Colors.white54, fontSize: 11)),
+              const SizedBox(height: 8),
+              Expanded(
+                child: _lineCompleted
+                    ? SingleChildScrollView(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            if (_hasNextDialogueLine() && !_isCheckpointPending())
+                              const Padding(
+                                padding: EdgeInsets.only(bottom: 10),
+                                child: Text('click', style: TextStyle(color: Colors.white60, fontSize: 12)),
                               ),
-                              if (!combinedUnlocked)
-                                Text(
-                                  '${unlock.reason} ${template.reason}'.trim(),
-                                  style: const TextStyle(color: Colors.orangeAccent, fontSize: 12),
+                            if (_isCheckpointPending()) _checkpointChoicePanel(),
+                            if (!_hasNextDialogueLine() && !_isCheckpointPending())
+                              Wrap(
+                                spacing: 8,
+                                runSpacing: 8,
+                                children: List.generate(beat.choices.length, (i) {
+                                  final choice = beat.choices[i];
+                                  final routeLocked = _isChoiceBlockedByRouteLock(choice);
+                                  final kind = i == beat.choices.length - 1 ? ChoiceKind.condition : ChoiceKind.free;
+                                  final premiumSample = _premiumSampleForChoice(_storyIndex + 1, choice, choiceIndex: i);
+                                  return Column(
+                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    children: [
+                                      ElevatedButton.icon(
+                                        style: ElevatedButton.styleFrom(backgroundColor: kind == ChoiceKind.free ? null : Colors.indigo.withOpacity(0.72)),
+                                        onPressed: (_endingCharacterName != null || routeLocked)
+                                            ? null
+                                            : () => _pickStoryChoice(
+                                                  StoryChoice(
+                                                    label: choice.label,
+                                                    mainTarget: choice.mainTarget,
+                                                    mainDelta: choice.mainDelta,
+                                                    result: choice.result,
+                                                    sideTarget: choice.sideTarget,
+                                                    sideDelta: choice.sideDelta,
+                                                    kind: kind,
+                                                  ),
+                                                  i,
+                                                ),
+                                        icon: Icon(kind == ChoiceKind.free ? Icons.radio_button_unchecked : Icons.key, size: 16),
+                                        label: Text('[${_choiceKindLabel(kind)}] ${choice.label}'),
+                                      ),
+                                      if (premiumSample != null)
+                                        Padding(
+                                          padding: const EdgeInsets.only(top: 4),
+                                          child: OutlinedButton.icon(
+                                            style: OutlinedButton.styleFrom(foregroundColor: const Color(0xFFC3B3FF), side: const BorderSide(color: Color(0xFF7E67FF))),
+                                            onPressed: (_endingCharacterName != null || routeLocked)
+                                                ? null
+                                                : () => _openAttachedPremiumForChoice(beat, choice, i, premiumSample),
+                                            icon: const Icon(Icons.auto_awesome, size: 16),
+                                            label: Text('[프리미엄] 추가 장면 · ${premiumSample['title']}'),
+                                          ),
+                                        ),
+                                    ],
+                                  );
+                                }),
+                              ),
+                            if (_lockedRouteCharacterName != null && _storyIndex >= 14)
+                              Padding(
+                                padding: const EdgeInsets.only(top: 6),
+                                child: Text('루트 잠금 활성: $_lockedRouteCharacterName', style: const TextStyle(color: Colors.amberAccent, fontSize: 12)),
+                              ),
+                            const SizedBox(height: 10),
+                            const Text('광고/프리미엄 슬롯', style: TextStyle(color: Colors.white70, fontSize: 12)),
+                            const SizedBox(height: 4),
+                            Wrap(
+                              spacing: 8,
+                              runSpacing: 8,
+                              children: [
+                                OutlinedButton.icon(onPressed: _watchRewardAdSkeleton, icon: const Icon(Icons.ondemand_video), label: const Text('보상 광고(+1 토큰)')),
+                                FilledButton.icon(
+                                  style: FilledButton.styleFrom(backgroundColor: const Color(0xFF6A4BFF)),
+                                  onPressed: _endingCharacterName == null ? () => _openPremiumChoiceFlow(beat) : null,
+                                  icon: const Icon(Icons.stars),
+                                  label: Text('프리미엄 선택지 (추가 장면, 보유 토큰: $_premiumTokens)'),
                                 ),
-                            ],
-                          );
-                        },
-                      ),
-                      const SizedBox(height: 10),
-                      const Text('광고/프리미엄 슬롯', style: TextStyle(color: Colors.white70, fontSize: 12)),
-                      const SizedBox(height: 4),
-                      Wrap(
-                        spacing: 8,
-                        runSpacing: 8,
-                        children: [
-                          OutlinedButton.icon(
-                            onPressed: _watchRewardAdSkeleton,
-                            icon: const Icon(Icons.ondemand_video),
-                            label: const Text('보상 광고(+1 토큰)'),
-                          ),
-                          FilledButton.icon(
-                            style: FilledButton.styleFrom(backgroundColor: const Color(0xFF6A4BFF)),
-                            onPressed: _endingCharacterName == null ? () => _openPremiumChoiceFlow(beat) : null,
-                            icon: const Icon(Icons.stars),
-                            label: Text('프리미엄 선택지 (추가 장면, 보유 토큰: $_premiumTokens)'),
-                          ),
-                        ],
-                      ),
-                    ],
-                  )
-                else
-                  const Text('탭하여 대사 넘기기', style: TextStyle(color: Colors.white54, fontSize: 12)),
-              ],
-            ),
+                              ],
+                            ),
+                          ],
+                        ),
+                      )
+                    : const Text('탭하여 대사 넘기기', style: TextStyle(color: Colors.white54, fontSize: 12)),
+              ),
+            ],
           ),
         ),
       ),
