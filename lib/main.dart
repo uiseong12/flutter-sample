@@ -1939,27 +1939,30 @@ class _GameShellState extends State<GameShell> {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('로열 하트 크로니클'),
-        actions: [
-          Padding(
-            padding: const EdgeInsets.only(right: 12),
-            child: Center(child: Text('🎟 $_premiumTokens')),
+        toolbarHeight: 84,
+        title: SizedBox(
+          height: 70,
+          child: Stack(
+            children: [
+              Positioned.fill(child: Image.asset('assets/ui/hud_top_frame.png', fit: BoxFit.fill)),
+              Positioned(
+                left: 58,
+                top: 25,
+                child: Row(
+                  children: [
+                    _hudCurrency('assets/ui/icon_gold.png', _gold.toString()),
+                    const SizedBox(width: 8),
+                    _hudCurrency('assets/ui/icon_silk.png', _evidenceOwned.length.toString()),
+                    const SizedBox(width: 8),
+                    _hudCurrency('assets/ui/icon_token.png', _premiumTokens.toString()),
+                    const SizedBox(width: 8),
+                    _hudCurrency('assets/ui/icon_seal.png', (_politicalStats['legitimacy'] ?? 0).toString()),
+                  ],
+                ),
+              ),
+            ],
           ),
-          if (_endingRuleId != null)
-            Padding(
-              padding: const EdgeInsets.only(right: 12),
-              child: Center(child: Text('판정: $_endingRuleId/$_endingRuleType', style: const TextStyle(fontSize: 12))),
-            ),
-          if (_endingCharacterName != null)
-            Padding(
-              padding: const EdgeInsets.only(right: 12),
-              child: Center(child: Text('엔딩: $_endingCharacterName', style: const TextStyle(fontWeight: FontWeight.bold))),
-            ),
-          Padding(
-            padding: const EdgeInsets.only(right: 12),
-            child: Center(child: Text('💰 $_gold')),
-          ),
-        ],
+        ),
       ),
       body: AnimatedSwitcher(
         duration: const Duration(milliseconds: 260),
@@ -1969,22 +1972,29 @@ class _GameShellState extends State<GameShell> {
         ),
         child: KeyedSubtree(key: ValueKey(_menuIndex), child: _buildMenuPage(_menuIndex)),
       ),
-      bottomNavigationBar: NavigationBar(
-        selectedIndex: _menuIndex,
-        onDestinationSelected: (v) {
-          _playClick();
-          setState(() => _menuIndex = v);
-        },
-        destinations: const [
-          NavigationDestination(icon: Icon(Icons.home), label: '홈'),
-          NavigationDestination(icon: Icon(Icons.auto_stories), label: '스토리'),
-          NavigationDestination(icon: Icon(Icons.favorite), label: '데이트'),
-          NavigationDestination(icon: Icon(Icons.construction), label: '아르바이트'),
-          NavigationDestination(icon: Icon(Icons.store), label: '제작/상점'),
-          NavigationDestination(icon: Icon(Icons.receipt_long), label: '장부'),
-          NavigationDestination(icon: Icon(Icons.collections_bookmark), label: '도감'),
-          NavigationDestination(icon: Icon(Icons.settings), label: '설정'),
-        ],
+      bottomNavigationBar: Container(
+        decoration: BoxDecoration(
+          image: DecorationImage(image: AssetImage('assets/ui/bottom_nav_frame.png'), fit: BoxFit.fill),
+        ),
+        child: NavigationBar(
+          backgroundColor: Colors.transparent,
+          indicatorColor: const Color(0x7A7E67FF),
+          selectedIndex: _menuIndex,
+          onDestinationSelected: (v) {
+            _playClick();
+            setState(() => _menuIndex = v);
+          },
+          destinations: [
+            NavigationDestination(icon: Image.asset('assets/ui/nav_home.png', width: 20), label: '홈'),
+            NavigationDestination(icon: Image.asset('assets/ui/nav_story.png', width: 20), label: '스토리'),
+            NavigationDestination(icon: Image.asset('assets/ui/nav_date.png', width: 20), label: '데이트'),
+            NavigationDestination(icon: Image.asset('assets/ui/nav_work.png', width: 20), label: '아르바이트'),
+            NavigationDestination(icon: Image.asset('assets/ui/nav_shop.png', width: 20), label: '제작/상점'),
+            NavigationDestination(icon: Image.asset('assets/ui/nav_ledger.png', width: 20), label: '장부'),
+            NavigationDestination(icon: Image.asset('assets/ui/nav_codex.png', width: 20), label: '도감'),
+            NavigationDestination(icon: Image.asset('assets/ui/nav_settings.png', width: 20), label: '설정'),
+          ],
+        ),
       ),
     );
   }
@@ -2025,12 +2035,22 @@ class _GameShellState extends State<GameShell> {
         Positioned.fill(child: Container(color: Colors.black.withOpacity(0.28))),
 
         Center(
-          child: AnimatedSwitcher(
-            duration: const Duration(milliseconds: 260),
-            child: SizedBox(
-              key: ValueKey(_playerAvatar),
-              child: _fullBodySprite(_playerAvatar, width: 250),
-            ),
+          child: Stack(
+            alignment: Alignment.center,
+            children: [
+              Positioned(bottom: 20, child: Image.asset('assets/ui/ground_shadow.png', width: 320)),
+              AnimatedSwitcher(
+                duration: const Duration(milliseconds: 260),
+                child: SizedBox(
+                  key: ValueKey(_playerAvatar),
+                  child: _fullBodySprite(_playerAvatar, width: 250),
+                ),
+              ),
+              Positioned(left: 18, top: 120, child: Image.asset('assets/ui/equip_slot_ring.png', width: 42)),
+              Positioned(right: 18, top: 120, child: Image.asset('assets/ui/equip_slot_brooch.png', width: 42)),
+              Positioned(left: 24, bottom: 120, child: Image.asset('assets/ui/equip_slot_cloak.png', width: 42)),
+              Positioned(right: 24, bottom: 120, child: Image.asset('assets/ui/equip_slot_dress.png', width: 42)),
+            ],
           ),
         ),
 
@@ -2038,18 +2058,10 @@ class _GameShellState extends State<GameShell> {
           top: 16,
           left: 12,
           child: Container(
-            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
-            decoration: BoxDecoration(
-              color: Colors.black.withOpacity(0.45),
-              borderRadius: BorderRadius.circular(10),
-            ),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text('금화 $_gold  ·  실크 ${_evidenceOwned.length}  ·  토큰 $_premiumTokens', style: const TextStyle(color: Colors.white70, fontSize: 12)),
-                const Text('오늘 AP 12/12', style: TextStyle(color: Colors.lightGreenAccent, fontSize: 12)),
-              ],
-            ),
+            width: 220,
+            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+            decoration: BoxDecoration(image: DecorationImage(image: AssetImage('assets/ui/panel_parchment_dark.png'), fit: BoxFit.fill)),
+            child: const Text('오늘 AP 12/12\n남은 할 일: 스토리 1 · 데이트 1 · 알바 1', style: TextStyle(color: Colors.white, fontSize: 12)),
           ),
         ),
 
@@ -2057,16 +2069,14 @@ class _GameShellState extends State<GameShell> {
           top: 16,
           right: 12,
           child: Container(
+            width: 190,
             padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
-            decoration: BoxDecoration(
-              color: Colors.black.withOpacity(0.45),
-              borderRadius: BorderRadius.circular(10),
-            ),
+            decoration: BoxDecoration(image: DecorationImage(image: AssetImage('assets/ui/mini_inventory_sheet.png'), fit: BoxFit.fill)),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text('착용: ${outfit.name}', style: const TextStyle(color: Colors.white70, fontSize: 12)),
-                Text('총 매력: $_totalCharm', style: const TextStyle(color: Colors.white70, fontSize: 12)),
+                Text('장착: ${outfit.name}', style: const TextStyle(color: Colors.black87, fontSize: 12, fontWeight: FontWeight.bold)),
+                Text('총 매력: $_totalCharm', style: const TextStyle(color: Colors.black87, fontSize: 12)),
               ],
             ),
           ),
@@ -2122,6 +2132,8 @@ class _GameShellState extends State<GameShell> {
           ),
         ),
 
+        Positioned.fill(child: IgnorePointer(child: Image.asset('assets/ui/foreground_vignette.png', fit: BoxFit.cover))),
+
         Positioned(
           left: 12,
           right: 12,
@@ -2168,6 +2180,20 @@ class _GameShellState extends State<GameShell> {
           ),
         ),
       ],
+    );
+  }
+
+  Widget _hudCurrency(String icon, String value) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 3),
+      decoration: BoxDecoration(color: Colors.black.withOpacity(0.25), borderRadius: BorderRadius.circular(8)),
+      child: Row(
+        children: [
+          Image.asset(icon, width: 16, height: 16),
+          const SizedBox(width: 4),
+          Text(value, style: const TextStyle(fontSize: 11, color: Colors.white, fontWeight: FontWeight.bold)),
+        ],
+      ),
     );
   }
 
@@ -2281,12 +2307,12 @@ class _GameShellState extends State<GameShell> {
     );
   }
 
-  IconData _nodeTypeIcon(int beat) {
-    if (beat % 5 == 0) return Icons.gavel; // ⚖️ 재판
-    if (beat % 5 == 1) return Icons.heart_broken; // 💔 감정
-    if (beat % 5 == 2) return Icons.checkroom; // 👗 의전
-    if (beat % 5 == 3) return Icons.search; // 🔍 조사
-    return Icons.auto_awesome;
+  String _nodeTypeIconAsset(int beat) {
+    if (beat % 5 == 0) return 'assets/ui/node_icon_trial.png';
+    if (beat % 5 == 1) return 'assets/ui/node_icon_emotion.png';
+    if (beat % 5 == 2) return 'assets/ui/node_icon_ceremony.png';
+    if (beat % 5 == 3) return 'assets/ui/node_icon_investigate.png';
+    return 'assets/ui/node_icon_ceremony.png';
   }
 
   String _nodeTypeLabel(int beat) {
@@ -2399,7 +2425,7 @@ class _GameShellState extends State<GameShell> {
                       child: Column(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
-                          Icon(_nodeTypeIcon(beat), color: Colors.white, size: 12),
+                          Image.asset(_nodeTypeIconAsset(beat), width: 12, height: 12),
                           Text('${n['id']! + 1}', style: const TextStyle(color: Colors.white, fontSize: 9, fontWeight: FontWeight.bold)),
                         ],
                       ),
@@ -2727,6 +2753,12 @@ class _GameShellState extends State<GameShell> {
   Widget _workPage() {
     const herbs = ['라벤더', '로즈마리', '박하', '세이지'];
 
+    final sceneBg = _selectedWork == WorkMiniGame.herbSort
+        ? 'assets/ui/minigame_herbfield_bg.png'
+        : _selectedWork == WorkMiniGame.smithTiming
+            ? 'assets/ui/minigame_stable_bg.png'
+            : 'assets/ui/minigame_market_bg.png';
+
     Widget gameBody;
     if (_selectedWork == WorkMiniGame.herbSort) {
       gameBody = Column(
@@ -2785,6 +2817,23 @@ class _GameShellState extends State<GameShell> {
       padding: const EdgeInsets.all(14),
       children: [
         const Text('중세 아르바이트 미니게임', style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
+        const SizedBox(height: 8),
+        ClipRRect(
+          borderRadius: BorderRadius.circular(12),
+          child: SizedBox(
+            height: 220,
+            child: Stack(
+              children: [
+                Positioned.fill(child: Image.asset(sceneBg, fit: BoxFit.cover)),
+                Positioned(top: 8, left: 8, child: Image.asset('assets/ui/hud_timer_score.png', width: 180)),
+                if (_selectedWork == WorkMiniGame.haggling)
+                  Positioned(right: 8, bottom: 0, child: Image.asset('assets/ui/npc_merchant_neutral.png', height: 160)),
+                if (_selectedWork == WorkMiniGame.haggling)
+                  const Positioned(left: 12, bottom: 16, child: Text('상인: "52G 근처로!"', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold))),
+              ],
+            ),
+          ),
+        ),
         const SizedBox(height: 8),
         SegmentedButton<WorkMiniGame>(
           segments: const [
