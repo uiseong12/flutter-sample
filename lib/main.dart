@@ -276,6 +276,7 @@ class _GameShellState extends State<GameShell> {
   ];
 
   late List<int?> _storySelections;
+  Map<int, int> _stepNodePick = {};
 
   Character _characterByName(String name) => _characters.firstWhere((e) => e.name == name);
 
@@ -311,6 +312,8 @@ class _GameShellState extends State<GameShell> {
       _equippedOutfitId = m['equippedOutfitId'] ?? _equippedOutfitId;
       _endingCharacterName = m['endingCharacterName'] as String?;
       _storySelections = ((m['storySelections'] as List<dynamic>?) ?? List.filled(_story.length, null)).map<int?>((e) => e == null ? null : e as int).toList();
+      final stepPickRaw = (m['stepNodePick'] as Map<String, dynamic>? ?? {});
+      _stepNodePick = stepPickRaw.map((k, v) => MapEntry(int.parse(k), v as int));
       _logs
         ..clear()
         ..addAll((m['logs'] as List<dynamic>? ?? []).map((e) => e.toString()));
@@ -344,6 +347,7 @@ class _GameShellState extends State<GameShell> {
         'equippedOutfitId': _equippedOutfitId,
         'endingCharacterName': _endingCharacterName,
         'storySelections': _storySelections,
+        'stepNodePick': _stepNodePick.map((k, v) => MapEntry(k.toString(), v)),
         'logs': _logs,
         'characters': _characters.map((e) => e.toJson()).toList(),
       }),
@@ -981,7 +985,8 @@ class _GameShellState extends State<GameShell> {
 
   Widget _branchRouteMap() {
     // bottom -> top progression with multi-branch clickable nodes
-    const mapH = 520.0;
+    const viewH = 520.0;
+    const mapH = 940.0;
     const laneX = [48.0, 168.0, 288.0];
 
     final nodes = <Map<String, int>>[
@@ -997,7 +1002,7 @@ class _GameShellState extends State<GameShell> {
 
     Offset nodePos(Map<String, int> n) {
       final x = laneX[n['lane']!];
-      final y = mapH - 54 - (n['step']! * 130);
+      final y = mapH - 74 - (n['step']! * 230);
       return Offset(x, y);
     }
 
@@ -1008,54 +1013,81 @@ class _GameShellState extends State<GameShell> {
       [3, 6], [4, 6], [4, 7], [5, 7],
     ];
 
+    bool isLocked(Map<String, int> n) {
+      final step = n['step']!;
+      final id = n['id']!;
+      if (!_stepNodePick.containsKey(step)) return false;
+      return _stepNodePick[step] != id;
+    }
+
     return Container(
-      height: mapH,
+      height: viewH,
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(14),
         color: const Color(0xFF0F2340),
       ),
-      child: Stack(
-        children: [
-          Positioned.fill(
-            child: CustomPaint(
-              painter: _RouteLinkPainter(
-                nodes: nodes,
-                links: links,
-                nodePos: nodePos,
-                selectedBeat: _storyIndex,
-              ),
-            ),
-          ),
-          ...nodes.map((n) {
-            final beat = n['beat']!;
-            final pos = nodePos(n);
-            final done = _storySelections[beat] != null;
-            final selected = beat == _storyIndex;
-            return Positioned(
-              left: pos.dx,
-              top: pos.dy,
-              child: GestureDetector(
-                onTap: () {
-                  _playClick();
-                  setState(() => _storyIndex = beat);
-                },
-                child: AnimatedContainer(
-                  duration: const Duration(milliseconds: 180),
-                  width: 34,
-                  height: 34,
-                  alignment: Alignment.center,
-                  decoration: BoxDecoration(
-                    shape: BoxShape.circle,
-                    color: selected ? Colors.amber : (done ? const Color(0xFF8A6B4D) : const Color(0xFF364A66)),
-                    border: Border.all(color: Colors.white70),
-                    boxShadow: selected ? [const BoxShadow(color: Colors.amberAccent, blurRadius: 8)] : null,
+      child: SingleChildScrollView(
+        reverse: true,
+        child: SizedBox(
+          height: mapH,
+          child: Stack(
+            children: [
+              Positioned.fill(
+                child: CustomPaint(
+                  painter: _RouteLinkPainter(
+                    nodes: nodes,
+                    links: links,
+                    nodePos: nodePos,
+                    selectedBeat: _storyIndex,
                   ),
-                  child: Text('${n['id']! + 1}', style: const TextStyle(color: Colors.white, fontSize: 11, fontWeight: FontWeight.bold)),
                 ),
               ),
-            );
-          }),
-        ],
+              ...nodes.map((n) {
+                final beat = n['beat']!;
+                final pos = nodePos(n);
+                final done = _storySelections[beat] != null;
+                final selected = beat == _storyIndex;
+                final locked = isLocked(n);
+
+                return Positioned(
+                  left: pos.dx,
+                  top: pos.dy,
+                  child: GestureDetector(
+                    onTap: locked
+                        ? null
+                        : () {
+                            _playClick();
+                            setState(() {
+                              _storyIndex = beat;
+                              _stepNodePick[n['step']!] = n['id']!;
+                            });
+                          },
+                    child: AnimatedContainer(
+                      duration: const Duration(milliseconds: 180),
+                      width: 34,
+                      height: 34,
+                      alignment: Alignment.center,
+                      decoration: BoxDecoration(
+                        shape: BoxShape.circle,
+                        color: locked
+                            ? const Color(0xFF2D3A4F)
+                            : selected
+                                ? Colors.amber
+                                : (done ? const Color(0xFF8A6B4D) : const Color(0xFF364A66)),
+                        border: Border.all(color: Colors.white70),
+                        boxShadow: selected ? [const BoxShadow(color: Colors.amberAccent, blurRadius: 8)] : null,
+                      ),
+                      child: Text(
+                        locked ? '×' : '${n['id']! + 1}',
+                        style: const TextStyle(color: Colors.white, fontSize: 11, fontWeight: FontWeight.bold),
+                      ),
+                    ),
+                  ),
+                );
+              }),
+            ],
+          ),
+        ),
       ),
     );
   }
@@ -1437,16 +1469,27 @@ class _RouteLinkPainter extends CustomPainter {
   final Offset Function(Map<String, int>) nodePos;
   final int selectedBeat;
 
+  void _drawDashedPath(Canvas canvas, Path path, Paint paint, {double dash = 6, double gap = 5}) {
+    for (final metric in path.computeMetrics()) {
+      double distance = 0;
+      while (distance < metric.length) {
+        final next = distance + dash;
+        canvas.drawPath(metric.extractPath(distance, next.clamp(0, metric.length)), paint);
+        distance = next + gap;
+      }
+    }
+  }
+
   @override
   void paint(Canvas canvas, Size size) {
     final base = Paint()
-      ..color = const Color(0x66C0B090)
-      ..strokeWidth = 2
+      ..color = const Color(0x44C0B090)
+      ..strokeWidth = 1.6
       ..style = PaintingStyle.stroke;
 
     final active = Paint()
-      ..color = const Color(0xCCFFE08A)
-      ..strokeWidth = 2.8
+      ..color = const Color(0x88FFE08A)
+      ..strokeWidth = 2.0
       ..style = PaintingStyle.stroke;
 
     Map<String, int> byId(int id) => nodes.firstWhere((e) => e['id'] == id);
@@ -1456,14 +1499,14 @@ class _RouteLinkPainter extends CustomPainter {
       final b = byId(l[1]);
       final p1 = nodePos(a) + const Offset(17, 17);
       final p2 = nodePos(b) + const Offset(17, 17);
-      final cp = Offset((p1.dx + p2.dx) / 2, p1.dy - 22);
+      final cp = Offset((p1.dx + p2.dx) / 2, p1.dy - 28);
 
       final path = Path()
         ..moveTo(p1.dx, p1.dy)
         ..quadraticBezierTo(cp.dx, cp.dy, p2.dx, p2.dy);
 
       final isActive = (a['beat'] == selectedBeat) || (b['beat'] == selectedBeat);
-      canvas.drawPath(path, isActive ? active : base);
+      _drawDashedPath(canvas, path, isActive ? active : base);
     }
   }
 
