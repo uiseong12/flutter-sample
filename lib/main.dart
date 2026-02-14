@@ -1,4 +1,8 @@
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart' show rootBundle;
+import 'package:shared_preferences/shared_preferences.dart';
 
 void main() {
   runApp(const StoryApp());
@@ -38,6 +42,28 @@ class Character {
   int affection;
   int dates;
   int gifts;
+
+  Map<String, dynamic> toJson() => {
+        'name': name,
+        'title': title,
+        'description': description,
+        'favoriteGift': favoriteGift,
+        'affection': affection,
+        'dates': dates,
+        'gifts': gifts,
+      };
+
+  factory Character.fromJson(Map<String, dynamic> json) {
+    return Character(
+      name: json['name'] as String,
+      title: json['title'] as String,
+      description: json['description'] as String,
+      favoriteGift: json['favoriteGift'] as String,
+      affection: json['affection'] as int? ?? 30,
+      dates: json['dates'] as int? ?? 0,
+      gifts: json['gifts'] as int? ?? 0,
+    );
+  }
 }
 
 class StoryEvent {
@@ -50,6 +76,18 @@ class StoryEvent {
   final String title;
   final String description;
   final List<StoryChoice> choices;
+
+  factory StoryEvent.fromJson(Map<String, dynamic> json) {
+    final choices = (json['choices'] as List<dynamic>)
+        .map((e) => StoryChoice.fromJson(e as Map<String, dynamic>))
+        .toList();
+
+    return StoryEvent(
+      title: json['title'] as String,
+      description: json['description'] as String,
+      choices: choices,
+    );
+  }
 }
 
 class StoryChoice {
@@ -64,6 +102,15 @@ class StoryChoice {
   final String result;
   final String target;
   final int affectionDelta;
+
+  factory StoryChoice.fromJson(Map<String, dynamic> json) {
+    return StoryChoice(
+      label: json['label'] as String,
+      result: json['result'] as String,
+      target: json['target'] as String,
+      affectionDelta: json['affectionDelta'] as int,
+    );
+  }
 }
 
 class HomePage extends StatefulWidget {
@@ -74,11 +121,15 @@ class HomePage extends StatefulWidget {
 }
 
 class _HomePageState extends State<HomePage> {
+  static const _saveKey = 'story_save_v1';
+
   int _selectedTab = 0;
   int _storyIndex = 0;
+  bool _isLoading = true;
+
   final List<String> _logs = [];
 
-  late final List<Character> _characters = [
+  final List<Character> _defaultCharacters = [
     Character(
       name: '엘리안',
       title: '왕실 근위대장',
@@ -93,68 +144,83 @@ class _HomePageState extends State<HomePage> {
     ),
   ];
 
-  late final List<StoryEvent> _events = [
-    StoryEvent(
-      title: '성벽 아래의 첫 만남',
-      description: '여주인공은 몰래 성을 빠져나와 시장 조사를 하던 중 두 남자와 조우한다.',
-      choices: [
-        StoryChoice(
-          label: '엘리안에게 검술 시범을 요청한다',
-          result: '엘리안은 미소를 숨기지 못했다.',
-          target: '엘리안',
-          affectionDelta: 12,
-        ),
-        StoryChoice(
-          label: '루시안에게 별점술을 부탁한다',
-          result: '루시안은 조용히 별의 의미를 읽어주었다.',
-          target: '루시안',
-          affectionDelta: 12,
-        ),
-      ],
-    ),
-    StoryEvent(
-      title: '수확제의 소란',
-      description: '축제 도중 소동이 벌어지고, 누구와 함께 해결할지 선택해야 한다.',
-      choices: [
-        StoryChoice(
-          label: '엘리안과 함께 시민들을 대피시킨다',
-          result: '엘리안은 당신의 용기를 인정했다.',
-          target: '엘리안',
-          affectionDelta: 10,
-        ),
-        StoryChoice(
-          label: '루시안과 함께 마법 결계를 펼친다',
-          result: '루시안은 당신과의 호흡에 감탄했다.',
-          target: '루시안',
-          affectionDelta: 10,
-        ),
-      ],
-    ),
-    StoryEvent(
-      title: '비밀 정원에서의 고백',
-      description: '달빛 아래, 진심을 전할 기회가 찾아온다.',
-      choices: [
-        StoryChoice(
-          label: '엘리안에게 마음을 보여준다',
-          result: '엘리안은 맹세처럼 당신의 손에 입맞췄다.',
-          target: '엘리안',
-          affectionDelta: 15,
-        ),
-        StoryChoice(
-          label: '루시안에게 약속의 마법을 제안한다',
-          result: '루시안은 처음으로 감정을 숨기지 못했다.',
-          target: '루시안',
-          affectionDelta: 15,
-        ),
-      ],
-    ),
-  ];
+  late List<Character> _characters;
+  List<StoryEvent> _events = [];
+
+  @override
+  void initState() {
+    super.initState();
+    _initialize();
+  }
+
+  Future<void> _initialize() async {
+    _characters = _defaultCharacters
+        .map(
+          (c) => Character(
+            name: c.name,
+            title: c.title,
+            description: c.description,
+            favoriteGift: c.favoriteGift,
+            affection: c.affection,
+            dates: c.dates,
+            gifts: c.gifts,
+          ),
+        )
+        .toList();
+
+    await _loadEvents();
+    await _loadProgress();
+
+    if (mounted) {
+      setState(() => _isLoading = false);
+    }
+  }
+
+  Future<void> _loadEvents() async {
+    final raw = await rootBundle.loadString('assets/story_events.json');
+    final decoded = jsonDecode(raw) as List<dynamic>;
+    _events = decoded.map((e) => StoryEvent.fromJson(e as Map<String, dynamic>)).toList();
+  }
+
+  Future<void> _loadProgress() async {
+    final prefs = await SharedPreferences.getInstance();
+    final raw = prefs.getString(_saveKey);
+    if (raw == null) return;
+
+    try {
+      final data = jsonDecode(raw) as Map<String, dynamic>;
+      _storyIndex = (data['storyIndex'] as int? ?? 0).clamp(0, _events.length - 1);
+      _logs
+        ..clear()
+        ..addAll((data['logs'] as List<dynamic>? ?? []).map((e) => e.toString()));
+
+      final savedCharacters = (data['characters'] as List<dynamic>? ?? [])
+          .map((e) => Character.fromJson(e as Map<String, dynamic>))
+          .toList();
+
+      if (savedCharacters.length == _characters.length) {
+        _characters = savedCharacters;
+      }
+    } catch (_) {
+      // ignore broken save data
+    }
+  }
+
+  Future<void> _saveProgress() async {
+    final prefs = await SharedPreferences.getInstance();
+    final data = {
+      'storyIndex': _storyIndex,
+      'logs': _logs,
+      'characters': _characters.map((c) => c.toJson()).toList(),
+    };
+    await prefs.setString(_saveKey, jsonEncode(data));
+  }
 
   Character _findCharacter(String name) {
     return _characters.firstWhere((c) => c.name == name);
   }
 
-  void _applyChoice(StoryChoice choice) {
+  Future<void> _applyChoice(StoryChoice choice) async {
     setState(() {
       final character = _findCharacter(choice.target);
       character.affection = (character.affection + choice.affectionDelta).clamp(0, 100);
@@ -163,19 +229,23 @@ class _HomePageState extends State<HomePage> {
         _storyIndex += 1;
       }
     });
+
+    await _saveProgress();
     _showSnack(choice.result);
   }
 
-  void _goDate(Character character) {
+  Future<void> _goDate(Character character) async {
     setState(() {
       character.dates += 1;
       character.affection = (character.affection + 8).clamp(0, 100);
       _logs.insert(0, '[데이트] ${character.name}와 분수대 산책 (+8)');
     });
+
+    await _saveProgress();
     _showSnack('${character.name}와 데이트를 즐겼어요.');
   }
 
-  void _sendGift(Character character) {
+  Future<void> _sendGift(Character character) async {
     final bool favoriteBonus = character.gifts % 2 == 0;
     final int bonus = favoriteBonus ? 12 : 6;
 
@@ -187,26 +257,80 @@ class _HomePageState extends State<HomePage> {
         '[선물] ${character.name}에게 ${favoriteBonus ? character.favoriteGift : '향초'} 전달 (+$bonus)',
       );
     });
+
+    await _saveProgress();
     _showSnack('${character.name}에게 선물을 전했어요.');
   }
 
+  Future<void> _resetProgress() async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.remove(_saveKey);
+
+    setState(() {
+      _storyIndex = 0;
+      _logs.clear();
+      _characters = _defaultCharacters
+          .map(
+            (c) => Character(
+              name: c.name,
+              title: c.title,
+              description: c.description,
+              favoriteGift: c.favoriteGift,
+              affection: c.affection,
+              dates: c.dates,
+              gifts: c.gifts,
+            ),
+          )
+          .toList();
+    });
+
+    _showSnack('진행 상황을 초기화했어요.');
+  }
+
+  String _endingText() {
+    final sorted = [..._characters]..sort((a, b) => b.affection.compareTo(a.affection));
+    final top = sorted.first;
+
+    if (top.affection >= 80) {
+      return '엔딩: ${top.name}와 함께 왕국의 새 시대를 여는 해피엔딩';
+    }
+    if (top.affection >= 60) {
+      return '엔딩: ${top.name}와 서로를 이해하며 천천히 가까워지는 엔딩';
+    }
+    return '엔딩: 사랑보다 사명을 택한 독립 엔딩';
+  }
+
+  bool get _isStoryFinished => _events.isNotEmpty && _storyIndex >= _events.length - 1;
+
   void _showSnack(String text) {
+    if (!mounted) return;
     ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(text)));
   }
 
   @override
   Widget build(BuildContext context) {
-    final currentEvent = _events[_storyIndex];
+    if (_isLoading) {
+      return const Scaffold(
+        body: Center(child: CircularProgressIndicator()),
+      );
+    }
 
     final pages = [
-      _buildStoryPage(currentEvent),
+      _buildStoryPage(),
       _buildCharactersPage(),
       _buildEventLogPage(),
     ];
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('중세 여주 로맨스 MVP'),
+        title: const Text('중세 여주 로맨스 MVP+'),
+        actions: [
+          IconButton(
+            onPressed: _resetProgress,
+            tooltip: '리셋',
+            icon: const Icon(Icons.refresh),
+          ),
+        ],
       ),
       body: pages[_selectedTab],
       bottomNavigationBar: NavigationBar(
@@ -221,7 +345,9 @@ class _HomePageState extends State<HomePage> {
     );
   }
 
-  Widget _buildStoryPage(StoryEvent event) {
+  Widget _buildStoryPage() {
+    final event = _events[_storyIndex];
+
     return ListView(
       padding: const EdgeInsets.all(16),
       children: [
@@ -243,7 +369,7 @@ class _HomePageState extends State<HomePage> {
           (choice) => Padding(
             padding: const EdgeInsets.only(bottom: 10),
             child: FilledButton(
-              onPressed: () => _applyChoice(choice),
+              onPressed: _isStoryFinished ? null : () => _applyChoice(choice),
               child: Text(choice.label),
             ),
           ),
@@ -253,6 +379,19 @@ class _HomePageState extends State<HomePage> {
           '진행도: ${_storyIndex + 1} / ${_events.length}',
           style: Theme.of(context).textTheme.bodyMedium,
         ),
+        if (_isStoryFinished) ...[
+          const SizedBox(height: 16),
+          Card(
+            color: Theme.of(context).colorScheme.secondaryContainer,
+            child: Padding(
+              padding: const EdgeInsets.all(12),
+              child: Text(
+                _endingText(),
+                style: Theme.of(context).textTheme.titleMedium,
+              ),
+            ),
+          ),
+        ],
       ],
     );
   }
