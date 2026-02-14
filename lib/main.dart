@@ -3302,11 +3302,11 @@ class _GameShellState extends State<GameShell> {
         child: ClipRRect(
           borderRadius: BorderRadius.circular(12),
           child: Align(
-            // 얼굴이 잘리지 않도록 프레이밍을 아래로 내리고, 표시 범위를 약간 확대
-            alignment: const Alignment(0, -0.02),
+            // 머리는 고정으로 살리고, 하단(무릎 아래)만 잘라내는 프레이밍
+            alignment: Alignment.topCenter,
             widthFactor: 1,
-            heightFactor: 0.76,
-            child: _characterImageWithExpression(c, width: 350),
+            heightFactor: 0.82,
+            child: _characterImageWithExpression(c, width: 340),
           ),
         ),
       ),
