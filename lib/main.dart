@@ -1453,6 +1453,14 @@ class _GameShellState extends State<GameShell> {
   }
 
   void _startFlameGame() {
+    void safeSet(VoidCallback fn) {
+      if (!mounted) return;
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (!mounted) return;
+        setState(fn);
+      });
+    }
+
     setState(() {
       _workTimeLeft = 20;
       _workScore = 0;
@@ -1462,24 +1470,17 @@ class _GameShellState extends State<GameShell> {
     final game = DotFlameGame(
       mode: _toFlameMode(_selectedWork),
       durationSec: 20,
-      onTick: (s) {
-        if (!mounted) return;
-        setState(() => _workTimeLeft = s);
-      },
-      onScore: (s) {
-        if (!mounted) return;
-        setState(() => _workScore = s);
-      },
-      onCombo: (c) {
-        if (!mounted) return;
-        setState(() => _combo = c);
-      },
+      onTick: (s) => safeSet(() => _workTimeLeft = s),
+      onScore: (s) => safeSet(() => _workScore = s),
+      onCombo: (c) => safeSet(() => _combo = c),
       onFail: _flashFail,
       onDone: (score, combo) async {
         if (!mounted) return;
         _workScore = score;
         _combo = combo;
-        Navigator.of(context).pop();
+        if (Navigator.of(context).canPop()) {
+          Navigator.of(context).pop();
+        }
         await _finishWorkMiniGame();
       },
     );
@@ -1677,10 +1678,17 @@ class _GameShellState extends State<GameShell> {
   }
 
   void _flashFail() {
-    _failFlash = true;
-    Future.delayed(const Duration(milliseconds: 140), () {
+    if (!mounted) return;
+    WidgetsBinding.instance.addPostFrameCallback((_) {
       if (!mounted) return;
-      setState(() => _failFlash = false);
+      setState(() => _failFlash = true);
+      Future.delayed(const Duration(milliseconds: 140), () {
+        if (!mounted) return;
+        WidgetsBinding.instance.addPostFrameCallback((__) {
+          if (!mounted) return;
+          setState(() => _failFlash = false);
+        });
+      });
     });
   }
 

@@ -5,6 +5,7 @@ import 'package:flame/components.dart';
 import 'package:flame/game.dart';
 import 'package:flame/input.dart';
 import 'package:flame_tiled/flame_tiled.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 
 import 'flame/components.dart';
@@ -63,7 +64,7 @@ class DotFlameGame extends FlameGame {
     _setupControls();
 
     _timer = durationSec.toDouble();
-    onTick(_timer.ceil());
+    Future.microtask(() => onTick(_timer.ceil()));
   }
 
   GameScene _createScene() {
@@ -84,21 +85,24 @@ class DotFlameGame extends FlameGame {
   }
 
   Future<void> _loadTiledMap(String mapName) async {
-    try {
-      // flame_tiled/web path handling can vary by environment; try primary path first.
-      final tiled = await TiledComponent.load('minigame/$mapName.tmx', Vector2.all(32));
-      _world.add(tiled);
+    // flame_tiled on Flutter Web may double-prefix asset paths (assets/assets/tiles/..)
+    // depending on bundling/runtime. To prevent hard failures in production web builds,
+    // use runtime map fallback on web, and keep TMX loading for non-web targets.
+    if (kIsWeb) {
+      _buildRuntimeFallbackMap();
       return;
-    } catch (_) {}
+    }
 
-    try {
-      // Fallback for environments expecting explicit tiles prefix.
-      final tiled = await TiledComponent.load('tiles/minigame/$mapName.tmx', Vector2.all(32));
-      _world.add(tiled);
-      return;
-    } catch (_) {}
+    for (final path in ['minigame/$mapName.tmx', 'tiles/minigame/$mapName.tmx', '$mapName.tmx']) {
+      try {
+        final tiled = await TiledComponent.load(path, Vector2.all(32));
+        _world.add(tiled);
+        return;
+      } catch (_) {
+        // try next path
+      }
+    }
 
-    // Final fallback: generate runtime tile grid so gameplay continues even if TMX fails.
     _buildRuntimeFallbackMap();
   }
 
@@ -165,7 +169,13 @@ class DotFlameGame extends FlameGame {
   void update(double dt) {
     super.update(dt);
 
-    _player.velocity = _joystick.relativeDelta * 120;
+    Vector2 input = Vector2.zero();
+    try {
+      input = _joystick.relativeDelta;
+    } catch (_) {
+      input = Vector2.zero();
+    }
+    _player.velocity = input * 120;
     _scene.update(dt);
 
     _timer -= dt;
