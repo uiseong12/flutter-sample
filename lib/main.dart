@@ -30,7 +30,7 @@ class StoryApp extends StatelessWidget {
 
 enum Expression { neutral, smile, angry, blush, sad }
 enum TransitionPreset { fade, slide, flash }
-enum WorkMiniGame { herbSort, smithTiming, haggling }
+enum WorkMiniGame { herbSort, smithTiming, haggling, courierRun, dateDance, gardenWalk }
 enum RelationshipState { strange, favorable, trust, shaken, bond, alliedLovers, oath }
 enum ChoiceKind { free, condition, premium }
 
@@ -186,11 +186,27 @@ class _GameShellState extends State<GameShell> {
   WorkMiniGame _selectedWork = WorkMiniGame.herbSort;
   int _workTimeLeft = 0;
   int _workScore = 0;
+  int _combo = 0;
+  bool _failFlash = false;
   String _herbTarget = '라벤더';
   double _smithMeter = 0.0;
   bool _smithDirForward = true;
   double _hagglingTarget = 52;
   double _hagglingOffer = 52;
+  double _marketCursor = 0.0;
+  bool _marketDirForward = true;
+  int _danceNeed = 0;
+  int _danceStreak = 0;
+
+  Point<int> _herbPos = const Point(3, 3);
+  List<List<int>> _herbGrid = List.generate(7, (_) => List.filled(7, 0));
+  Point<int> _courierPos = const Point(0, 3);
+  Set<String> _courierDocs = <String>{};
+  List<Point<int>> _guards = const [Point(2, 2), Point(4, 4), Point(5, 1)];
+  Point<int> _gardenPos = const Point(3, 3);
+  Set<String> _gardenHearts = <String>{};
+  Set<String> _gardenThorns = <String>{};
+
   Timer? _workTimer;
 
   int _sceneKey = 0;
@@ -1409,11 +1425,25 @@ class _GameShellState extends State<GameShell> {
     setState(() {});
   }
 
+  String _pKey(int x, int y) => '$x:$y';
+
   void _prepareWorkRound() {
     switch (_selectedWork) {
       case WorkMiniGame.herbSort:
         const herbs = ['라벤더', '로즈마리', '박하', '세이지'];
         _herbTarget = herbs[_random.nextInt(herbs.length)];
+        _herbPos = const Point(3, 3);
+        _herbGrid = List.generate(7, (_) => List.filled(7, 0));
+        for (int y = 0; y < 7; y++) {
+          for (int x = 0; x < 7; x++) {
+            final r = _random.nextInt(100);
+            if (r < 12) _herbGrid[y][x] = 1; // herb
+            if (r >= 12 && r < 18) _herbGrid[y][x] = 2; // poison
+            if (r >= 18 && r < 21) _herbGrid[y][x] = 3; // rare
+            if (r >= 21 && r < 28) _herbGrid[y][x] = 4; // rock
+          }
+        }
+        _herbGrid[3][3] = 0;
         break;
       case WorkMiniGame.smithTiming:
         _smithMeter = _random.nextDouble();
@@ -1422,6 +1452,21 @@ class _GameShellState extends State<GameShell> {
       case WorkMiniGame.haggling:
         _hagglingTarget = 35 + _random.nextInt(31).toDouble();
         _hagglingOffer = 20 + _random.nextInt(61).toDouble();
+        _marketCursor = _random.nextDouble();
+        _marketDirForward = _random.nextBool();
+        break;
+      case WorkMiniGame.courierRun:
+        _courierPos = const Point(0, 3);
+        _courierDocs = {'6:1', '6:3', '6:5'};
+        break;
+      case WorkMiniGame.dateDance:
+        _danceNeed = _random.nextInt(4);
+        _danceStreak = 0;
+        break;
+      case WorkMiniGame.gardenWalk:
+        _gardenPos = const Point(3, 3);
+        _gardenHearts = {'1:1', '5:2', '2:5', '6:6'};
+        _gardenThorns = {'4:1', '1:4', '5:5'};
         break;
     }
   }
@@ -1431,6 +1476,7 @@ class _GameShellState extends State<GameShell> {
     _workTimer?.cancel();
     _workTimeLeft = 20;
     _workScore = 0;
+    _combo = 0;
     _prepareWorkRound();
 
     _workTimer = Timer.periodic(const Duration(milliseconds: 120), (timer) {
@@ -1456,6 +1502,23 @@ class _GameShellState extends State<GameShell> {
         }
       }
 
+      if (_selectedWork == WorkMiniGame.haggling) {
+        final d = 0.04;
+        if (_marketDirForward) {
+          _marketCursor += d;
+          if (_marketCursor >= 1) {
+            _marketCursor = 1;
+            _marketDirForward = false;
+          }
+        } else {
+          _marketCursor -= d;
+          if (_marketCursor <= 0) {
+            _marketCursor = 0;
+            _marketDirForward = true;
+          }
+        }
+      }
+
       if (timer.tick % 8 == 0) {
         _workTimeLeft -= 1;
         if (_workTimeLeft <= 0) {
@@ -1474,7 +1537,12 @@ class _GameShellState extends State<GameShell> {
     if (!mounted) return;
     final reward = 30 + (_workScore * 9);
     _gold += reward;
-    _logs.insert(0, '[아르바이트:${_selectedWork.name}] 점수 $_workScore, 골드 +$reward');
+    _logs.insert(0, '[미니게임:${_selectedWork.name}] 점수 $_workScore, 콤보 $_combo, 골드 +$reward');
+    if (_selectedWork == WorkMiniGame.dateDance || _selectedWork == WorkMiniGame.gardenWalk) {
+      final c = _characters[_random.nextInt(_characters.length)];
+      c.affection = (c.affection + 1).clamp(0, 100);
+      _logs.insert(0, '[감정선] ${c.name} 호감 +1 (미니게임 연동)');
+    }
     _playReward();
     await _save();
     if (_menuIndex == 3 && mounted) {
@@ -1513,48 +1581,136 @@ class _GameShellState extends State<GameShell> {
     }
   }
 
-  void _workActionHerb(String herb) {
+  void _flashFail() {
+    _failFlash = true;
+    Future.delayed(const Duration(milliseconds: 140), () {
+      if (!mounted) return;
+      setState(() => _failFlash = false);
+    });
+  }
+
+  void _gainCombo(int scoreGain) {
+    _combo += 1;
+    _workScore += scoreGain + (_combo ~/ 3);
+  }
+
+  void _resetCombo() {
+    _combo = 0;
+  }
+
+  void _workMove(int dx, int dy) {
     if (_workTimeLeft <= 0) return;
-    if (herb == _herbTarget) {
-      _workScore += 2;
-      _playReward();
-    } else {
-      _workScore = max(0, _workScore - 1);
-      _playClick();
+    if (_selectedWork == WorkMiniGame.herbSort) {
+      final nx = (_herbPos.x + dx).clamp(0, 6);
+      final ny = (_herbPos.y + dy).clamp(0, 6);
+      if (_herbGrid[ny][nx] == 4) return;
+      _herbPos = Point(nx, ny);
+      final cell = _herbGrid[ny][nx];
+      if (cell == 1) {
+        _gainCombo(2);
+        _herbGrid[ny][nx] = 0;
+      } else if (cell == 2) {
+        _workScore = max(0, _workScore - 2);
+        _resetCombo();
+        _flashFail();
+      } else if (cell == 3) {
+        _gainCombo(4);
+        _applyPoliticalDelta({'publicTrust': 1}, '희귀 약초');
+        _herbGrid[ny][nx] = 0;
+      }
+    } else if (_selectedWork == WorkMiniGame.courierRun) {
+      final nx = (_courierPos.x + dx).clamp(0, 6);
+      final ny = (_courierPos.y + dy).clamp(0, 6);
+      _courierPos = Point(nx, ny);
+      final key = _pKey(nx, ny);
+      if (_courierDocs.contains(key)) {
+        _courierDocs.remove(key);
+        _gainCombo(3);
+      }
+      for (final g in _guards) {
+        if ((g.y - ny).abs() <= 0 && nx > g.x && nx - g.x <= 2) {
+          _workScore = max(0, _workScore - 2);
+          _resetCombo();
+          _flashFail();
+          _applyPoliticalDelta({'surveillance': 1}, '경비 시야 노출');
+          break;
+        }
+      }
+    } else if (_selectedWork == WorkMiniGame.gardenWalk) {
+      final nx = (_gardenPos.x + dx).clamp(0, 6);
+      final ny = (_gardenPos.y + dy).clamp(0, 6);
+      _gardenPos = Point(nx, ny);
+      final key = _pKey(nx, ny);
+      if (_gardenHearts.contains(key)) {
+        _gardenHearts.remove(key);
+        _gainCombo(2);
+      }
+      if (_gardenThorns.contains(key)) {
+        _workScore = max(0, _workScore - 1);
+        _resetCombo();
+        _flashFail();
+      }
     }
-    _prepareWorkRound();
     setState(() {});
+  }
+
+  void _workActionHerb(String herb) {
+    // legacy: mapped to movement mode
+    _workMove(1, 0);
   }
 
   void _workActionSmith() {
     if (_workTimeLeft <= 0) return;
     final dist = (_smithMeter - 0.5).abs();
-    int gain;
-    if (dist < 0.07) {
-      gain = 4;
-    } else if (dist < 0.15) {
-      gain = 2;
+    if (dist < 0.06) {
+      _gainCombo(4);
+      if (_combo >= 3) {
+        _logs.insert(0, '[보이스] 엘리안: 대단하군.');
+      }
+    } else if (dist < 0.14) {
+      _gainCombo(2);
     } else {
-      gain = 1;
+      _workScore = max(0, _workScore - 1);
+      _resetCombo();
+      _flashFail();
     }
-    _workScore += gain;
     _playClick();
     setState(() {});
   }
 
   void _workActionHaggling() {
     if (_workTimeLeft <= 0) return;
-    final diff = (_hagglingOffer - _hagglingTarget).abs();
+    final offer = 20 + (_marketCursor * 60);
+    final diff = (offer - _hagglingTarget).abs();
     if (diff <= 2) {
-      _workScore += 4;
+      _gainCombo(4);
       _playReward();
     } else if (diff <= 6) {
-      _workScore += 2;
+      _gainCombo(2);
       _playClick();
     } else {
       _workScore = max(0, _workScore - 1);
+      _resetCombo();
+      _flashFail();
     }
-    _prepareWorkRound();
+    setState(() {});
+  }
+
+  void _workActionDance(int input) {
+    if (_workTimeLeft <= 0) return;
+    if (input == _danceNeed) {
+      _danceStreak += 1;
+      _gainCombo(3);
+      if (_danceStreak % 3 == 0) {
+        _logs.insert(0, '[로맨스] 손잡기 연출 성공');
+      }
+    } else {
+      _danceStreak = 0;
+      _resetCombo();
+      _workScore = max(0, _workScore - 1);
+      _flashFail();
+    }
+    _danceNeed = _random.nextInt(4);
     setState(() {});
   }
 
@@ -2874,85 +3030,113 @@ class _GameShellState extends State<GameShell> {
   }
 
   Widget _workPage() {
-    const herbs = ['라벤더', '로즈마리', '박하', '세이지'];
-
-    final sceneBg = _selectedWork == WorkMiniGame.herbSort
-        ? 'assets/ui/minigame_herbfield_bg.png'
-        : _selectedWork == WorkMiniGame.smithTiming
-            ? 'assets/ui/minigame_stable_bg.png'
-            : 'assets/ui/minigame_market_bg.png';
-
-    Widget gameBody;
-    if (_selectedWork == WorkMiniGame.herbSort) {
-      gameBody = Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text('지시된 약초를 고르세요: $_herbTarget', style: const TextStyle(fontWeight: FontWeight.w700)),
-          const SizedBox(height: 8),
-          Wrap(
-            spacing: 8,
-            runSpacing: 8,
-            children: herbs
-                .map((h) => OutlinedButton(onPressed: _workTimeLeft > 0 ? () => _workActionHerb(h) : null, child: Text(h)))
-                .toList(),
-          ),
-        ],
-      );
-    } else if (_selectedWork == WorkMiniGame.smithTiming) {
-      gameBody = Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          const Text('대장간 단조: 중앙(황금 구간)에 맞춰 타격!', style: TextStyle(fontWeight: FontWeight.w700)),
-          const SizedBox(height: 10),
-          Stack(
-            children: [
-              Container(height: 20, decoration: BoxDecoration(color: Colors.grey.shade300, borderRadius: BorderRadius.circular(10))),
-              Positioned(left: 140, child: Container(width: 40, height: 20, decoration: BoxDecoration(color: Colors.amber.shade300, borderRadius: BorderRadius.circular(8)))),
-              Positioned(left: _smithMeter * 320, child: Container(width: 8, height: 20, color: Colors.redAccent)),
-            ],
-          ),
-          const SizedBox(height: 10),
-          FilledButton(onPressed: _workTimeLeft > 0 ? _workActionSmith : null, child: const Text('망치 내리치기')),
-        ],
-      );
-    } else {
-      gameBody = Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text('시장 흥정: 목표 ${_hagglingTarget.toStringAsFixed(0)}G 근처로 제시', style: const TextStyle(fontWeight: FontWeight.w700)),
-          const SizedBox(height: 8),
-          Slider(
-            min: 20,
-            max: 80,
-            divisions: 60,
-            value: _hagglingOffer,
-            label: '${_hagglingOffer.toStringAsFixed(0)}G',
-            onChanged: _workTimeLeft > 0 ? (v) => setState(() => _hagglingOffer = v) : null,
-          ),
-          Text('현재 제시가: ${_hagglingOffer.toStringAsFixed(0)}G'),
-          const SizedBox(height: 8),
-          FilledButton(onPressed: _workTimeLeft > 0 ? _workActionHaggling : null, child: const Text('흥정 제시')),
-        ],
-      );
-    }
+    final sceneBg = switch (_selectedWork) {
+      WorkMiniGame.herbSort => 'assets/ui/minigame_herbfield_bg.png',
+      WorkMiniGame.smithTiming => 'assets/ui/minigame_stable_bg.png',
+      WorkMiniGame.haggling => 'assets/ui/minigame_market_bg.png',
+      WorkMiniGame.courierRun => 'assets/generated/bg_castle/001-medieval-fantasy-royal-castle-courtyard-.png',
+      WorkMiniGame.dateDance => 'assets/generated/bg_ballroom/001-luxurious-medieval-ballroom-interior-at-.png',
+      WorkMiniGame.gardenWalk => 'assets/ui/minigame_herbfield_bg.png',
+    };
 
     return ListView(
       padding: const EdgeInsets.all(14),
       children: [
-        const Text('중세 아르바이트 미니게임', style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
+        const Text('도트 액션 미니게임', style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
         const SizedBox(height: 8),
         ClipRRect(
           borderRadius: BorderRadius.circular(12),
-          child: SizedBox(
-            height: 220,
+          child: Container(
+            height: 360,
+            color: Colors.black,
             child: Stack(
               children: [
                 Positioned.fill(child: Image.asset(sceneBg, fit: BoxFit.cover)),
-                Positioned(top: 8, left: 8, child: Image.asset('assets/ui/hud_timer_score.png', width: 180)),
-                if (_selectedWork == WorkMiniGame.haggling)
-                  Positioned(right: 8, bottom: 0, child: Image.asset('assets/ui/npc_merchant_neutral.png', height: 160)),
-                if (_selectedWork == WorkMiniGame.haggling)
-                  const Positioned(left: 12, bottom: 16, child: Text('상인: "52G 근처로!"', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold))),
+                Positioned.fill(child: Container(color: _failFlash ? const Color(0x66FF0000) : Colors.transparent)),
+                Positioned(
+                  top: 8,
+                  left: 8,
+                  right: 8,
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                    decoration: BoxDecoration(color: Colors.black.withOpacity(0.5), borderRadius: BorderRadius.circular(10)),
+                    child: Row(
+                      children: [
+                        Text('⏱ $_workTimeLeft', style: const TextStyle(color: Colors.white)),
+                        const SizedBox(width: 10),
+                        Text('점수 $_workScore', style: const TextStyle(color: Colors.white)),
+                        const SizedBox(width: 10),
+                        Text('콤보 x$_combo', style: const TextStyle(color: Colors.amberAccent)),
+                        const Spacer(),
+                        SizedBox(width: 34, height: 34, child: _characterImageWithExpression(_characters.first, width: 28)),
+                      ],
+                    ),
+                  ),
+                ),
+                Positioned(
+                  top: 54,
+                  left: 10,
+                  right: 10,
+                  bottom: 74,
+                  child: CustomPaint(
+                    painter: _MiniGamePainter(
+                      mode: _selectedWork,
+                      herbGrid: _herbGrid,
+                      herbPos: _herbPos,
+                      courierPos: _courierPos,
+                      courierDocs: _courierDocs,
+                      guards: _guards,
+                      gardenPos: _gardenPos,
+                      gardenHearts: _gardenHearts,
+                      gardenThorns: _gardenThorns,
+                      smithMeter: _smithMeter,
+                      marketCursor: _marketCursor,
+                      hagglingTarget: _hagglingTarget,
+                      danceNeed: _danceNeed,
+                    ),
+                  ),
+                ),
+                Positioned(
+                  left: 10,
+                  right: 10,
+                  bottom: 8,
+                  child: Row(
+                    children: [
+                      Expanded(
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                          children: [
+                            IconButton(onPressed: _workTimeLeft > 0 ? () => _workMove(-1, 0) : null, icon: const Icon(Icons.arrow_left, color: Colors.white)),
+                            IconButton(onPressed: _workTimeLeft > 0 ? () => _workMove(0, -1) : null, icon: const Icon(Icons.arrow_drop_up, color: Colors.white)),
+                            IconButton(onPressed: _workTimeLeft > 0 ? () => _workMove(0, 1) : null, icon: const Icon(Icons.arrow_drop_down, color: Colors.white)),
+                            IconButton(onPressed: _workTimeLeft > 0 ? () => _workMove(1, 0) : null, icon: const Icon(Icons.arrow_right, color: Colors.white)),
+                          ],
+                        ),
+                      ),
+                      const SizedBox(width: 8),
+                      Expanded(
+                        child: _selectedWork == WorkMiniGame.dateDance
+                            ? Wrap(
+                                spacing: 6,
+                                children: List.generate(
+                                  4,
+                                  (i) => ElevatedButton(
+                                    onPressed: _workTimeLeft > 0 ? () => _workActionDance(i) : null,
+                                    child: Text(['←', '↑', '→', '↓'][i]),
+                                  ),
+                                ),
+                              )
+                            : Wrap(
+                                spacing: 6,
+                                children: [
+                                  ElevatedButton(onPressed: _workTimeLeft > 0 ? _workActionSmith : null, child: const Text('타이밍')),
+                                  ElevatedButton(onPressed: _workTimeLeft > 0 ? _workActionHaggling : null, child: const Text('정지')),
+                                ],
+                              ),
+                      ),
+                    ],
+                  ),
+                ),
               ],
             ),
           ),
@@ -2962,27 +3146,16 @@ class _GameShellState extends State<GameShell> {
           spacing: 6,
           runSpacing: 6,
           children: [
-            _workTab('약초 분류', WorkMiniGame.herbSort),
+            _workTab('약초 채집', WorkMiniGame.herbSort),
             _workTab('대장간 단조', WorkMiniGame.smithTiming),
             _workTab('시장 흥정', WorkMiniGame.haggling),
+            _workTab('전달 임무', WorkMiniGame.courierRun),
+            _workTab('무도회', WorkMiniGame.dateDance),
+            _workTab('정원 산책', WorkMiniGame.gardenWalk),
           ],
         ),
         const SizedBox(height: 10),
-        Card(
-          child: Padding(
-            padding: const EdgeInsets.all(12),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text('남은 시간: $_workTimeLeft초  |  점수: $_workScore'),
-                const SizedBox(height: 10),
-                gameBody,
-                const SizedBox(height: 10),
-                _sealPrimaryButton('아르바이트 시작', _workTimeLeft > 0 ? null : _startWorkMiniGame),
-              ],
-            ),
-          ),
-        ),
+        _sealPrimaryButton('플레이 시작 (20초 루프)', _workTimeLeft > 0 ? null : _startWorkMiniGame),
       ],
     );
   }
@@ -3451,6 +3624,106 @@ class _SealButtonState extends State<_SealButton> {
       child: Opacity(opacity: 0.55, child: body),
     );
   }
+}
+
+class _MiniGamePainter extends CustomPainter {
+  const _MiniGamePainter({
+    required this.mode,
+    required this.herbGrid,
+    required this.herbPos,
+    required this.courierPos,
+    required this.courierDocs,
+    required this.guards,
+    required this.gardenPos,
+    required this.gardenHearts,
+    required this.gardenThorns,
+    required this.smithMeter,
+    required this.marketCursor,
+    required this.hagglingTarget,
+    required this.danceNeed,
+  });
+
+  final WorkMiniGame mode;
+  final List<List<int>> herbGrid;
+  final Point<int> herbPos;
+  final Point<int> courierPos;
+  final Set<String> courierDocs;
+  final List<Point<int>> guards;
+  final Point<int> gardenPos;
+  final Set<String> gardenHearts;
+  final Set<String> gardenThorns;
+  final double smithMeter;
+  final double marketCursor;
+  final double hagglingTarget;
+  final int danceNeed;
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final tile = min(size.width, size.height) / 7;
+    final gridPaint = Paint()..color = const Color(0x55FFFFFF);
+
+    if (mode == WorkMiniGame.herbSort || mode == WorkMiniGame.courierRun || mode == WorkMiniGame.gardenWalk) {
+      for (int y = 0; y < 7; y++) {
+        for (int x = 0; x < 7; x++) {
+          canvas.drawRect(Rect.fromLTWH(x * tile, y * tile, tile - 1, tile - 1), gridPaint);
+          if (mode == WorkMiniGame.herbSort) {
+            final c = herbGrid[y][x];
+            if (c == 1) canvas.drawCircle(Offset(x * tile + tile / 2, y * tile + tile / 2), tile * 0.18, Paint()..color = Colors.greenAccent);
+            if (c == 2) canvas.drawCircle(Offset(x * tile + tile / 2, y * tile + tile / 2), tile * 0.18, Paint()..color = Colors.redAccent);
+            if (c == 3) canvas.drawCircle(Offset(x * tile + tile / 2, y * tile + tile / 2), tile * 0.2, Paint()..color = Colors.amberAccent);
+            if (c == 4) canvas.drawRect(Rect.fromLTWH(x * tile + tile * 0.2, y * tile + tile * 0.2, tile * 0.6, tile * 0.6), Paint()..color = Colors.blueGrey);
+          }
+          if (mode == WorkMiniGame.courierRun && courierDocs.contains('$x:$y')) {
+            canvas.drawRect(Rect.fromLTWH(x * tile + tile * 0.25, y * tile + tile * 0.25, tile * 0.5, tile * 0.5), Paint()..color = Colors.yellow.shade200);
+          }
+          if (mode == WorkMiniGame.gardenWalk) {
+            if (gardenHearts.contains('$x:$y')) canvas.drawCircle(Offset(x * tile + tile / 2, y * tile + tile / 2), tile * 0.18, Paint()..color = Colors.pinkAccent);
+            if (gardenThorns.contains('$x:$y')) canvas.drawLine(Offset(x * tile + tile * 0.25, y * tile + tile * 0.25), Offset(x * tile + tile * 0.75, y * tile + tile * 0.75), Paint()..color = Colors.red.shade900..strokeWidth = 3);
+          }
+        }
+      }
+      if (mode == WorkMiniGame.courierRun) {
+        for (final g in guards) {
+          canvas.drawCircle(Offset(g.x * tile + tile / 2, g.y * tile + tile / 2), tile * 0.2, Paint()..color = Colors.orange);
+          final cone = Path()
+            ..moveTo(g.x * tile + tile / 2, g.y * tile + tile / 2)
+            ..lineTo((g.x + 2.5) * tile, (g.y + 0.5) * tile)
+            ..lineTo((g.x + 2.5) * tile, (g.y - 0.5) * tile)
+            ..close();
+          canvas.drawPath(cone, Paint()..color = const Color(0x55FF4444));
+        }
+      }
+      final p = mode == WorkMiniGame.herbSort ? herbPos : (mode == WorkMiniGame.courierRun ? courierPos : gardenPos);
+      canvas.drawRect(Rect.fromLTWH(p.x * tile + tile * 0.22, p.y * tile + tile * 0.16, tile * 0.56, tile * 0.68), Paint()..color = const Color(0xFF7E67FF));
+    } else if (mode == WorkMiniGame.smithTiming) {
+      final track = Rect.fromLTWH(24, size.height * 0.45, size.width - 48, 24);
+      canvas.drawRRect(RRect.fromRectAndRadius(track, const Radius.circular(12)), Paint()..color = Colors.white24);
+      final gold = Rect.fromLTWH(track.left + track.width * 0.45, track.top, track.width * 0.1, track.height);
+      canvas.drawRRect(RRect.fromRectAndRadius(gold, const Radius.circular(8)), Paint()..color = Colors.amber);
+      final x = track.left + (track.width * smithMeter);
+      canvas.drawRect(Rect.fromLTWH(x - 4, track.top - 6, 8, track.height + 12), Paint()..color = Colors.redAccent);
+    } else if (mode == WorkMiniGame.haggling) {
+      final track = Rect.fromLTWH(24, size.height * 0.45, size.width - 48, 24);
+      canvas.drawRRect(RRect.fromRectAndRadius(track, const Radius.circular(12)), Paint()..color = Colors.white24);
+      final targetX = track.left + track.width * ((hagglingTarget - 20) / 60);
+      canvas.drawCircle(Offset(targetX, track.center.dy), 10, Paint()..color = Colors.amber);
+      final cursorX = track.left + track.width * marketCursor;
+      canvas.drawCircle(Offset(cursorX, track.center.dy), 8, Paint()..color = Colors.lightBlueAccent);
+    } else {
+      const arrows = ['←', '↑', '→', '↓'];
+      final tp = TextPainter(textDirection: TextDirection.ltr);
+      for (int i = 0; i < 4; i++) {
+        final rect = Rect.fromLTWH(24 + i * ((size.width - 48) / 4), size.height * 0.4, (size.width - 56) / 4, 56);
+        canvas.drawRRect(RRect.fromRectAndRadius(rect, const Radius.circular(10)), Paint()..color = i == danceNeed ? const Color(0xCC7E67FF) : const Color(0x66444444));
+        tp.text = TextSpan(text: arrows[i], style: const TextStyle(color: Colors.white, fontSize: 28));
+        tp.layout();
+        tp.paint(canvas, Offset(rect.center.dx - tp.width / 2, rect.center.dy - tp.height / 2));
+      }
+    }
+  }
+
+  @override
+  bool shouldRepaint(covariant _MiniGamePainter oldDelegate) => true;
 }
 
 class _RouteLinkPainter extends CustomPainter {
