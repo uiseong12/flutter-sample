@@ -910,6 +910,21 @@ class _GameShellState extends State<GameShell> {
     );
   }
 
+  UnlockDecision _evaluateTemplateRule(String templateName, List<Map<String, dynamic>> conditions) {
+    final templates = (_unlockRules['unlockTemplates'] as Map<String, dynamic>? ?? {});
+    final template = (templates[templateName] as Map<String, dynamic>? ?? {});
+    final pool = (template['pool'] as List<dynamic>? ?? []).map((e) => e.toString()).toSet();
+    final scoped = conditions.where((c) => pool.contains(c['type']?.toString() ?? '')).toList();
+    final passes = scoped.where(_evaluateCondition).length;
+    final requiredAll = template['requiredAll'] as int?;
+    final requiredAny = template['requiredAny'] as int?;
+    final required = requiredAll ?? requiredAny ?? scoped.length;
+    if (passes >= required) {
+      return const UnlockDecision(unlocked: true, reason: '');
+    }
+    return UnlockDecision(unlocked: false, reason: '템플릿($templateName) 조건 미충족: $passes/$required');
+  }
+
   void _lockRouteAtNode15IfNeeded() {
     if (_storyIndex != 14 || _lockedRouteCharacterName != null) return;
     Character top = _characters.first;
@@ -1708,20 +1723,20 @@ class _GameShellState extends State<GameShell> {
                       .map(
                         (c) => Padding(
                           padding: const EdgeInsets.only(bottom: 8),
-                            child: Row(
-                              children: [
-                                SizedBox(width: 36, child: Text(c.name, style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold))),
-                                const SizedBox(width: 8),
-                                SizedBox(
-                                  width: 66,
-                                  child: Text(
-                                    _relationshipLabel(_relationshipStates[c.name] ?? RelationshipState.strange),
-                                    style: const TextStyle(color: Colors.amberAccent, fontSize: 11),
-                                  ),
+                          child: Row(
+                            children: [
+                              SizedBox(width: 36, child: Text(c.name, style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold))),
+                              const SizedBox(width: 8),
+                              SizedBox(
+                                width: 66,
+                                child: Text(
+                                  _relationshipLabel(_relationshipStates[c.name] ?? RelationshipState.strange),
+                                  style: const TextStyle(color: Colors.amberAccent, fontSize: 11),
                                 ),
-                                const SizedBox(width: 8),
-                                Expanded(child: LinearProgressIndicator(value: c.affection / 100, minHeight: 8)),
-                                const SizedBox(width: 8),
+                              ),
+                              const SizedBox(width: 8),
+                              Expanded(child: LinearProgressIndicator(value: c.affection / 100, minHeight: 8)),
+                              const SizedBox(width: 8),
                               SizedBox(width: 30, child: Text('${c.affection}', style: const TextStyle(color: Colors.white))),
                               SizedBox(width: 32, child: _deltaBadge(c.name)),
                             ],
@@ -2144,11 +2159,17 @@ class _GameShellState extends State<GameShell> {
                       Builder(
                         builder: (_) {
                           final unlock = _evaluateUnlockRule('knight_pov_1');
+                          final template = _evaluateTemplateRule('normal', [
+                            {'type': 'affectionThreshold', 'target': 'knight', 'value': 40},
+                            {'type': 'politicalStatThreshold', 'stat': 'military', 'value': 35},
+                            {'type': 'flagTrue', 'flag': 'publicly_supported_me'},
+                          ]);
+                          final combinedUnlocked = unlock.unlocked && template.unlocked;
                           return Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
                               OutlinedButton(
-                                onPressed: unlock.unlocked && _endingCharacterName == null
+                                onPressed: combinedUnlocked && _endingCharacterName == null
                                     ? () {
                                         final choice = StoryChoice(
                                           label: '[조건] 기사 시점 개방',
@@ -2161,7 +2182,11 @@ class _GameShellState extends State<GameShell> {
                                     : null,
                                 child: const Text('[조건] 기사 시점 분기'),
                               ),
-                              if (!unlock.unlocked) Text(unlock.reason, style: const TextStyle(color: Colors.orangeAccent, fontSize: 12)),
+                              if (!combinedUnlocked)
+                                Text(
+                                  '${unlock.reason} ${template.reason}'.trim(),
+                                  style: const TextStyle(color: Colors.orangeAccent, fontSize: 12),
+                                ),
                             ],
                           );
                         },
