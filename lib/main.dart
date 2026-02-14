@@ -232,6 +232,8 @@ class _GameShellState extends State<GameShell> {
   final Map<String, int> _lastDelta = {};
   final Map<String, String> _dateModeByCharacter = {};
   final Map<int, List<Map<String, String>>> _nodeDialogues = {};
+  final Map<int, List<Map<String, dynamic>>> _nodeCheckpoints = {};
+  final Map<int, Set<int>> _resolvedCheckpointAts = {};
   int _nodeDialogueIndex = 0;
 
   final Map<String, Expression> _expressions = {};
@@ -1078,6 +1080,7 @@ class _GameShellState extends State<GameShell> {
       final m = jsonDecode(await rootBundle.loadString('story_dialogues_30.json')) as Map<String, dynamic>;
       final nodes = (m['nodes'] as List<dynamic>? ?? []);
       _nodeDialogues.clear();
+      _nodeCheckpoints.clear();
       for (final n in nodes) {
         final map = n as Map<String, dynamic>;
         final id = map['node'] as int?;
@@ -1090,6 +1093,9 @@ class _GameShellState extends State<GameShell> {
           };
         }).toList();
         _nodeDialogues[id] = lines;
+
+        final cps = (map['checkpoints'] as List<dynamic>? ?? []).map((e) => (e as Map<String, dynamic>)).toList();
+        _nodeCheckpoints[id] = cps;
       }
     } catch (_) {}
   }
@@ -1266,7 +1272,50 @@ class _GameShellState extends State<GameShell> {
     return _nodeDialogueIndex < lines.length - 1;
   }
 
+  Map<String, dynamic>? _currentCheckpoint() {
+    final cps = _nodeCheckpoints[_storyIndex + 1] ?? const [];
+    final resolved = _resolvedCheckpointAts[_storyIndex + 1] ?? <int>{};
+    for (final cp in cps) {
+      final at = cp['at'] as int? ?? -1;
+      if (at == _nodeDialogueIndex && !resolved.contains(at)) return cp;
+    }
+    return null;
+  }
+
+  bool _isCheckpointPending() => _currentCheckpoint() != null;
+
+  Future<void> _applyCheckpointChoice(Map<String, dynamic> option) async {
+    final targetName = option['target']?.toString();
+    final delta = option['affectionDelta'] as int? ?? 0;
+    final polit = (option['political'] as Map<String, dynamic>? ?? {});
+    final text = option['result']?.toString() ?? '선택 결과가 반영되었다.';
+
+    if (targetName != null && targetName.isNotEmpty && delta != 0) {
+      final c = _characterByName(targetName);
+      await _addAffection(c, delta, '[체크포인트]');
+    }
+
+    if (polit.isNotEmpty) {
+      final m = <String, int>{};
+      for (final e in polit.entries) {
+        m[e.key] = (e.value as num).toInt();
+      }
+      _applyPoliticalDelta(m, '체크포인트');
+    }
+
+    final at = (_currentCheckpoint()?['at'] as int? ?? _nodeDialogueIndex);
+    _resolvedCheckpointAts.putIfAbsent(_storyIndex + 1, () => <int>{}).add(at);
+    _logs.insert(0, '[체크포인트] $text');
+
+    if (_hasNextDialogueLine()) {
+      setState(() => _nodeDialogueIndex += 1);
+      _beginBeatLine();
+    }
+    await _save();
+  }
+
   void _nextDialogueLine() {
+    if (_isCheckpointPending()) return;
     if (!_hasNextDialogueLine()) return;
     setState(() {
       _nodeDialogueIndex += 1;
@@ -1293,7 +1342,7 @@ class _GameShellState extends State<GameShell> {
     });
 
     int i = 0;
-    final ms = _autoPlay ? 12 : 22;
+    final ms = _autoPlay ? 18 : 34;
     _typingTimer = Timer.periodic(Duration(milliseconds: ms), (t) {
       if (!mounted) {
         t.cancel();
@@ -3063,15 +3112,48 @@ class _GameShellState extends State<GameShell> {
     );
   }
 
+  Widget _checkpointChoicePanel() {
+    final cp = _currentCheckpoint();
+    if (cp == null) return const SizedBox.shrink();
+    final title = cp['title']?.toString() ?? '중간 선택';
+    final options = (cp['options'] as List<dynamic>? ?? []).cast<Map<String, dynamic>>();
+
+    return Container(
+      margin: const EdgeInsets.only(bottom: 10),
+      padding: const EdgeInsets.all(10),
+      decoration: BoxDecoration(color: Colors.black.withOpacity(0.4), borderRadius: BorderRadius.circular(8), border: Border.all(color: Colors.white24)),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(title, style: const TextStyle(color: Colors.amberAccent, fontWeight: FontWeight.w700)),
+          const SizedBox(height: 6),
+          Wrap(
+            spacing: 8,
+            runSpacing: 8,
+            children: options
+                .map((o) => OutlinedButton(
+                      onPressed: () => _applyCheckpointChoice(o),
+                      child: Text(o['label']?.toString() ?? '선택'),
+                    ))
+                .toList(),
+          ),
+        ],
+      ),
+    );
+  }
+
   Widget _dialogWindow(StoryBeat beat) {
     return GestureDetector(
       onTap: () {
-        if (_lineCompleted) return;
-        _typingTimer?.cancel();
-        setState(() {
-          _visibleLine = beat.line;
-          _lineCompleted = true;
-        });
+        if (!_lineCompleted) {
+          _typingTimer?.cancel();
+          setState(() {
+            _visibleLine = _currentDialogueLines()[_nodeDialogueIndex.clamp(0, _currentDialogueLines().length - 1)]['line'] ?? beat.line;
+            _lineCompleted = true;
+          });
+          return;
+        }
+        _nextDialogueLine();
       },
       child: AnimatedSwitcher(
         duration: const Duration(milliseconds: 260),
@@ -3124,12 +3206,14 @@ class _GameShellState extends State<GameShell> {
                   Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      if (_hasNextDialogueLine())
-                        Padding(
-                          padding: const EdgeInsets.only(bottom: 10),
-                          child: _sealPrimaryButton('다음 대사', _nextDialogueLine),
+                      if (_hasNextDialogueLine() && !_isCheckpointPending())
+                        const Padding(
+                          padding: EdgeInsets.only(bottom: 10),
+                          child: Text('click', style: TextStyle(color: Colors.white60, fontSize: 12)),
                         ),
-                      if (!_hasNextDialogueLine())
+                      if (_isCheckpointPending())
+                        _checkpointChoicePanel(),
+                      if (!_hasNextDialogueLine() && !_isCheckpointPending())
                         Wrap(
                         spacing: 8,
                         runSpacing: 8,
