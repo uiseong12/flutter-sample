@@ -1998,27 +1998,82 @@ class _GameShellState extends State<GameShell> {
   }
 
   Widget _sealPrimaryButton(String label, VoidCallback? onPressed) {
-    final enabled = onPressed != null;
-    return GestureDetector(
-      onTapDown: (_) => _playClick(),
-      child: Opacity(
-        opacity: enabled ? 1 : 0.45,
-        child: Container(
-          decoration: BoxDecoration(
-            image: const DecorationImage(image: AssetImage('assets/ui/button_primary_seal_v2.png'), fit: BoxFit.fill),
-            boxShadow: enabled ? [const BoxShadow(color: Color(0x887E67FF), blurRadius: 10)] : null,
-          ),
-          child: TextButton(
-            onPressed: onPressed,
-            child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 12),
-              child: Text(
-                label,
-                style: const TextStyle(fontSize: 17, fontWeight: FontWeight.w700, color: Color(0xFFF6F1E8), shadows: [Shadow(color: Color(0x99000000), blurRadius: 6)]),
-              ),
+    return SizedBox(height: 68, child: _SealButton(label: label, onPressed: onPressed, onClickSfx: _playClick));
+  }
+
+  Widget _buildBottomNav() {
+    final items = [
+      ('assets/ui/nav_home.png', '홈'),
+      ('assets/ui/nav_story.png', '스토리'),
+      ('assets/ui/nav_date.png', '데이트'),
+      ('assets/ui/nav_work.png', '아르바이트'),
+      ('assets/ui/nav_shop.png', '제작/상점'),
+      ('assets/ui/nav_ledger.png', '장부'),
+      ('assets/ui/nav_codex.png', '도감'),
+      ('assets/ui/nav_settings.png', '설정'),
+    ];
+
+    return SizedBox(
+      height: 92,
+      child: Stack(
+        children: [
+          Positioned.fill(child: Image.asset('assets/ui/bottom_nav_frame_v3.png', fit: BoxFit.fill)),
+          Positioned.fill(
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+              children: List.generate(items.length, (i) {
+                final selected = i == _menuIndex;
+                return Expanded(
+                  child: InkWell(
+                    onTap: () {
+                      _playClick();
+                      setState(() => _menuIndex = i);
+                    },
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Stack(
+                          alignment: Alignment.center,
+                          children: [
+                            if (selected)
+                              Container(
+                                width: 34,
+                                height: 34,
+                                decoration: BoxDecoration(
+                                  shape: BoxShape.circle,
+                                  color: const Color(0x447E67FF),
+                                  boxShadow: const [BoxShadow(color: Color(0xAA7E67FF), blurRadius: 8)],
+                                ),
+                              ),
+                            Image.asset(items[i].$1, width: 20),
+                          ],
+                        ),
+                        const SizedBox(height: 3),
+                        Text(
+                          items[i].$2,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: TextStyle(
+                            fontSize: 11,
+                            color: selected ? const Color(0xFFF6F1E8) : const Color(0xCCF6F1E8),
+                            fontWeight: selected ? FontWeight.w700 : FontWeight.w500,
+                          ),
+                        ),
+                        if (selected)
+                          Container(
+                            margin: const EdgeInsets.only(top: 2),
+                            width: 6,
+                            height: 6,
+                            decoration: const BoxDecoration(color: Color(0xFFE9D7A1), shape: BoxShape.circle),
+                          ),
+                      ],
+                    ),
+                  ),
+                );
+              }),
             ),
           ),
-        ),
+        ],
       ),
     );
   }
@@ -2062,30 +2117,7 @@ class _GameShellState extends State<GameShell> {
         ),
         child: KeyedSubtree(key: ValueKey(_menuIndex), child: _buildMenuPage(_menuIndex)),
       ),
-      bottomNavigationBar: Container(
-        decoration: BoxDecoration(
-          image: DecorationImage(image: AssetImage('assets/ui/bottom_nav_frame_v3.png'), fit: BoxFit.fill),
-        ),
-        child: NavigationBar(
-          backgroundColor: Colors.transparent,
-          indicatorColor: const Color(0x7A7E67FF),
-          selectedIndex: _menuIndex,
-          onDestinationSelected: (v) {
-            _playClick();
-            setState(() => _menuIndex = v);
-          },
-          destinations: [
-            NavigationDestination(icon: Image.asset('assets/ui/nav_home.png', width: 20), label: '홈'),
-            NavigationDestination(icon: Image.asset('assets/ui/nav_story.png', width: 20), label: '스토리'),
-            NavigationDestination(icon: Image.asset('assets/ui/nav_date.png', width: 20), label: '데이트'),
-            NavigationDestination(icon: Image.asset('assets/ui/nav_work.png', width: 20), label: '아르바이트'),
-            NavigationDestination(icon: Image.asset('assets/ui/nav_shop.png', width: 20), label: '제작/상점'),
-            NavigationDestination(icon: Image.asset('assets/ui/nav_ledger.png', width: 20), label: '장부'),
-            NavigationDestination(icon: Image.asset('assets/ui/nav_codex.png', width: 20), label: '도감'),
-            NavigationDestination(icon: Image.asset('assets/ui/nav_settings.png', width: 20), label: '설정'),
-          ],
-        ),
-      ),
+      bottomNavigationBar: _buildBottomNav(),
     );
   }
 
@@ -3267,6 +3299,89 @@ class _GameShellState extends State<GameShell> {
             subtitle: Text('감정씬 직전·직후 강제 광고 없음\n보상형 광고 중심 노출'),
           ),
         ],
+      ),
+    );
+  }
+}
+
+class _SealButton extends StatefulWidget {
+  const _SealButton({required this.label, required this.onPressed, required this.onClickSfx});
+
+  final String label;
+  final VoidCallback? onPressed;
+  final VoidCallback onClickSfx;
+
+  @override
+  State<_SealButton> createState() => _SealButtonState();
+}
+
+class _SealButtonState extends State<_SealButton> {
+  bool _pressed = false;
+
+  @override
+  Widget build(BuildContext context) {
+    final enabled = widget.onPressed != null;
+    return Opacity(
+      opacity: enabled ? 1 : 0.45,
+      child: GestureDetector(
+        onTapDown: enabled
+            ? (_) {
+                widget.onClickSfx();
+                setState(() => _pressed = true);
+              }
+            : null,
+        onTapCancel: enabled ? () => setState(() => _pressed = false) : null,
+        onTapUp: enabled ? (_) => setState(() => _pressed = false) : null,
+        onTap: widget.onPressed,
+        child: AnimatedContainer(
+          duration: const Duration(milliseconds: 90),
+          transform: Matrix4.translationValues(0, _pressed ? 2 : 0, 0),
+          decoration: BoxDecoration(
+            boxShadow: enabled
+                ? [
+                    BoxShadow(color: const Color(0x887E67FF), blurRadius: _pressed ? 4 : 10, offset: Offset(0, _pressed ? 1 : 3)),
+                  ]
+                : null,
+          ),
+          child: Stack(
+            alignment: Alignment.center,
+            children: [
+              Positioned.fill(
+                child: ClipRRect(
+                  borderRadius: BorderRadius.circular(34),
+                  child: Image.asset(
+                    'assets/ui/button_primary_seal_v2.png',
+                    fit: BoxFit.fill,
+                    centerSlice: const Rect.fromLTWH(140, 24, 240, 90),
+                  ),
+                ),
+              ),
+              Positioned(
+                top: 10,
+                child: Container(
+                  width: 120,
+                  height: 8,
+                  decoration: BoxDecoration(
+                    gradient: const LinearGradient(colors: [Color(0x55FFFFFF), Color(0x00FFFFFF)]),
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                ),
+              ),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: List.generate(3, (i) => Container(margin: const EdgeInsets.symmetric(horizontal: 3), width: 4, height: 4, decoration: const BoxDecoration(color: Color(0xFFE9D7A1), shape: BoxShape.circle))),
+              ),
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
+                child: Text(
+                  widget.label,
+                  textAlign: TextAlign.center,
+                  style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w700, color: Color(0xFFF6F1E8), shadows: [Shadow(color: Color(0x99000000), blurRadius: 6)]),
+                ),
+              ),
+            ],
+          ),
+        ),
       ),
     );
   }
