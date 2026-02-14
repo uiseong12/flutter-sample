@@ -569,88 +569,131 @@ class _GameShellState extends State<GameShell> {
 
   Widget _storyProgressPage() {
     final cleared = _storySelections.where((e) => e != null).length;
+    final preview = _story[_storyIndex];
 
     return ListView(
       padding: const EdgeInsets.all(14),
       children: [
+        ClipRRect(
+          borderRadius: BorderRadius.circular(14),
+          child: SizedBox(
+            height: 210,
+            child: Stack(
+              children: [
+                AnimatedSwitcher(
+                  duration: const Duration(milliseconds: 350),
+                  child: SizedBox.expand(
+                    key: ValueKey(preview.backgroundAsset),
+                    child: SvgPicture.asset(preview.backgroundAsset, fit: BoxFit.cover),
+                  ),
+                ),
+                Positioned.fill(child: Container(color: Colors.black.withOpacity(0.35))),
+                Positioned(
+                  left: 12,
+                  right: 12,
+                  bottom: 12,
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text('EP ${_storyIndex + 1}. ${preview.title}', style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 17)),
+                      const SizedBox(height: 4),
+                      Text(preview.line, maxLines: 2, overflow: TextOverflow.ellipsis, style: const TextStyle(color: Colors.white70)),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+        const SizedBox(height: 12),
         Card(
           child: Padding(
             padding: const EdgeInsets.all(12),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const Text('스토리 진행도', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 17)),
-                const SizedBox(height: 8),
-                _progressRouteLine(),
+                const Text('스토리 진행도 (아래 → 위)', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 17)),
                 const SizedBox(height: 6),
                 Text('클리어: $cleared / ${_story.length}'),
                 if (_endingCharacterName != null)
                   Text('확정 엔딩: $_endingCharacterName', style: const TextStyle(fontWeight: FontWeight.bold)),
-                const SizedBox(height: 8),
+                const SizedBox(height: 10),
+                _verticalRouteMap(),
+                const SizedBox(height: 10),
                 FilledButton(
                   onPressed: () => setState(() => _inStoryScene = true),
-                  child: Text(cleared == 0 ? '스토리 시작' : '스토리 이어하기'),
+                  child: Text(cleared == 0 ? '스토리 시작' : '이 스텝부터 진행'),
                 ),
               ],
             ),
           ),
         ),
-        const SizedBox(height: 10),
-        ...List.generate(_story.length, (i) {
-          final beat = _story[i];
-          final picked = _storySelections[i];
-          return Card(
-            child: Padding(
-              padding: const EdgeInsets.all(12),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text('EP ${i + 1}. ${beat.title}', style: const TextStyle(fontWeight: FontWeight.bold)),
-                  const SizedBox(height: 4),
-                  Text(beat.line, maxLines: 2, overflow: TextOverflow.ellipsis),
-                  const SizedBox(height: 8),
-                  if (picked == null)
-                    const Text('선택 전', style: TextStyle(color: Colors.grey))
-                  else
-                    Text('선택 루트: ${beat.choices[picked].label}', style: const TextStyle(color: Colors.teal, fontWeight: FontWeight.w600)),
-                ],
-              ),
-            ),
-          );
-        })
       ],
     );
   }
 
-  Widget _progressRouteLine() {
-    return SingleChildScrollView(
-      scrollDirection: Axis.horizontal,
-      child: Row(
-        children: List.generate(_story.length, (i) {
-          final done = _storySelections[i] != null;
-          return Row(
-            children: [
-              Container(
-                width: 24,
-                height: 24,
-                alignment: Alignment.center,
+  Widget _verticalRouteMap() {
+    return Column(
+      children: List.generate(_story.length, (revIndex) {
+        final i = _story.length - 1 - revIndex; // 아래가 시작, 위가 최신
+        final beat = _story[i];
+        final done = _storySelections[i] != null;
+        final selected = i == _storyIndex;
+        final picked = _storySelections[i];
+
+        return Column(
+          children: [
+            InkWell(
+              onTap: () => setState(() => _storyIndex = i),
+              borderRadius: BorderRadius.circular(12),
+              child: Container(
+                padding: const EdgeInsets.all(10),
                 decoration: BoxDecoration(
-                  color: done ? Colors.pink : Colors.white,
-                  border: Border.all(color: Colors.pink),
-                  shape: BoxShape.circle,
+                  borderRadius: BorderRadius.circular(12),
+                  border: Border.all(color: selected ? Colors.pink : Colors.grey.shade300, width: selected ? 2 : 1),
+                  color: selected ? Colors.pink.withOpacity(0.08) : Colors.white,
                 ),
-                child: Text(done ? '●' : '○', style: TextStyle(color: done ? Colors.white : Colors.pink, fontSize: 12)),
+                child: Row(
+                  children: [
+                    Container(
+                      width: 24,
+                      height: 24,
+                      alignment: Alignment.center,
+                      decoration: BoxDecoration(
+                        color: done ? Colors.pink : Colors.white,
+                        border: Border.all(color: Colors.pink),
+                        shape: BoxShape.circle,
+                      ),
+                      child: Text(done ? '●' : '○', style: TextStyle(color: done ? Colors.white : Colors.pink, fontSize: 12)),
+                    ),
+                    const SizedBox(width: 10),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text('EP ${i + 1}. ${beat.title}', style: const TextStyle(fontWeight: FontWeight.w700)),
+                          const SizedBox(height: 2),
+                          if (picked == null)
+                            const Text('선택 전', style: TextStyle(color: Colors.grey))
+                          else
+                            Text('선택 루트: ${beat.choices[picked].label}', style: const TextStyle(color: Colors.teal, fontSize: 12)),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
               ),
-              if (i != _story.length - 1)
-                Container(
-                  width: 26,
-                  height: 2,
-                  color: (_storySelections[i] != null) ? Colors.pink : Colors.grey.shade400,
-                ),
-            ],
-          );
-        }),
-      ),
+            ),
+            if (revIndex != _story.length - 1)
+              Container(
+                width: 2,
+                height: 18,
+                color: Colors.grey.shade400,
+                margin: const EdgeInsets.symmetric(vertical: 4),
+              ),
+          ],
+        );
+      }),
     );
   }
 
