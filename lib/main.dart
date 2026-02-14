@@ -179,6 +179,7 @@ class _GameShellState extends State<GameShell> {
 
   String _equippedOutfitId = 'default';
   String? _endingCharacterName;
+  bool _showAffectionOverlay = false;
   final List<String> _logs = [];
   final List<_Sparkle> _sparkles = [];
   final Map<String, int> _lastDelta = {};
@@ -801,80 +802,98 @@ class _GameShellState extends State<GameShell> {
 
   Widget _homePage() {
     final outfit = _outfits.firstWhere((e) => e.id == _equippedOutfitId);
-    return ListView(
-      padding: const EdgeInsets.all(14),
+
+    return Stack(
       children: [
-        Container(
-          height: 290,
-          decoration: BoxDecoration(borderRadius: BorderRadius.circular(16)),
-          child: ClipRRect(
-            borderRadius: BorderRadius.circular(16),
-            child: Stack(
+        Positioned.fill(
+          child: Image.asset(
+            'assets/generated/bg_castle/001-medieval-fantasy-royal-castle-courtyard-.png',
+            fit: BoxFit.cover,
+          ),
+        ),
+        Positioned.fill(child: Container(color: Colors.black.withOpacity(0.28))),
+
+        Center(
+          child: AnimatedSwitcher(
+            duration: const Duration(milliseconds: 260),
+            child: SizedBox(
+              key: ValueKey(_playerAvatar),
+              child: _fullBodySprite(_playerAvatar, width: 250),
+            ),
+          ),
+        ),
+
+        Positioned(
+          top: 16,
+          right: 12,
+          child: Container(
+            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+            decoration: BoxDecoration(
+              color: Colors.black.withOpacity(0.45),
+              borderRadius: BorderRadius.circular(10),
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Positioned.fill(child: Image.asset('assets/generated/bg_castle/001-medieval-fantasy-royal-castle-courtyard-.png', fit: BoxFit.cover)),
-                Positioned.fill(child: Container(color: Colors.black.withOpacity(0.28))),
-                Positioned(left: 12, bottom: 0, child: _fullBodySprite(_playerAvatar, width: 180)),
-                Positioned(
-                  right: 14,
-                  top: 20,
-                  child: Container(
-                    width: 235,
-                    padding: const EdgeInsets.all(12),
-                    decoration: BoxDecoration(color: Colors.black.withOpacity(0.5), borderRadius: BorderRadius.circular(12)),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        const Text('주인공 상태', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 17)),
-                        const SizedBox(height: 6),
-                        Text('착용: ${outfit.name}', style: const TextStyle(color: Colors.white70)),
-                        Text('총 매력: $_totalCharm', style: const TextStyle(color: Colors.white70)),
-                        const Text('엔딩 조건: 호감도 100 선점', style: TextStyle(color: Colors.white70)),
-                      ],
-                    ),
-                  ),
-                )
+                Text('착용: ${outfit.name}', style: const TextStyle(color: Colors.white70, fontSize: 12)),
+                Text('총 매력: $_totalCharm', style: const TextStyle(color: Colors.white70, fontSize: 12)),
               ],
             ),
           ),
         ),
-        const SizedBox(height: 10),
-        Card(
-          child: Padding(
-            padding: const EdgeInsets.all(10),
-            child: Column(
-              children: _characters
-                  .map(
-                    (c) => Padding(
-                      padding: const EdgeInsets.only(bottom: 8),
-                      child: Row(
-                        children: [
-                          SizedBox(width: 30, child: Text(c.name, style: const TextStyle(fontWeight: FontWeight.bold))),
-                          const SizedBox(width: 6),
-                          Expanded(child: LinearProgressIndicator(value: c.affection / 100, minHeight: 8)),
-                          const SizedBox(width: 8),
-                          SizedBox(width: 30, child: Text('${c.affection}')),
-                          SizedBox(width: 30, child: _deltaBadge(c.name)),
-                        ],
-                      ),
-                    ),
-                  )
-                  .toList(),
+
+        Positioned(
+          left: 12,
+          right: 12,
+          bottom: 20,
+          child: AnimatedSlide(
+            duration: const Duration(milliseconds: 220),
+            offset: _showAffectionOverlay ? Offset.zero : const Offset(0, 1.1),
+            child: AnimatedOpacity(
+              duration: const Duration(milliseconds: 180),
+              opacity: _showAffectionOverlay ? 1 : 0,
+              child: Container(
+                padding: const EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                  color: Colors.black.withOpacity(0.62),
+                  borderRadius: BorderRadius.circular(12),
+                  border: Border.all(color: Colors.white24),
+                ),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: _characters
+                      .map(
+                        (c) => Padding(
+                          padding: const EdgeInsets.only(bottom: 8),
+                          child: Row(
+                            children: [
+                              SizedBox(width: 36, child: Text(c.name, style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold))),
+                              const SizedBox(width: 8),
+                              Expanded(child: LinearProgressIndicator(value: c.affection / 100, minHeight: 8)),
+                              const SizedBox(width: 8),
+                              SizedBox(width: 30, child: Text('${c.affection}', style: const TextStyle(color: Colors.white))),
+                              SizedBox(width: 32, child: _deltaBadge(c.name)),
+                            ],
+                          ),
+                        ),
+                      )
+                      .toList(),
+                ),
+              ),
             ),
           ),
         ),
-        const SizedBox(height: 10),
-        Card(
-          child: Padding(
-            padding: const EdgeInsets.all(12),
-            child: Column(
-              children: [
-                const Text('현재 장착 전신 프리뷰', style: TextStyle(fontWeight: FontWeight.bold)),
-                const SizedBox(height: 8),
-                Center(child: _fullBodySprite(_playerAvatar, width: 200)),
-                const SizedBox(height: 8),
-                const Text('하단 메뉴(스토리/아르바이트/상점/데이트)로 이동하세요.'),
-              ],
-            ),
+
+        Positioned(
+          left: 12,
+          bottom: 12,
+          child: FilledButton.icon(
+            onPressed: () {
+              _playClick();
+              setState(() => _showAffectionOverlay = !_showAffectionOverlay);
+            },
+            icon: Icon(_showAffectionOverlay ? Icons.expand_more : Icons.expand_less),
+            label: Text(_showAffectionOverlay ? '호감도 닫기' : '호감도 열기'),
           ),
         ),
       ],
