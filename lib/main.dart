@@ -2762,55 +2762,7 @@ class _GameShellState extends State<GameShell> {
           ),
         ),
 
-        Positioned(
-          left: 12,
-          right: 12,
-          bottom: 20,
-          child: AnimatedSlide(
-            duration: const Duration(milliseconds: 220),
-            offset: _showAffectionOverlay ? Offset.zero : const Offset(0, 1.1),
-            child: AnimatedOpacity(
-              duration: const Duration(milliseconds: 180),
-              opacity: _showAffectionOverlay ? 1 : 0,
-              child: Container(
-                padding: const EdgeInsets.all(12),
-                decoration: BoxDecoration(
-                  color: Colors.black.withOpacity(0.62),
-                  borderRadius: BorderRadius.circular(12),
-                  border: Border.all(color: Colors.white24),
-                ),
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: _characters
-                      .map(
-                        (c) => Padding(
-                          padding: const EdgeInsets.only(bottom: 8),
-                          child: Row(
-                            children: [
-                              SizedBox(width: 36, child: Text(c.name, style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold))),
-                              const SizedBox(width: 8),
-                              SizedBox(
-                                width: 66,
-                                child: Text(
-                                  _relationshipLabel(_relationshipStates[c.name] ?? RelationshipState.strange),
-                                  style: const TextStyle(color: Colors.amberAccent, fontSize: 11),
-                                ),
-                              ),
-                              const SizedBox(width: 8),
-                              Expanded(child: LinearProgressIndicator(value: c.affection / 100, minHeight: 8)),
-                              const SizedBox(width: 8),
-                              SizedBox(width: 30, child: Text('${c.affection}', style: const TextStyle(color: Colors.white))),
-                              SizedBox(width: 32, child: _deltaBadge(c.name)),
-                            ],
-                          ),
-                        ),
-                      )
-                      .toList(),
-                ),
-              ),
-            ),
-          ),
-        ),
+        const SizedBox.shrink(),
 
         Positioned.fill(child: IgnorePointer(child: Image.asset('assets/ui/foreground_vignette.png', fit: BoxFit.cover))),
 
@@ -2843,6 +2795,57 @@ class _GameShellState extends State<GameShell> {
                     }),
                   ),
                 ],
+              ),
+            ),
+          ),
+        ),
+
+        // 호감도 패널은 '오늘의 추천'보다 위 레이어/위치에 표시
+        Positioned(
+          left: 12,
+          right: 12,
+          top: 84,
+          child: AnimatedSlide(
+            duration: const Duration(milliseconds: 220),
+            offset: _showAffectionOverlay ? Offset.zero : const Offset(0, -0.16),
+            child: AnimatedOpacity(
+              duration: const Duration(milliseconds: 180),
+              opacity: _showAffectionOverlay ? 1 : 0,
+              child: Container(
+                padding: const EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                  color: Colors.black.withOpacity(0.72),
+                  borderRadius: BorderRadius.circular(12),
+                  border: Border.all(color: Colors.white24),
+                ),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: _characters
+                      .map(
+                        (c) => Padding(
+                          padding: const EdgeInsets.only(bottom: 8),
+                          child: Row(
+                            children: [
+                              SizedBox(width: 36, child: Text(c.name, style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold))),
+                              const SizedBox(width: 8),
+                              SizedBox(
+                                width: 66,
+                                child: Text(
+                                  _relationshipLabel(_relationshipStates[c.name] ?? RelationshipState.strange),
+                                  style: const TextStyle(color: Colors.amberAccent, fontSize: 11),
+                                ),
+                              ),
+                              const SizedBox(width: 8),
+                              Expanded(child: LinearProgressIndicator(value: c.affection / 100, minHeight: 8)),
+                              const SizedBox(width: 8),
+                              SizedBox(width: 30, child: Text('${c.affection}', style: const TextStyle(color: Colors.white))),
+                              SizedBox(width: 32, child: _deltaBadge(c.name)),
+                            ],
+                          ),
+                        ),
+                      )
+                      .toList(),
+                ),
               ),
             ),
           ),
@@ -2964,7 +2967,7 @@ class _GameShellState extends State<GameShell> {
                   left: 0,
                   right: 0,
                   top: 92,
-                  bottom: 78,
+                  bottom: 128,
                   child: _branchRouteMap(),
                 ),
                 Positioned(
@@ -3080,7 +3083,8 @@ class _GameShellState extends State<GameShell> {
 
     Offset nodePos(Map<String, int> n) {
       final x = laneX[n['lane']!];
-      final y = mapH - 72 - (n['step']! * stepGap);
+      // 하단 메뉴/브라우저 바에 첫 노드가 가리지 않도록 시작점을 위로 올림
+      final y = mapH - 126 - (n['step']! * stepGap);
       return Offset(x, y);
     }
 
