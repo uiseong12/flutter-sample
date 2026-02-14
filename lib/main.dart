@@ -31,6 +31,21 @@ class StoryApp extends StatelessWidget {
 enum Expression { neutral, smile, angry, blush, sad }
 enum TransitionPreset { fade, slide, flash }
 enum WorkMiniGame { herbSort, smithTiming, haggling }
+enum RelationshipState { strange, favorable, trust, shaken, bond, alliedLovers, oath }
+
+class UnlockDecision {
+  const UnlockDecision({required this.unlocked, required this.reason});
+
+  final bool unlocked;
+  final String reason;
+}
+
+class EndingDecision {
+  const EndingDecision({required this.id, required this.type});
+
+  final String id;
+  final String type;
+}
 
 class Character {
   Character({
@@ -152,10 +167,12 @@ class _GameShellState extends State<GameShell> {
 
   int _menuIndex = 0;
   int _gold = 120;
+  int _premiumTokens = 0;
   int _storyIndex = 0;
   int _baseCharm = 12;
   bool _loaded = false;
   bool _inStoryScene = false;
+  bool _endingEvaluated = false;
 
   bool _autoPlay = false;
   bool _skipTyping = false;
@@ -179,12 +196,35 @@ class _GameShellState extends State<GameShell> {
 
   String _equippedOutfitId = 'default';
   String? _endingCharacterName;
+  String? _lockedRouteCharacterName;
+  String? _endingRuleId;
+  String? _endingRuleType;
   bool _showAffectionOverlay = false;
   final List<String> _logs = [];
   final List<_Sparkle> _sparkles = [];
   final Map<String, int> _lastDelta = {};
 
   final Map<String, Expression> _expressions = {};
+  final Map<String, RelationshipState> _relationshipStates = {};
+  final Map<String, int> _politicalStats = {
+    'legitimacy': 30,
+    'economy': 30,
+    'publicTrust': 30,
+    'military': 30,
+    'surveillance': 10,
+  };
+  final Map<String, bool> _keyFlags = {
+    'publicly_supported_me': false,
+    'saved_in_ceremony': false,
+    'recipeUnlocked': false,
+    'guild_hostile': false,
+    'guild_backed': false,
+  };
+  final Set<String> _evidenceOwned = <String>{};
+  final Set<String> _costumeTags = <String>{};
+  Map<String, dynamic> _unlockRules = {};
+  Map<String, dynamic> _endingRules = {};
+  Map<String, dynamic> _statBalanceTable = {};
 
   final List<Character> _characters = [
     Character(
@@ -593,14 +633,363 @@ class _GameShellState extends State<GameShell> {
   String get _playerAvatar => _outfits.firstWhere((e) => e.id == _equippedOutfitId).avatarAsset;
   int get _totalCharm => _baseCharm + _equippedCharm;
 
+  String _relationshipLabel(RelationshipState state) {
+    switch (state) {
+      case RelationshipState.strange:
+        return '낯섦';
+      case RelationshipState.favorable:
+        return '호의';
+      case RelationshipState.trust:
+        return '신뢰';
+      case RelationshipState.shaken:
+        return '흔들림';
+      case RelationshipState.bond:
+        return '유대';
+      case RelationshipState.alliedLovers:
+        return '동맹연인';
+      case RelationshipState.oath:
+        return '공동서약';
+    }
+  }
+
+  RelationshipState _relationshipStateFromCode(String code) {
+    switch (code) {
+      case 'stranger':
+      case 'strange':
+        return RelationshipState.strange;
+      case 'favorable':
+        return RelationshipState.favorable;
+      case 'trust':
+        return RelationshipState.trust;
+      case 'shaken':
+        return RelationshipState.shaken;
+      case 'bond':
+        return RelationshipState.bond;
+      case 'allied_lovers':
+      case 'alliedLovers':
+        return RelationshipState.alliedLovers;
+      case 'oath':
+        return RelationshipState.oath;
+      default:
+        return RelationshipState.strange;
+    }
+  }
+
+  String _characterFlag(String characterName) {
+    switch (characterName) {
+      case '엘리안':
+        return 'publicly_supported_me';
+      case '루시안':
+        return 'saved_in_ceremony';
+      case '세레나':
+      default:
+        return 'guild_backed';
+    }
+  }
+
+  String _characterPoliticalStat(String characterName) {
+    switch (characterName) {
+      case '엘리안':
+        return 'military';
+      case '루시안':
+        return 'legitimacy';
+      case '세레나':
+      default:
+        return 'publicTrust';
+    }
+  }
+
+  int _affectionThreshold(RelationshipState state) {
+    switch (state) {
+      case RelationshipState.strange:
+        return 35;
+      case RelationshipState.favorable:
+        return 48;
+      case RelationshipState.trust:
+        return 62;
+      case RelationshipState.shaken:
+        return 52;
+      case RelationshipState.bond:
+        return 76;
+      case RelationshipState.alliedLovers:
+        return 90;
+      case RelationshipState.oath:
+        return 101;
+    }
+  }
+
+  int _politicalThreshold(RelationshipState state) {
+    switch (state) {
+      case RelationshipState.strange:
+        return 28;
+      case RelationshipState.favorable:
+        return 36;
+      case RelationshipState.trust:
+        return 44;
+      case RelationshipState.shaken:
+        return 40;
+      case RelationshipState.bond:
+        return 54;
+      case RelationshipState.alliedLovers:
+        return 66;
+      case RelationshipState.oath:
+        return 999;
+    }
+  }
+
+  RelationshipState _advanceState(RelationshipState current) {
+    switch (current) {
+      case RelationshipState.strange:
+        return RelationshipState.favorable;
+      case RelationshipState.favorable:
+        return RelationshipState.trust;
+      case RelationshipState.trust:
+        return RelationshipState.bond;
+      case RelationshipState.shaken:
+        return RelationshipState.trust;
+      case RelationshipState.bond:
+        return RelationshipState.alliedLovers;
+      case RelationshipState.alliedLovers:
+        return RelationshipState.oath;
+      case RelationshipState.oath:
+        return RelationshipState.oath;
+    }
+  }
+
+  void _refreshRelationshipStateFor(Character c, {String source = '관계'}) {
+    final current = _relationshipStates[c.name] ?? RelationshipState.strange;
+    final statKey = _characterPoliticalStat(c.name);
+    final flagKey = _characterFlag(c.name);
+    final affectionOk = c.affection >= _affectionThreshold(current);
+    final flagOk = _keyFlags[flagKey] ?? false;
+    final statOk = (_politicalStats[statKey] ?? 0) >= _politicalThreshold(current);
+    RelationshipState next = current;
+
+    if (c.affection < 25 || (_politicalStats['surveillance'] ?? 0) >= 85) {
+      next = RelationshipState.shaken;
+    } else if (affectionOk && flagOk && statOk) {
+      next = _advanceState(current);
+    }
+
+    if (next != current) {
+      _relationshipStates[c.name] = next;
+      _logs.insert(0, '[$source] ${c.name} 관계 상태: ${_relationshipLabel(current)} -> ${_relationshipLabel(next)}');
+    }
+  }
+
+  void _refreshAllRelationshipStates({String source = '관계'}) {
+    for (final c in _characters) {
+      _refreshRelationshipStateFor(c, source: source);
+    }
+  }
+
+  void _applyPoliticalDelta(Map<String, int> delta, String source) {
+    delta.forEach((key, value) {
+      final next = ((_politicalStats[key] ?? 0) + value).clamp(0, 100);
+      _politicalStats[key] = next;
+    });
+    _logs.insert(0, '[$source] 정치수치 변동: ${delta.entries.map((e) => '${e.key}${e.value >= 0 ? '+' : ''}${e.value}').join(', ')}');
+  }
+
+  void _applyStoryMetaFlags(StoryChoice choice) {
+    if (choice.label.contains('공개') || choice.label.contains('선언')) {
+      _keyFlags['publicly_supported_me'] = true;
+    }
+    if (_storyIndex >= 8) {
+      _keyFlags['saved_in_ceremony'] = true;
+    }
+    if (_storyIndex >= 10) {
+      _keyFlags['recipeUnlocked'] = true;
+    }
+    if (choice.label.contains('희생')) {
+      _keyFlags['guild_hostile'] = true;
+    }
+    if (choice.mainTarget == '세레나') {
+      _keyFlags['guild_backed'] = true;
+    }
+    if (choice.label.contains('증거') || choice.label.contains('감정서')) {
+      _evidenceOwned.add('trial_record');
+    }
+  }
+
+  void _applyStoryPoliticalImpact(StoryChoice choice) {
+    final delta = <String, int>{};
+    switch (choice.mainTarget) {
+      case '엘리안':
+        delta['military'] = 6;
+        delta['legitimacy'] = 2;
+        break;
+      case '루시안':
+        delta['legitimacy'] = 6;
+        delta['economy'] = 2;
+        break;
+      case '세레나':
+        delta['publicTrust'] = 6;
+        delta['economy'] = 2;
+        break;
+    }
+    if (choice.label.contains('비밀')) {
+      delta['surveillance'] = (delta['surveillance'] ?? 0) + 6;
+    }
+    if (choice.label.contains('공개') || choice.label.contains('선언')) {
+      delta['publicTrust'] = (delta['publicTrust'] ?? 0) + 3;
+    }
+    _applyPoliticalDelta(delta, '메이저 선택');
+  }
+
+  Map<String, dynamic>? _unlockExample(String id) {
+    final examples = (_unlockRules['examples'] as List<dynamic>? ?? []);
+    for (final item in examples) {
+      final map = item as Map<String, dynamic>;
+      if (map['id'] == id) return map;
+    }
+    return null;
+  }
+
+  Character? _characterFromUnlockTarget(String raw) {
+    if (raw == 'knight') return _characterByName('엘리안');
+    if (raw == 'rival') return _characterByName('세레나');
+    if (raw == 'mage') return _characterByName('루시안');
+    for (final c in _characters) {
+      if (c.name == raw) return c;
+    }
+    return null;
+  }
+
+  bool _evaluateCondition(Map<String, dynamic> condition) {
+    final type = condition['type']?.toString() ?? '';
+    switch (type) {
+      case 'affectionThreshold':
+        final targetRaw = condition['target']?.toString() ?? '';
+        final target = _characterFromUnlockTarget(targetRaw);
+        if (target == null) return false;
+        return target.affection >= (condition['value'] as int? ?? 0);
+      case 'stateReached':
+        final targetRaw = condition['target']?.toString() ?? '';
+        final target = _characterFromUnlockTarget(targetRaw);
+        if (target == null) return false;
+        final required = _relationshipStateFromCode(condition['value']?.toString() ?? 'strange');
+        final current = _relationshipStates[target.name] ?? RelationshipState.strange;
+        return current.index >= required.index;
+      case 'politicalStatThreshold':
+        final stat = condition['stat']?.toString() ?? '';
+        final threshold = condition['value'] as int? ?? 0;
+        return (_politicalStats[stat] ?? 0) >= threshold;
+      case 'flagTrue':
+        final flag = condition['flag']?.toString() ?? '';
+        return _keyFlags[flag] ?? false;
+      case 'evidenceOwned':
+        final key = condition['id']?.toString() ?? '';
+        return _evidenceOwned.contains(key);
+      case 'costumeTag':
+        final tag = condition['tag']?.toString() ?? '';
+        return _costumeTags.contains(tag);
+      default:
+        return false;
+    }
+  }
+
+  UnlockDecision _evaluateUnlockRule(String exampleId) {
+    final example = _unlockExample(exampleId);
+    if (example == null) return const UnlockDecision(unlocked: true, reason: '');
+    final conditions = (example['conditions'] as List<dynamic>).cast<Map<String, dynamic>>();
+    final passes = conditions.where(_evaluateCondition).length;
+    final ruleText = example['rule']?.toString() ?? '';
+    final split = ruleText.split('of');
+    int required = conditions.length;
+    if (split.length == 2) {
+      required = int.tryParse(split.first) ?? required;
+    }
+    final unlocked = passes >= required;
+    if (unlocked) {
+      return const UnlockDecision(unlocked: true, reason: '');
+    }
+    return UnlockDecision(
+      unlocked: false,
+      reason: '잠금 조건 미달성 ($passes/$required). 호감도·정치수치·핵심 플래그를 확인하세요.',
+    );
+  }
+
+  void _lockRouteAtNode15IfNeeded() {
+    if (_storyIndex != 14 || _lockedRouteCharacterName != null) return;
+    Character top = _characters.first;
+    for (final c in _characters.skip(1)) {
+      if (c.affection > top.affection) top = c;
+    }
+    _lockedRouteCharacterName = top.name;
+    _logs.insert(0, '[루트] 15노드에서 ${top.name} 루트가 잠금 확정되었습니다.');
+  }
+
+  bool _isChoiceBlockedByRouteLock(StoryChoice choice) {
+    return _lockedRouteCharacterName != null && _storyIndex >= 14 && choice.mainTarget != _lockedRouteCharacterName;
+  }
+
+  bool _matchesEndingRequirement(String key, dynamic value) {
+    if (key == 'recipeUnlocked') {
+      return (_keyFlags['recipeUnlocked'] ?? false) == value;
+    }
+    if (key == 'surveillanceMax') {
+      return (_politicalStats['surveillance'] ?? 0) <= (value as int? ?? 100);
+    }
+    return (_politicalStats[key] ?? 0) >= (value as int? ?? 0);
+  }
+
+  bool _matchesEndingTrigger(String trigger) {
+    switch (trigger) {
+      case 'node10_total_below_80':
+        final total = (_politicalStats['legitimacy'] ?? 0) + (_politicalStats['economy'] ?? 0) + (_politicalStats['publicTrust'] ?? 0) + (_politicalStats['military'] ?? 0);
+        return total < 80;
+      case 'surveillance_100':
+        return (_politicalStats['surveillance'] ?? 0) >= 100;
+      case 'guild_hostile_and_military_low':
+        return (_keyFlags['guild_hostile'] ?? false) && (_politicalStats['military'] ?? 0) < 45;
+      default:
+        return false;
+    }
+  }
+
+  EndingDecision? _evaluateEndingDecision() {
+    final endings = (_endingRules['endings'] as List<dynamic>? ?? []).cast<Map<String, dynamic>>();
+    final priority = (_endingRules['priority'] as List<dynamic>? ?? []).map((e) => e.toString()).toList();
+    for (final id in priority) {
+      Map<String, dynamic>? ending;
+      for (final e in endings) {
+        if (e['id'] == id) {
+          ending = e;
+          break;
+        }
+      }
+      if (ending == null) continue;
+      final requires = (ending['requires'] as Map<String, dynamic>? ?? {});
+      final trigger = ending['trigger']?.toString();
+      bool matched = true;
+      if (requires.isNotEmpty) {
+        for (final entry in requires.entries) {
+          if (!_matchesEndingRequirement(entry.key, entry.value)) {
+            matched = false;
+            break;
+          }
+        }
+      }
+      if (trigger != null && !_matchesEndingTrigger(trigger)) {
+        matched = false;
+      }
+      if (matched) {
+        return EndingDecision(id: id, type: ending['type']?.toString() ?? '미정');
+      }
+    }
+    return const EndingDecision(id: 'fallback_bad', type: '배드');
+  }
+
   @override
   void initState() {
     super.initState();
     _storySelections = List<int?>.filled(_story.length, null);
     for (final c in _characters) {
       _expressions[c.name] = Expression.neutral;
+      _relationshipStates[c.name] = RelationshipState.strange;
     }
-    _load();
+    _bootstrap();
   }
 
   @override
@@ -610,18 +999,40 @@ class _GameShellState extends State<GameShell> {
     super.dispose();
   }
 
+  Future<void> _bootstrap() async {
+    await _loadRuleFiles();
+    await _load();
+  }
+
+  Future<void> _loadRuleFiles() async {
+    try {
+      _unlockRules = jsonDecode(await rootBundle.loadString('unlock_rules_v3.json')) as Map<String, dynamic>;
+    } catch (_) {}
+    try {
+      _endingRules = jsonDecode(await rootBundle.loadString('ending_rules.json')) as Map<String, dynamic>;
+    } catch (_) {}
+    try {
+      _statBalanceTable = jsonDecode(await rootBundle.loadString('stat_balance_table.json')) as Map<String, dynamic>;
+    } catch (_) {}
+  }
+
   Future<void> _load() async {
     final pref = await SharedPreferences.getInstance();
     final raw = pref.getString(_saveKey);
     if (raw != null) {
       final m = jsonDecode(raw) as Map<String, dynamic>;
       _gold = m['gold'] ?? _gold;
+      _premiumTokens = m['premiumTokens'] ?? _premiumTokens;
       _storyIndex = (m['storyIndex'] ?? _storyIndex) as int;
       if (_storyIndex < 0) _storyIndex = 0;
       if (_storyIndex >= _story.length) _storyIndex = _story.length - 1;
       _baseCharm = m['baseCharm'] ?? _baseCharm;
       _equippedOutfitId = m['equippedOutfitId'] ?? _equippedOutfitId;
       _endingCharacterName = m['endingCharacterName'] as String?;
+      _lockedRouteCharacterName = m['lockedRouteCharacterName'] as String?;
+      _endingRuleId = m['endingRuleId'] as String?;
+      _endingRuleType = m['endingRuleType'] as String?;
+      _endingEvaluated = m['endingEvaluated'] ?? _endingEvaluated;
       final loadedSelections = ((m['storySelections'] as List<dynamic>?) ?? const [])
           .map<int?>((e) => e == null ? null : e as int)
           .toList();
@@ -642,8 +1053,31 @@ class _GameShellState extends State<GameShell> {
           _characters[i].affection = (charRaw[i]['affection'] ?? _characters[i].affection) as int;
         }
       }
+
+      final relationRaw = (m['relationshipStates'] as Map<String, dynamic>? ?? {});
+      for (final c in _characters) {
+        _relationshipStates[c.name] = _relationshipStateFromCode(relationRaw[c.name]?.toString() ?? 'strange');
+      }
+
+      final politicalRaw = (m['politicalStats'] as Map<String, dynamic>? ?? {});
+      for (final key in _politicalStats.keys) {
+        _politicalStats[key] = (politicalRaw[key] ?? _politicalStats[key]) as int;
+      }
+
+      final flagRaw = (m['keyFlags'] as Map<String, dynamic>? ?? {});
+      for (final key in _keyFlags.keys) {
+        _keyFlags[key] = (flagRaw[key] ?? _keyFlags[key]) as bool;
+      }
+
+      _evidenceOwned
+        ..clear()
+        ..addAll((m['evidenceOwned'] as List<dynamic>? ?? []).map((e) => e.toString()));
+      _costumeTags
+        ..clear()
+        ..addAll((m['costumeTags'] as List<dynamic>? ?? []).map((e) => e.toString()));
     }
 
+    _lockRouteAtNode15IfNeeded();
     _beginBeatLine();
 
     if (mounted) {
@@ -660,14 +1094,24 @@ class _GameShellState extends State<GameShell> {
       _saveKey,
       jsonEncode({
         'gold': _gold,
+        'premiumTokens': _premiumTokens,
         'storyIndex': _storyIndex,
         'baseCharm': _baseCharm,
         'equippedOutfitId': _equippedOutfitId,
         'endingCharacterName': _endingCharacterName,
+        'lockedRouteCharacterName': _lockedRouteCharacterName,
+        'endingRuleId': _endingRuleId,
+        'endingRuleType': _endingRuleType,
+        'endingEvaluated': _endingEvaluated,
         'storySelections': _storySelections,
         'stepNodePick': _stepNodePick.map((k, v) => MapEntry(k.toString(), v)),
         'logs': _logs,
         'characters': _characters.map((e) => e.toJson()).toList(),
+        'relationshipStates': _relationshipStates.map((k, v) => MapEntry(k, v.name)),
+        'politicalStats': _politicalStats,
+        'keyFlags': _keyFlags,
+        'evidenceOwned': _evidenceOwned.toList(),
+        'costumeTags': _costumeTags.toList(),
       }),
     );
   }
@@ -738,6 +1182,7 @@ class _GameShellState extends State<GameShell> {
     _lastDelta[target.name] = delta;
     _logs.insert(0, '$logPrefix ${target.name} +$delta');
     _triggerSparkles(target.name, positive: delta >= 0);
+    _refreshRelationshipStateFor(target, source: logPrefix.replaceAll('[', '').replaceAll(']', ''));
     await _checkEndingIfNeeded(target);
 
     Future.delayed(const Duration(milliseconds: 900), () {
@@ -774,9 +1219,16 @@ class _GameShellState extends State<GameShell> {
 
   Future<void> _pickStoryChoice(StoryChoice choice, int choiceIndex) async {
     if (_endingCharacterName != null) return;
+    if (_isChoiceBlockedByRouteLock(choice)) {
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('루트 잠금: $_lockedRouteCharacterName 진행 중입니다.')));
+      return;
+    }
     _playClick();
+    final pickedNodeIndex = _storyIndex;
 
     _storySelections[_storyIndex] = choiceIndex;
+    _applyStoryMetaFlags(choice);
+    _applyStoryPoliticalImpact(choice);
 
     final main = _characterByName(choice.mainTarget);
     await _addAffection(main, _scaledGain(choice.mainDelta), '[스토리]');
@@ -797,6 +1249,10 @@ class _GameShellState extends State<GameShell> {
       _transitionPreset = choice.sideDelta < 0 ? TransitionPreset.flash : TransitionPreset.slide;
     }
 
+    _lockRouteAtNode15IfNeeded();
+    await _evaluateEndingIfNeeded(pickedNodeIndex, choice.result);
+    _refreshAllRelationshipStates(source: '메이저 선택');
+
     _beginBeatLine();
     await _save();
 
@@ -813,7 +1269,9 @@ class _GameShellState extends State<GameShell> {
     _playClick();
     _gold -= item.price;
     await _addAffection(target, _scaledGain(item.affectionBoost), '[상점] ${item.name} 선물 ->');
+    _applyPoliticalDelta({_characterPoliticalStat(target.name): 2, 'publicTrust': 1}, '상점 선물');
     _setExpression(target.name, Expression.blush);
+    _refreshRelationshipStateFor(target, source: '상점');
     await _save();
     setState(() {});
   }
@@ -826,6 +1284,9 @@ class _GameShellState extends State<GameShell> {
     _playClick();
     _gold -= item.price;
     _equippedOutfitId = item.id;
+    if (item.id.contains('noble')) _costumeTags.add('noble');
+    if (item.id.contains('ranger')) _costumeTags.add('ranger');
+    if (item.id.contains('moon')) _costumeTags.add('moon');
     _logs.insert(0, '[장착] ${item.name} 착용 (매력 +${item.charmBonus})');
     await _save();
     setState(() {});
@@ -964,8 +1425,11 @@ class _GameShellState extends State<GameShell> {
     final gain = _scaledGain(6 + _random.nextInt(6));
     _playReward();
     await _addAffection(target, gain, '[데이트]');
+    _applyPoliticalDelta({_characterPoliticalStat(target.name): 3, 'publicTrust': 1}, '데이트');
+    _keyFlags['saved_in_ceremony'] = true;
     _setExpression(target.name, Expression.blush);
     _logs.insert(0, '[상황] $picked');
+    _refreshRelationshipStateFor(target, source: '데이트');
     await _save();
 
     if (!mounted) return;
@@ -978,6 +1442,59 @@ class _GameShellState extends State<GameShell> {
       ),
     );
     setState(() {});
+  }
+
+  Future<void> _watchRewardAdSkeleton() async {
+    _playReward();
+    _premiumTokens += 1;
+    _logs.insert(0, '[광고 보상] 프리미엄 토큰 +1');
+    await _save();
+    if (!mounted) return;
+    ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('보상 광고 시청(시뮬레이션): 프리미엄 토큰 +1')));
+    setState(() {});
+  }
+
+  Future<void> _usePremiumChoice(StoryBeat beat) async {
+    if (_premiumTokens <= 0 || _endingCharacterName != null) return;
+    final primary = _characterByName(beat.leftCharacter);
+    final secondary = _characterByName(beat.rightCharacter);
+    final target = primary.affection >= secondary.affection ? primary : secondary;
+    final synthetic = StoryChoice(
+      label: '[프리미엄] 결속의 서약',
+      mainTarget: target.name,
+      mainDelta: 16,
+      result: '프리미엄 선택으로 감정과 정치의 결속이 크게 강화되었다.',
+    );
+    _premiumTokens -= 1;
+    await _pickStoryChoice(synthetic, 99);
+    _applyPoliticalDelta({
+      _characterPoliticalStat(target.name): 10,
+      'publicTrust': 4,
+      'surveillance': -2,
+    }, '프리미엄 선택');
+    _refreshRelationshipStateFor(target, source: '프리미엄');
+    await _save();
+    if (mounted) setState(() {});
+  }
+
+  Future<void> _evaluateEndingIfNeeded(int pickedNodeIndex, String resultText) async {
+    if (pickedNodeIndex != 29 || _endingEvaluated) return;
+    final decision = _evaluateEndingDecision();
+    if (decision == null) return;
+    _endingRuleId = decision.id;
+    _endingRuleType = decision.type;
+    _endingEvaluated = true;
+    _logs.insert(0, '[엔딩 판정] ${decision.id} (${decision.type})');
+    await _save();
+    if (!mounted) return;
+    await showDialog(
+      context: context,
+      builder: (_) => AlertDialog(
+        title: const Text('엔딩 판정'),
+        content: Text('ending id: ${decision.id}\nending type: ${decision.type}\n\n스토리 결과: $resultText'),
+        actions: [TextButton(onPressed: () => Navigator.pop(context), child: const Text('확인'))],
+      ),
+    );
   }
 
   Color _moodOverlay() {
@@ -1062,6 +1579,15 @@ class _GameShellState extends State<GameShell> {
       appBar: AppBar(
         title: const Text('로열 하트 크로니클'),
         actions: [
+          Padding(
+            padding: const EdgeInsets.only(right: 12),
+            child: Center(child: Text('🎟 $_premiumTokens')),
+          ),
+          if (_endingRuleId != null)
+            Padding(
+              padding: const EdgeInsets.only(right: 12),
+              child: Center(child: Text('판정: $_endingRuleId/$_endingRuleType', style: const TextStyle(fontSize: 12))),
+            ),
           if (_endingCharacterName != null)
             Padding(
               padding: const EdgeInsets.only(right: 12),
@@ -1182,12 +1708,20 @@ class _GameShellState extends State<GameShell> {
                       .map(
                         (c) => Padding(
                           padding: const EdgeInsets.only(bottom: 8),
-                          child: Row(
-                            children: [
-                              SizedBox(width: 36, child: Text(c.name, style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold))),
-                              const SizedBox(width: 8),
-                              Expanded(child: LinearProgressIndicator(value: c.affection / 100, minHeight: 8)),
-                              const SizedBox(width: 8),
+                            child: Row(
+                              children: [
+                                SizedBox(width: 36, child: Text(c.name, style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold))),
+                                const SizedBox(width: 8),
+                                SizedBox(
+                                  width: 66,
+                                  child: Text(
+                                    _relationshipLabel(_relationshipStates[c.name] ?? RelationshipState.strange),
+                                    style: const TextStyle(color: Colors.amberAccent, fontSize: 11),
+                                  ),
+                                ),
+                                const SizedBox(width: 8),
+                                Expanded(child: LinearProgressIndicator(value: c.affection / 100, minHeight: 8)),
+                                const SizedBox(width: 8),
                               SizedBox(width: 30, child: Text('${c.affection}', style: const TextStyle(color: Colors.white))),
                               SizedBox(width: 32, child: _deltaBadge(c.name)),
                             ],
@@ -1384,7 +1918,10 @@ class _GameShellState extends State<GameShell> {
                   child: GestureDetector(
                     onTap: () {
                       _playClick();
-                      setState(() => _storyIndex = beat);
+                      setState(() {
+                        _storyIndex = beat;
+                        _lockRouteAtNode15IfNeeded();
+                      });
                     },
                     child: AnimatedContainer(
                       duration: const Duration(milliseconds: 180),
@@ -1575,16 +2112,80 @@ class _GameShellState extends State<GameShell> {
                 Text(_visibleLine, style: const TextStyle(color: Colors.white, fontSize: 15)),
                 const SizedBox(height: 10),
                 if (_lineCompleted)
-                  Wrap(
-                    spacing: 8,
-                    runSpacing: 8,
-                    children: List.generate(
-                      beat.choices.length,
-                      (i) => ElevatedButton(
-                        onPressed: _endingCharacterName != null ? null : () => _pickStoryChoice(beat.choices[i], i),
-                        child: Text(beat.choices[i].label),
+                  Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Wrap(
+                        spacing: 8,
+                        runSpacing: 8,
+                        children: List.generate(
+                          beat.choices.length,
+                          (i) {
+                            final choice = beat.choices[i];
+                            final routeLocked = _isChoiceBlockedByRouteLock(choice);
+                            return ElevatedButton(
+                              onPressed: (_endingCharacterName != null || routeLocked) ? null : () => _pickStoryChoice(choice, i),
+                              child: Text(choice.label),
+                            );
+                          },
+                        ),
                       ),
-                    ),
+                      if (_lockedRouteCharacterName != null && _storyIndex >= 14)
+                        Padding(
+                          padding: const EdgeInsets.only(top: 6),
+                          child: Text(
+                            '루트 잠금 활성: $_lockedRouteCharacterName',
+                            style: const TextStyle(color: Colors.amberAccent, fontSize: 12),
+                          ),
+                        ),
+                      const SizedBox(height: 10),
+                      const Text('조건 선택 슬롯', style: TextStyle(color: Colors.white70, fontSize: 12)),
+                      const SizedBox(height: 4),
+                      Builder(
+                        builder: (_) {
+                          final unlock = _evaluateUnlockRule('knight_pov_1');
+                          return Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              OutlinedButton(
+                                onPressed: unlock.unlocked && _endingCharacterName == null
+                                    ? () {
+                                        final choice = StoryChoice(
+                                          label: '[조건] 기사 시점 개방',
+                                          mainTarget: '엘리안',
+                                          mainDelta: 10,
+                                          result: '조건 분기: 기사 시점 단서가 해금되어 전황 판단이 유리해졌다.',
+                                        );
+                                        _pickStoryChoice(choice, 88);
+                                      }
+                                    : null,
+                                child: const Text('[조건] 기사 시점 분기'),
+                              ),
+                              if (!unlock.unlocked) Text(unlock.reason, style: const TextStyle(color: Colors.orangeAccent, fontSize: 12)),
+                            ],
+                          );
+                        },
+                      ),
+                      const SizedBox(height: 10),
+                      const Text('광고/프리미엄 슬롯', style: TextStyle(color: Colors.white70, fontSize: 12)),
+                      const SizedBox(height: 4),
+                      Wrap(
+                        spacing: 8,
+                        runSpacing: 8,
+                        children: [
+                          OutlinedButton.icon(
+                            onPressed: _watchRewardAdSkeleton,
+                            icon: const Icon(Icons.ondemand_video),
+                            label: const Text('보상 광고(+1 토큰)'),
+                          ),
+                          FilledButton.icon(
+                            onPressed: (_premiumTokens > 0 && _endingCharacterName == null) ? () => _usePremiumChoice(beat) : null,
+                            icon: const Icon(Icons.stars),
+                            label: Text('프리미엄 선택 (1 토큰, 보유: $_premiumTokens)'),
+                          ),
+                        ],
+                      ),
+                    ],
                   )
                 else
                   const Text('탭하여 대사 넘기기', style: TextStyle(color: Colors.white54, fontSize: 12)),
@@ -1754,7 +2355,7 @@ class _GameShellState extends State<GameShell> {
               child: ListTile(
                 leading: SizedBox(width: 40, height: 54, child: _characterImageWithExpression(c, width: 36)),
                 title: Text('${c.name} (${c.role})'),
-                subtitle: Text('호감도 ${c.affection}'),
+                subtitle: Text('호감도 ${c.affection} · 관계 ${_relationshipLabel(_relationshipStates[c.name] ?? RelationshipState.strange)}'),
                 trailing: FilledButton(onPressed: () => _dateRandom(c), child: const Text('데이트')),
               ),
             )),
