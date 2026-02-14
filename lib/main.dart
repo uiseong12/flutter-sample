@@ -2,10 +2,13 @@ import 'dart:async';
 import 'dart:convert';
 import 'dart:math';
 
+import 'package:flame/game.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+
+import 'minigame/flame_dot_game.dart';
 
 void main() {
   runApp(const StoryApp());
@@ -208,6 +211,7 @@ class _GameShellState extends State<GameShell> {
   Set<String> _gardenThorns = <String>{};
 
   Timer? _workTimer;
+  DotFlameGame? _flameGame;
 
   int _sceneKey = 0;
   int _animTick = 0;
@@ -1430,6 +1434,56 @@ class _GameShellState extends State<GameShell> {
   }
 
   String _pKey(int x, int y) => '$x:$y';
+
+  FlameMode _toFlameMode(WorkMiniGame game) {
+    switch (game) {
+      case WorkMiniGame.herbSort:
+        return FlameMode.herb;
+      case WorkMiniGame.smithTiming:
+        return FlameMode.smith;
+      case WorkMiniGame.haggling:
+        return FlameMode.haggling;
+      case WorkMiniGame.courierRun:
+        return FlameMode.courier;
+      case WorkMiniGame.dateDance:
+        return FlameMode.dance;
+      case WorkMiniGame.gardenWalk:
+        return FlameMode.garden;
+    }
+  }
+
+  void _startFlameGame() {
+    _flameGame = DotFlameGame(
+      mode: _toFlameMode(_selectedWork),
+      durationSec: 20,
+      onTick: (s) {
+        if (!mounted) return;
+        setState(() => _workTimeLeft = s);
+      },
+      onScore: (s) {
+        if (!mounted) return;
+        setState(() => _workScore = s);
+      },
+      onCombo: (c) {
+        if (!mounted) return;
+        setState(() => _combo = c);
+      },
+      onFail: () {
+        _flashFail();
+      },
+      onDone: (score, combo) async {
+        if (!mounted) return;
+        _workScore = score;
+        _combo = combo;
+        await _finishWorkMiniGame();
+      },
+    );
+    setState(() {
+      _workTimeLeft = 20;
+      _workScore = 0;
+      _combo = 0;
+    });
+  }
 
   void _prepareWorkRound() {
     switch (_selectedWork) {
@@ -3235,31 +3289,15 @@ class _GameShellState extends State<GameShell> {
                   left: 10,
                   right: 10,
                   bottom: 74,
-                  child: LayoutBuilder(
-                    builder: (_, constraints) => Stack(
-                      children: [
-                        Positioned.fill(
-                          child: CustomPaint(
-                            painter: _MiniGamePainter(
-                              mode: _selectedWork,
-                              herbGrid: _herbGrid,
-                              herbPos: _herbPos,
-                              courierPos: _courierPos,
-                              courierDocs: _courierDocs,
-                              guards: _guards,
-                              gardenPos: _gardenPos,
-                              gardenHearts: _gardenHearts,
-                              gardenThorns: _gardenThorns,
-                              smithMeter: _smithMeter,
-                              marketCursor: _marketCursor,
-                              hagglingTarget: _hagglingTarget,
-                              danceNeed: _danceNeed,
-                            ),
-                          ),
-                        ),
-                        _workActorOverlay(constraints),
-                      ],
-                    ),
+                  child: ClipRRect(
+                    borderRadius: BorderRadius.circular(10),
+                    child: _flameGame == null
+                        ? Container(
+                            color: Colors.black.withOpacity(0.35),
+                            alignment: Alignment.center,
+                            child: const Text('플레이 시작을 누르면 Flame 캔버스가 실행됩니다', style: TextStyle(color: Color(0xFFF6F1E8))),
+                          )
+                        : GameWidget(game: _flameGame!),
                   ),
                 ),
                 if (_cutinCharacter != null)
@@ -3289,44 +3327,13 @@ class _GameShellState extends State<GameShell> {
                     ),
                   ),
                 Positioned(
-                  left: 10,
-                  right: 10,
-                  bottom: 8,
-                  child: Row(
-                    children: [
-                      Expanded(
-                        child: Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                          children: [
-                            IconButton(onPressed: _workTimeLeft > 0 ? () => _workMove(-1, 0) : null, icon: const Icon(Icons.arrow_left, color: Colors.white)),
-                            IconButton(onPressed: _workTimeLeft > 0 ? () => _workMove(0, -1) : null, icon: const Icon(Icons.arrow_drop_up, color: Colors.white)),
-                            IconButton(onPressed: _workTimeLeft > 0 ? () => _workMove(0, 1) : null, icon: const Icon(Icons.arrow_drop_down, color: Colors.white)),
-                            IconButton(onPressed: _workTimeLeft > 0 ? () => _workMove(1, 0) : null, icon: const Icon(Icons.arrow_right, color: Colors.white)),
-                          ],
-                        ),
-                      ),
-                      const SizedBox(width: 8),
-                      Expanded(
-                        child: _selectedWork == WorkMiniGame.dateDance
-                            ? Wrap(
-                                spacing: 6,
-                                children: List.generate(
-                                  4,
-                                  (i) => ElevatedButton(
-                                    onPressed: _workTimeLeft > 0 ? () => _workActionDance(i) : null,
-                                    child: Text(['←', '↑', '→', '↓'][i]),
-                                  ),
-                                ),
-                              )
-                            : Wrap(
-                                spacing: 6,
-                                children: [
-                                  ElevatedButton(onPressed: _workTimeLeft > 0 ? _workActionSmith : null, child: const Text('타이밍')),
-                                  ElevatedButton(onPressed: _workTimeLeft > 0 ? _workActionHaggling : null, child: const Text('정지')),
-                                ],
-                              ),
-                      ),
-                    ],
+                  left: 12,
+                  right: 12,
+                  bottom: 12,
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                    decoration: BoxDecoration(color: Colors.black.withOpacity(0.45), borderRadius: BorderRadius.circular(8)),
+                    child: const Text('좌하단 조이스틱 이동 · 우하단 액션 버튼', style: TextStyle(color: Color(0xFFF6F1E8), fontSize: 12)),
                   ),
                 ),
               ],
@@ -3363,7 +3370,7 @@ class _GameShellState extends State<GameShell> {
           ),
         ),
         const SizedBox(height: 10),
-        _sealPrimaryButton('플레이 시작 (20초 루프)', _workTimeLeft > 0 ? null : _startWorkMiniGame),
+        _sealPrimaryButton('플레이 시작 (20초 루프)', _workTimeLeft > 0 ? null : _startFlameGame),
       ],
     );
   }
