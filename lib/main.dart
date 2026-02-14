@@ -1112,22 +1112,42 @@ class _GameShellState extends State<GameShell> {
       mergeNodesFromJson(base, _nodeDialogues, _nodeCheckpoints);
 
       try {
-        final cine = jsonDecode(await rootBundle.loadString('story_dialogues_cinematic_1_10.json')) as Map<String, dynamic>;
+        final cine = jsonDecode(await rootBundle.loadString('story_dialogues_cinematic_1_30.json')) as Map<String, dynamic>;
         mergeNodesFromJson(cine, _nodeDialogues, _nodeCheckpoints);
-      } catch (_) {}
+      } catch (_) {
+        try {
+          final cineLegacy = jsonDecode(await rootBundle.loadString('story_dialogues_cinematic_1_10.json')) as Map<String, dynamic>;
+          mergeNodesFromJson(cineLegacy, _nodeDialogues, _nodeCheckpoints);
+        } catch (_) {}
+      }
 
       try {
-        final e = jsonDecode(await rootBundle.loadString('story_dialogues_route_elian_16_30.json')) as Map<String, dynamic>;
+        final e = jsonDecode(await rootBundle.loadString('story_dialogues_route_elian_1_30.json')) as Map<String, dynamic>;
         mergeNodesFromJson(e, _routeNodeDialogues['elian']!, _routeNodeCheckpoints['elian']!);
-      } catch (_) {}
+      } catch (_) {
+        try {
+          final eLegacy = jsonDecode(await rootBundle.loadString('story_dialogues_route_elian_16_30.json')) as Map<String, dynamic>;
+          mergeNodesFromJson(eLegacy, _routeNodeDialogues['elian']!, _routeNodeCheckpoints['elian']!);
+        } catch (_) {}
+      }
       try {
-        final l = jsonDecode(await rootBundle.loadString('story_dialogues_route_lucian_16_30.json')) as Map<String, dynamic>;
+        final l = jsonDecode(await rootBundle.loadString('story_dialogues_route_lucian_1_30.json')) as Map<String, dynamic>;
         mergeNodesFromJson(l, _routeNodeDialogues['lucian']!, _routeNodeCheckpoints['lucian']!);
-      } catch (_) {}
+      } catch (_) {
+        try {
+          final lLegacy = jsonDecode(await rootBundle.loadString('story_dialogues_route_lucian_16_30.json')) as Map<String, dynamic>;
+          mergeNodesFromJson(lLegacy, _routeNodeDialogues['lucian']!, _routeNodeCheckpoints['lucian']!);
+        } catch (_) {}
+      }
       try {
-        final s = jsonDecode(await rootBundle.loadString('story_dialogues_route_serena_16_30.json')) as Map<String, dynamic>;
+        final s = jsonDecode(await rootBundle.loadString('story_dialogues_route_serena_1_30.json')) as Map<String, dynamic>;
         mergeNodesFromJson(s, _routeNodeDialogues['serena']!, _routeNodeCheckpoints['serena']!);
-      } catch (_) {}
+      } catch (_) {
+        try {
+          final sLegacy = jsonDecode(await rootBundle.loadString('story_dialogues_route_serena_16_30.json')) as Map<String, dynamic>;
+          mergeNodesFromJson(sLegacy, _routeNodeDialogues['serena']!, _routeNodeCheckpoints['serena']!);
+        } catch (_) {}
+      }
     } catch (_) {}
   }
 
@@ -1301,7 +1321,7 @@ class _GameShellState extends State<GameShell> {
 
   List<Map<String, dynamic>> _activeNodeLines(int nodeId) {
     final route = _lockedRouteCode();
-    if (route != null && nodeId >= 16) {
+    if (route != null) {
       final routeLines = _routeNodeDialogues[route]?[nodeId];
       if (routeLines != null && routeLines.isNotEmpty) return routeLines;
     }
@@ -1346,7 +1366,7 @@ class _GameShellState extends State<GameShell> {
 
   List<Map<String, dynamic>> _activeNodeCheckpoints(int nodeId) {
     final route = _lockedRouteCode();
-    if (route != null && nodeId >= 16) {
+    if (route != null) {
       final routeCps = _routeNodeCheckpoints[route]?[nodeId];
       if (routeCps != null && routeCps.isNotEmpty) return routeCps;
     }
