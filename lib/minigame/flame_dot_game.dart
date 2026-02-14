@@ -11,6 +11,8 @@ import 'flame/components.dart';
 import 'flame/models.dart';
 import 'flame/scenes.dart';
 
+export 'flame/models.dart' show FlameMode;
+
 class DotFlameGame extends FlameGame {
   DotFlameGame({
     required this.mode,
@@ -145,5 +147,3 @@ class DotFlameGame extends FlameGame {
     onTick(_timer.ceil());
   }
 }
-
-export 'flame/models.dart' show FlameMode;

@@ -4,6 +4,7 @@ import 'dart:math';
 
 import 'package:flame/game.dart';
 import 'package:flutter/material.dart';
+import 'package:vector_math/vector_math_64.dart' as v64;
 import 'package:flutter/services.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -3693,7 +3694,7 @@ class _BottomNavItemState extends State<_BottomNavItem> {
         onTap: widget.onTap,
         child: AnimatedContainer(
           duration: const Duration(milliseconds: 90),
-          transform: Matrix4.translationValues(0, _pressed ? 2 : 0, 0),
+          transform: v64.Matrix4.translationValues(0, _pressed ? 2 : 0, 0),
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
@@ -3774,7 +3775,7 @@ class _SealButtonState extends State<_SealButton> {
       onTap: widget.onPressed,
       child: AnimatedContainer(
         duration: const Duration(milliseconds: 90),
-        transform: Matrix4.translationValues(0, _pressed ? 2 : 0, 0),
+        transform: v64.Matrix4.translationValues(0, _pressed ? 2 : 0, 0),
         decoration: BoxDecoration(
           boxShadow: enabled
               ? [
