@@ -1315,12 +1315,80 @@ class _GameShellState extends State<GameShell> {
   }
 
   void _nextDialogueLine() {
-    if (_isCheckpointPending()) return;
     if (!_hasNextDialogueLine()) return;
     setState(() {
       _nodeDialogueIndex += 1;
     });
     _beginBeatLine();
+  }
+
+  Future<void> _openCheckpointPopup(StoryBeat beat) async {
+    final cp = _currentCheckpoint();
+    if (cp == null || !mounted) return;
+    final title = cp['title']?.toString() ?? '중간 선택';
+    final options = (cp['options'] as List<dynamic>? ?? []).cast<Map<String, dynamic>>();
+
+    await showDialog(
+      context: context,
+      builder: (_) => AlertDialog(
+        title: Text(title),
+        content: SizedBox(
+          width: 380,
+          child: SingleChildScrollView(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const Text('체크포인트 선택을 완료해야 다음 대사로 진행됩니다.'),
+                const SizedBox(height: 10),
+                ...options.map((o) => Padding(
+                      padding: const EdgeInsets.only(bottom: 8),
+                      child: OutlinedButton(
+                        onPressed: () async {
+                          Navigator.pop(context);
+                          await _applyCheckpointChoice(o);
+                        },
+                        child: Text(o['label']?.toString() ?? '선택'),
+                      ),
+                    )),
+                const SizedBox(height: 8),
+                ExpansionTile(
+                  tilePadding: EdgeInsets.zero,
+                  title: const Text('추가 옵션 펼치기 (광고/프리미엄)'),
+                  children: [
+                    Wrap(
+                      spacing: 8,
+                      runSpacing: 8,
+                      children: [
+                        OutlinedButton.icon(
+                          onPressed: () async {
+                            Navigator.pop(context);
+                            await _watchRewardAdSkeleton();
+                          },
+                          icon: const Icon(Icons.ondemand_video),
+                          label: const Text('보상 광고(+1 토큰)'),
+                        ),
+                        FilledButton.icon(
+                          onPressed: _endingCharacterName == null
+                              ? () {
+                                  Navigator.pop(context);
+                                  Future.microtask(() => _openPremiumChoiceFlow(beat));
+                                }
+                              : null,
+                          icon: const Icon(Icons.stars),
+                          label: Text('프리미엄 선택지 (보유: $_premiumTokens)'),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 4),
+                  ],
+                ),
+              ],
+            ),
+          ),
+        ),
+        actions: [TextButton(onPressed: () => Navigator.pop(context), child: const Text('닫기'))],
+      ),
+    );
   }
 
   void _beginBeatLine() {
@@ -3179,7 +3247,11 @@ class _GameShellState extends State<GameShell> {
           });
           return;
         }
-        _nextDialogueLine();
+        if (_isCheckpointPending()) {
+          _openCheckpointPopup(beat);
+        } else {
+          _nextDialogueLine();
+        }
       },
       child: Container(
         key: ValueKey('dialog_fixed_${_storyIndex}_${_nodeDialogueIndex}_$_lineCompleted'),
@@ -3216,16 +3288,7 @@ class _GameShellState extends State<GameShell> {
               ),
               const SizedBox(height: 6),
               SizedBox(height: 72, child: Text(_visibleLine, style: const TextStyle(color: Colors.white, fontSize: 15))),
-              const SizedBox(height: 6),
-              LinearProgressIndicator(
-                value: (_characterByName(beat.leftCharacter).affection / 100).clamp(0, 1),
-                minHeight: 6,
-                backgroundColor: Colors.white24,
-                valueColor: const AlwaysStoppedAnimation(Colors.pinkAccent),
-              ),
-              const SizedBox(height: 2),
-              const Text('감정 게이지', style: TextStyle(color: Colors.white54, fontSize: 11)),
-              const SizedBox(height: 8),
+              const SizedBox(height: 10),
               Expanded(
                 child: _lineCompleted
                     ? SingleChildScrollView(
@@ -3237,7 +3300,11 @@ class _GameShellState extends State<GameShell> {
                                 padding: EdgeInsets.only(bottom: 10),
                                 child: Text('click', style: TextStyle(color: Colors.white60, fontSize: 12)),
                               ),
-                            if (_isCheckpointPending()) _checkpointChoicePanel(),
+                            if (_isCheckpointPending())
+                              const Padding(
+                                padding: EdgeInsets.only(bottom: 10),
+                                child: Text('체크포인트 선택 필요 (화면 탭)', style: TextStyle(color: Colors.amberAccent, fontSize: 12)),
+                              ),
                             if (!_hasNextDialogueLine() && !_isCheckpointPending())
                               Wrap(
                                 spacing: 8,
@@ -3290,22 +3357,7 @@ class _GameShellState extends State<GameShell> {
                                 padding: const EdgeInsets.only(top: 6),
                                 child: Text('루트 잠금 활성: $_lockedRouteCharacterName', style: const TextStyle(color: Colors.amberAccent, fontSize: 12)),
                               ),
-                            const SizedBox(height: 10),
-                            const Text('광고/프리미엄 슬롯', style: TextStyle(color: Colors.white70, fontSize: 12)),
-                            const SizedBox(height: 4),
-                            Wrap(
-                              spacing: 8,
-                              runSpacing: 8,
-                              children: [
-                                OutlinedButton.icon(onPressed: _watchRewardAdSkeleton, icon: const Icon(Icons.ondemand_video), label: const Text('보상 광고(+1 토큰)')),
-                                FilledButton.icon(
-                                  style: FilledButton.styleFrom(backgroundColor: const Color(0xFF6A4BFF)),
-                                  onPressed: _endingCharacterName == null ? () => _openPremiumChoiceFlow(beat) : null,
-                                  icon: const Icon(Icons.stars),
-                                  label: Text('프리미엄 선택지 (추가 장면, 보유 토큰: $_premiumTokens)'),
-                                ),
-                              ],
-                            ),
+                            const SizedBox(height: 2),
                           ],
                         ),
                       )
