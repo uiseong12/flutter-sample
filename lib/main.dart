@@ -2218,7 +2218,7 @@ class _GameShellState extends State<GameShell> {
       height: 92,
       child: Stack(
         children: [
-          Positioned.fill(child: Image.asset('assets/ui/bottom_nav_frame_v3.png', fit: BoxFit.fill)),
+          Positioned.fill(child: Image.asset('assets/ui/bottom_nav_frame_v4.png', fit: BoxFit.fill)),
           Positioned.fill(
             child: Row(
               children: List.generate(
@@ -2253,20 +2253,27 @@ class _GameShellState extends State<GameShell> {
           height: 70,
           child: Stack(
             children: [
-              Positioned.fill(child: Image.asset('assets/ui/top_hud_frame_v3.png', fit: BoxFit.fill)),
+              Positioned.fill(child: Image.asset('assets/ui/top_hud_frame_v4.png', fit: BoxFit.fill)),
               Positioned(
                 left: 58,
-                top: 25,
+                top: 23,
                 child: Row(
                   children: [
-                    _hudCurrency('assets/ui/icon_gold.png', _gold.toString()),
+                    _hudCurrency('assets/ui/icon_gold.png', _gold.toString(), shortLabel: 'G'),
                     const SizedBox(width: 8),
-                    _hudCurrency('assets/ui/icon_silk.png', _evidenceOwned.length.toString()),
+                    _hudCurrency('assets/ui/icon_silk.png', _evidenceOwned.length.toString(), shortLabel: 'S'),
                     const SizedBox(width: 8),
-                    _hudCurrency('assets/ui/icon_token.png', _premiumTokens.toString()),
-                    const SizedBox(width: 8),
-                    _hudCurrency('assets/ui/icon_seal.png', (_politicalStats['legitimacy'] ?? 0).toString()),
+                    _hudCurrency('assets/ui/icon_token.png', _premiumTokens.toString(), shortLabel: 'T'),
                   ],
+                ),
+              ),
+              Positioned(
+                right: 14,
+                top: 18,
+                child: IconButton(
+                  style: IconButton.styleFrom(backgroundColor: Colors.black.withOpacity(0.22)),
+                  onPressed: () => setState(() => _menuIndex = 7),
+                  icon: const Icon(Icons.add, color: Color(0xFFF6F1E8), size: 18),
                 ),
               ),
             ],
@@ -2333,34 +2340,28 @@ class _GameShellState extends State<GameShell> {
                   child: _fullBodySprite(_playerAvatar, width: 250),
                 ),
               ),
-              Positioned(left: 18, top: 120, child: GestureDetector(onTap: _showQuickInventory, child: Image.asset('assets/ui/equip_slot_ring.png', width: 42))),
-              Positioned(right: 18, top: 120, child: GestureDetector(onTap: _showQuickInventory, child: Image.asset('assets/ui/equip_slot_brooch.png', width: 42))),
-              Positioned(left: 24, bottom: 120, child: GestureDetector(onTap: _showQuickInventory, child: Image.asset('assets/ui/equip_slot_cloak.png', width: 42))),
-              Positioned(right: 24, bottom: 120, child: GestureDetector(onTap: _showQuickInventory, child: Image.asset('assets/ui/equip_slot_dress.png', width: 42))),
+              Positioned(left: 18, top: 120, child: GestureDetector(onTap: _showQuickInventory, child: Image.asset('assets/ui/equip_slot_ring.png', width: 48))),
+              Positioned(right: 18, top: 120, child: GestureDetector(onTap: _showQuickInventory, child: Image.asset('assets/ui/equip_slot_brooch.png', width: 48))),
+              Positioned(left: 24, bottom: 120, child: GestureDetector(onTap: _showQuickInventory, child: Image.asset('assets/ui/equip_slot_cloak.png', width: 48))),
+              Positioned(right: 24, bottom: 120, child: GestureDetector(onTap: _showQuickInventory, child: Image.asset('assets/ui/equip_slot_dress.png', width: 48))),
             ],
           ),
         ),
 
         Positioned(
-          top: 16,
+          top: 18,
           left: 12,
           child: Container(
-            width: 220,
-            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
-            decoration: BoxDecoration(image: DecorationImage(image: AssetImage('assets/ui/panel_parchment_dark.png'), fit: BoxFit.fill)),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                const Text('오늘 AP 12/12', style: TextStyle(color: Color(0xFFF6F1E8), fontSize: 12, fontWeight: FontWeight.w700)),
-                const SizedBox(height: 6),
-                Wrap(
-                  spacing: 6,
-                  children: const [
-                    Chip(label: Text('📘 1', style: TextStyle(fontSize: 11))),
-                    Chip(label: Text('💗 1', style: TextStyle(fontSize: 11))),
-                    Chip(label: Text('🔧 1', style: TextStyle(fontSize: 11))),
-                  ],
-                ),
+            width: 186,
+            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+            decoration: BoxDecoration(image: const DecorationImage(image: AssetImage('assets/ui/panel_parchment_dark.png'), fit: BoxFit.fill), borderRadius: BorderRadius.circular(10)),
+            child: Wrap(
+              spacing: 6,
+              runSpacing: 6,
+              children: const [
+                Chip(label: Text('📘 1', style: TextStyle(fontSize: 11))),
+                Chip(label: Text('💗 1', style: TextStyle(fontSize: 11))),
+                Chip(label: Text('🔧 1', style: TextStyle(fontSize: 11))),
               ],
             ),
           ),
@@ -2450,8 +2451,10 @@ class _GameShellState extends State<GameShell> {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text('오늘의 추천', style: TextStyle(color: Colors.amber, fontWeight: FontWeight.bold)),
+                        SizedBox(height: 4),
+                        Row(children: [Icon(Icons.favorite, size: 14, color: Colors.pinkAccent), SizedBox(width: 4), Text('추천 데이트: 신뢰 + 관계 진전', style: TextStyle(color: Color(0xFFF6F1E8), fontSize: 12))]),
                         SizedBox(height: 2),
-                        Text('• 추천 데이트: 신뢰 + 관계 진전\n• 추천 알바: 골드/재료 수급', style: TextStyle(color: Colors.white70, fontSize: 12)),
+                        Row(children: [Icon(Icons.construction, size: 14, color: Colors.orangeAccent), SizedBox(width: 4), Text('추천 알바: 골드/재료', style: TextStyle(color: Color(0xFFF6F1E8), fontSize: 12))]),
                       ],
                     ),
                   ),
@@ -2483,15 +2486,15 @@ class _GameShellState extends State<GameShell> {
     );
   }
 
-  Widget _hudCurrency(String icon, String value) {
+  Widget _hudCurrency(String icon, String value, {String shortLabel = ''}) {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 3),
-      decoration: BoxDecoration(color: Colors.black.withOpacity(0.25), borderRadius: BorderRadius.circular(8)),
+      decoration: BoxDecoration(color: Colors.black.withOpacity(0.2), borderRadius: BorderRadius.circular(8)),
       child: Row(
         children: [
-          Image.asset(icon, width: 16, height: 16),
-          const SizedBox(width: 4),
-          Text(value, style: const TextStyle(fontSize: 11, color: Colors.white, fontWeight: FontWeight.bold)),
+          Image.asset(icon, width: 24, height: 24),
+          const SizedBox(width: 6),
+          Text(shortLabel.isEmpty ? value : '$shortLabel $value', style: const TextStyle(fontSize: 15, color: Color(0xFFF6F1E8), fontWeight: FontWeight.w600)),
         ],
       ),
     );
@@ -2561,15 +2564,20 @@ class _GameShellState extends State<GameShell> {
                       color: Colors.black.withOpacity(0.42),
                       borderRadius: BorderRadius.circular(10),
                     ),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
+                    child: Row(
                       children: [
-                        const Text('스토리 진행도 (아래 → 위)', style: TextStyle(color: Color(0xFFF6F1E8), fontWeight: FontWeight.w700, fontSize: 17, shadows: [Shadow(color: Color(0x99000000), blurRadius: 6)])),
-                        const SizedBox(height: 4),
-                        Text('클리어: $cleared / ${_story.length}', style: const TextStyle(color: Color(0xFFF6F1E8))),
-                        Text('현재: EP ${_storyIndex + 1}. ${preview.title}', style: const TextStyle(color: Color(0xFFF6F1E8))),
-                        if (_endingCharacterName != null)
-                          Text('확정 엔딩: $_endingCharacterName', style: const TextStyle(color: Colors.amberAccent, fontWeight: FontWeight.bold)),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text('클리어 $cleared/${_story.length}', style: const TextStyle(color: Color(0xFFF6F1E8), fontWeight: FontWeight.w700, fontSize: 16, shadows: [Shadow(color: Color(0x99000000), blurRadius: 6)])),
+                              Text('현재: EP ${_storyIndex + 1} · ${preview.title}', style: const TextStyle(color: Color(0xFFF6F1E8))),
+                              if (_endingCharacterName != null)
+                                Text('확정 엔딩: $_endingCharacterName', style: const TextStyle(color: Colors.amberAccent, fontWeight: FontWeight.bold)),
+                            ],
+                          ),
+                        ),
+                        IconButton(onPressed: _showStoryLegend, icon: const Icon(Icons.help_outline, color: Color(0xFFF6F1E8))),
                       ],
                     ),
                   ),
@@ -2581,19 +2589,7 @@ class _GameShellState extends State<GameShell> {
                   bottom: 78,
                   child: _branchRouteMap(),
                 ),
-                Positioned(
-                  left: 12,
-                  right: 12,
-                  bottom: 12,
-                  child: _sealPrimaryButton(cleared == 0 ? '스토리 시작' : '이 스텝부터 진행', () {
-                    setState(() {
-                      _inStoryScene = true;
-                      _sceneKey += 1;
-                      _transitionPreset = TransitionPreset.fade;
-                    });
-                    _beginBeatLine();
-                  }),
-                ),
+                const SizedBox.shrink(),
               ],
             ),
           ),
@@ -2616,6 +2612,17 @@ class _GameShellState extends State<GameShell> {
     if (beat % 5 == 2) return '의전 체크';
     if (beat % 5 == 3) return '조사 노드';
     return '스토리 노드';
+  }
+
+  Future<void> _showStoryLegend() async {
+    await showDialog(
+      context: context,
+      builder: (_) => AlertDialog(
+        title: const Text('노드 아이콘 안내'),
+        content: const Text('🌹 감정 · ⚖ 재판 · 👗 의전 · 📜 조사\n⚠ 위험 뱃지는 감시도/배드 위험을 의미합니다.'),
+        actions: [TextButton(onPressed: () => Navigator.pop(context), child: const Text('확인'))],
+      ),
+    );
   }
 
   Future<void> _showNodePreview(int beat) async {
@@ -2697,19 +2704,22 @@ class _GameShellState extends State<GameShell> {
                 return Positioned(
                   left: pos.dx,
                   top: pos.dy,
-                  child: GestureDetector(
-                    onTap: () {
-                      _playClick();
-                      setState(() {
-                        _storyIndex = beat;
-                        _lockRouteAtNode15IfNeeded();
-                      });
-                    },
-                    onLongPress: () => _showNodePreview(beat),
-                    child: Stack(
-                      clipBehavior: Clip.none,
-                      children: [
-                        AnimatedContainer(
+                  child: Stack(
+                    clipBehavior: Clip.none,
+                    children: [
+                      GestureDetector(
+                        onTap: () {
+                          _playClick();
+                          setState(() {
+                            _storyIndex = beat;
+                            _lockRouteAtNode15IfNeeded();
+                          });
+                        },
+                        onLongPress: () => _showNodePreview(beat),
+                        child: Stack(
+                          clipBehavior: Clip.none,
+                          children: [
+                            AnimatedContainer(
                           duration: const Duration(milliseconds: 180),
                           width: 38,
                           height: 38,
@@ -2732,6 +2742,25 @@ class _GameShellState extends State<GameShell> {
                         if (beat % 5 == 0) const Positioned(bottom: -8, right: -8, child: Icon(Icons.warning_amber_rounded, size: 14, color: Colors.orangeAccent)),
                       ],
                     ),
+                      ),
+                      if (selected)
+                        Positioned(
+                          left: 40,
+                          top: 4,
+                          child: SizedBox(
+                            width: 88,
+                            height: 34,
+                            child: _sealPrimaryButton('시작', () {
+                              setState(() {
+                                _inStoryScene = true;
+                                _sceneKey += 1;
+                                _transitionPreset = TransitionPreset.fade;
+                              });
+                              _beginBeatLine();
+                            }),
+                          ),
+                        ),
+                    ],
                   ),
                 );
               }),
@@ -3112,6 +3141,29 @@ class _GameShellState extends State<GameShell> {
     return Positioned(left: c.maxWidth * 0.45, bottom: 16, child: _dotSprite(asset: 'assets/ui/dot_hero_sheet.png', row: heroRow, frame: frame, scale: 2.0));
   }
 
+  Widget _workMiniCard(String top, String title, WorkMiniGame game) {
+    final selected = _selectedWork == game;
+    return InkWell(
+      onTap: () => setState(() => _selectedWork = game),
+      child: Container(
+        padding: const EdgeInsets.all(8),
+        decoration: BoxDecoration(
+          color: selected ? const Color(0xFF6F54A8) : const Color(0xFF3B324C),
+          borderRadius: BorderRadius.circular(10),
+          border: Border.all(color: selected ? const Color(0xFFE9D7A1) : Colors.white24),
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(top, style: const TextStyle(fontSize: 11, color: Color(0xFFF6F1E8))),
+            const SizedBox(height: 4),
+            Text(title, style: const TextStyle(fontWeight: FontWeight.w700, color: Color(0xFFF6F1E8))),
+          ],
+        ),
+      ),
+    );
+  }
+
   Widget _workTab(String label, WorkMiniGame game) {
     final selected = _selectedWork == game;
     return InkWell(
@@ -3282,17 +3334,33 @@ class _GameShellState extends State<GameShell> {
           ),
         ),
         const SizedBox(height: 8),
-        Wrap(
-          spacing: 6,
-          runSpacing: 6,
+        Row(
           children: [
-            _workTab('약초 채집', WorkMiniGame.herbSort),
-            _workTab('대장간 단조', WorkMiniGame.smithTiming),
-            _workTab('시장 흥정', WorkMiniGame.haggling),
-            _workTab('전달 임무', WorkMiniGame.courierRun),
-            _workTab('무도회', WorkMiniGame.dateDance),
-            _workTab('정원 산책', WorkMiniGame.gardenWalk),
+            Expanded(child: _workMiniCard('오늘 추천', '약초 채집', WorkMiniGame.herbSort)),
+            const SizedBox(width: 8),
+            Expanded(child: _workMiniCard('주간 이벤트', '대장간 단조', WorkMiniGame.smithTiming)),
+            const SizedBox(width: 8),
+            Expanded(child: _workMiniCard('자유 플레이', '시장 흥정', WorkMiniGame.haggling)),
           ],
+        ),
+        Align(
+          alignment: Alignment.centerRight,
+          child: TextButton(
+            onPressed: () => showModalBottomSheet(
+              context: context,
+              builder: (_) => ListView(
+                padding: const EdgeInsets.all(12),
+                children: [
+                  _workTab('전달 임무', WorkMiniGame.courierRun),
+                  const SizedBox(height: 8),
+                  _workTab('무도회', WorkMiniGame.dateDance),
+                  const SizedBox(height: 8),
+                  _workTab('정원 산책', WorkMiniGame.gardenWalk),
+                ],
+              ),
+            ),
+            child: const Text('더 보기'),
+          ),
         ),
         const SizedBox(height: 10),
         _sealPrimaryButton('플레이 시작 (20초 루프)', _workTimeLeft > 0 ? null : _startWorkMiniGame),
@@ -3334,7 +3402,7 @@ class _GameShellState extends State<GameShell> {
               child: ListTile(
                 leading: SizedBox(width: 42, height: 52, child: _fullBodySprite(o.avatarAsset, width: 34)),
                 title: Text('${o.name}  (+${o.charmBonus} 매력)'),
-                subtitle: Text(o.price == 0 ? '기본 의상' : '${o.price} G'),
+                subtitle: Text('${o.price == 0 ? '기본 의상' : '${o.price} G'}  · 태그:${o.id.contains('noble') ? '왕실색' : o.id.contains('ranger') ? '길드' : '은등회'}  · 효과:💬🎞'),
                 trailing: FilledButton(
                   onPressed: o.id == _equippedOutfitId
                       ? null
@@ -3363,7 +3431,13 @@ class _GameShellState extends State<GameShell> {
                     Text('${item.name} · ${item.price}G', style: const TextStyle(fontWeight: FontWeight.w700)),
                     Text(item.description),
                     const SizedBox(height: 8),
-                    _sealPrimaryButton('선물하기', () => _showGiftTargetPicker(item)),
+                    Align(
+                      alignment: Alignment.centerRight,
+                      child: SizedBox(
+                        width: 120,
+                        child: _sealPrimaryButton('선물하기', () => _showGiftTargetPicker(item)),
+                      ),
+                    ),
                   ],
                 ),
               ),
@@ -3460,14 +3534,15 @@ class _GameShellState extends State<GameShell> {
 
   Widget _ledgerPage() {
     const names = {
-      'legitimacy': '정통성',
-      'economy': '경제력',
-      'publicTrust': '민심',
-      'military': '군사',
-      'surveillance': '감시도',
+      'legitimacy': '👑 정통성',
+      'economy': '🪙 경제력',
+      'publicTrust': '🌹 민심',
+      'military': '⚔ 군사',
+      'surveillance': '👁 감시도',
     };
 
     String alertLevel(int v) => v >= 80 ? '위험' : (v >= 50 ? '주의' : '안전');
+    Color alertColor(int v) => v >= 80 ? Colors.redAccent : (v >= 50 ? Colors.amber : Colors.green);
 
     return ListView(
       padding: const EdgeInsets.all(12),
@@ -3488,20 +3563,23 @@ class _GameShellState extends State<GameShell> {
         const SizedBox(height: 10),
         const Text('감시도 타임라인(최근 5회)', style: TextStyle(fontWeight: FontWeight.bold)),
         const SizedBox(height: 6),
-        ..._surveillanceTimeline.asMap().entries.map((e) => Padding(
-              padding: const EdgeInsets.only(bottom: 6),
-              child: Row(
-                children: [
-                  SizedBox(width: 50, child: Text('D-${e.key}')),
-                  const Icon(Icons.gavel, size: 14, color: Colors.brown),
-                  const SizedBox(width: 4),
-                  Expanded(child: LinearProgressIndicator(value: e.value / 100, minHeight: 7)),
-                  const SizedBox(width: 8),
-                  Text('${e.value}'),
-                ],
-              ),
-            )),
-        Text('경고 레벨: ${alertLevel(_politicalStats['surveillance'] ?? 0)}', style: const TextStyle(fontWeight: FontWeight.w700)),
+        ..._surveillanceTimeline.asMap().entries.map((e) {
+          final icons = [Icons.favorite, Icons.gavel, Icons.checkroom, Icons.search, Icons.construction];
+          return Padding(
+            padding: const EdgeInsets.only(bottom: 6),
+            child: Row(
+              children: [
+                SizedBox(width: 50, child: Text('D-${e.key}')),
+                Icon(icons[e.key % icons.length], size: 14, color: Colors.brown),
+                const SizedBox(width: 4),
+                Expanded(child: LinearProgressIndicator(value: e.value / 100, minHeight: 7)),
+                const SizedBox(width: 8),
+                Text('${e.value}'),
+              ],
+            ),
+          );
+        }),
+        Text('경고 레벨: ${alertLevel(_politicalStats['surveillance'] ?? 0)}', style: TextStyle(fontWeight: FontWeight.w700, color: alertColor(_politicalStats['surveillance'] ?? 0))),
         const SizedBox(height: 10),
         const Text('증거 카드 (필터: 길드/은등회/왕실)', style: TextStyle(fontWeight: FontWeight.bold)),
         Wrap(spacing: 6, runSpacing: 6, children: _evidenceOwned.map((e) => Chip(label: Text(e))).toList()),
@@ -3624,8 +3702,8 @@ class _BottomNavItemState extends State<_BottomNavItem> {
                         color: widget.selected ? const Color(0x447E67FF) : const Color(0x335F4A8A),
                         boxShadow: [
                           BoxShadow(
-                            color: widget.selected ? const Color(0xAA7E67FF) : const Color(0x665F4A8A),
-                            blurRadius: widget.selected ? 9 : 5,
+                            color: widget.selected ? const Color(0x887E67FF) : const Color(0x445F4A8A),
+                            blurRadius: widget.selected ? 5 : 3,
                           ),
                         ],
                       ),
