@@ -2968,18 +2968,30 @@ class _GameShellState extends State<GameShell> {
                   child: _branchRouteMap(),
                 ),
                 Positioned(
+                  left: 12,
                   right: 12,
-                  bottom: 12,
-                  child: SizedBox(
-                    width: 150,
-                    child: _sealPrimaryButton('선택 노드 시작', () {
-                      setState(() {
-                        _inStoryScene = true;
-                        _sceneKey += 1;
-                        _transitionPreset = TransitionPreset.fade;
-                      });
-                      _beginBeatLine();
-                    }),
+                  bottom: 18,
+                  child: Row(
+                    children: [
+                      Expanded(
+                        child: _sealPrimaryButton('선택 노드 시작', () {
+                          setState(() {
+                            _inStoryScene = true;
+                            _sceneKey += 1;
+                            _transitionPreset = TransitionPreset.fade;
+                          });
+                          _beginBeatLine();
+                        }),
+                      ),
+                      const SizedBox(width: 8),
+                      const Expanded(
+                        child: Text(
+                          '노드를 한 번 더 탭하면 바로 시작',
+                          style: TextStyle(color: Color(0xFFF6F1E8), fontSize: 12, shadows: [Shadow(color: Color(0x99000000), blurRadius: 6)]),
+                          textAlign: TextAlign.center,
+                        ),
+                      ),
+                    ],
                   ),
                 ),
               ],
@@ -3108,6 +3120,15 @@ class _GameShellState extends State<GameShell> {
                       GestureDetector(
                         onTap: () {
                           _playClick();
+                          if (beat == _storyIndex) {
+                            setState(() {
+                              _inStoryScene = true;
+                              _sceneKey += 1;
+                              _transitionPreset = TransitionPreset.fade;
+                            });
+                            _beginBeatLine();
+                            return;
+                          }
                           setState(() {
                             _storyIndex = beat;
                             _nodeDialogueIndex = 0;
@@ -3142,23 +3163,7 @@ class _GameShellState extends State<GameShell> {
                       ],
                     ),
                       ),
-                      if (selected)
-                        Positioned(
-                          left: 40,
-                          top: 4,
-                          child: SizedBox(
-                            width: 88,
-                            height: 34,
-                            child: _sealPrimaryButton('시작', () {
-                              setState(() {
-                                _inStoryScene = true;
-                                _sceneKey += 1;
-                                _transitionPreset = TransitionPreset.fade;
-                              });
-                              _beginBeatLine();
-                            }),
-                          ),
-                        ),
+                      const SizedBox.shrink(),
                     ],
                   ),
                 );
