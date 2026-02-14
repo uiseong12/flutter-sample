@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'dart:math';
 
 import 'package:flutter/material.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 void main() {
@@ -151,22 +152,19 @@ class _GameShellState extends State<GameShell> {
     Character(
       name: '엘리안',
       role: '왕실 근위대장',
-      portraitUrl:
-          'https://images.unsplash.com/photo-1547425260-76bcadfb4f2c?auto=format&fit=crop&w=900&q=80',
+      portraitUrl: 'assets/art/char_elian.svg',
       description: '신념이 강한 기사. 위기에서 더 빛난다.',
     ),
     Character(
       name: '루시안',
       role: '궁정 마도학자',
-      portraitUrl:
-          'https://images.unsplash.com/photo-1542204625-de293a23b6b2?auto=format&fit=crop&w=900&q=80',
+      portraitUrl: 'assets/art/char_lucian.svg',
       description: '차갑지만 깊이 있는 전략가.',
     ),
     Character(
       name: '세레나',
       role: '귀족 외교관',
-      portraitUrl:
-          'https://images.unsplash.com/photo-1488426862026-3ee34a7d66df?auto=format&fit=crop&w=900&q=80',
+      portraitUrl: 'assets/art/char_serena.svg',
       description: '사교의 달인. 미묘한 감정선을 읽는다.',
       affection: 26,
     ),
@@ -178,32 +176,28 @@ class _GameShellState extends State<GameShell> {
       name: '수수한 여행복',
       price: 0,
       charmBonus: 0,
-      avatarUrl:
-          'https://api.dicebear.com/9.x/adventurer/png?seed=HeroineDefault&backgroundColor=f3e8ff',
+      avatarUrl: 'assets/art/player_default.svg',
     ),
     OutfitItem(
       id: 'noble_dress',
       name: '귀족 연회 드레스',
       price: 220,
       charmBonus: 4,
-      avatarUrl:
-          'https://api.dicebear.com/9.x/adventurer/png?seed=HeroineNoble&backgroundColor=fde68a',
+      avatarUrl: 'assets/art/player_noble.svg',
     ),
     OutfitItem(
       id: 'ranger_look',
       name: '숲의 레인저 복장',
       price: 180,
       charmBonus: 3,
-      avatarUrl:
-          'https://api.dicebear.com/9.x/adventurer/png?seed=HeroineRanger&backgroundColor=bbf7d0',
+      avatarUrl: 'assets/art/player_ranger.svg',
     ),
     OutfitItem(
       id: 'moon_gown',
       name: '월광 궁정 예복',
       price: 380,
       charmBonus: 7,
-      avatarUrl:
-          'https://api.dicebear.com/9.x/adventurer/png?seed=HeroineMoon&backgroundColor=c4b5fd',
+      avatarUrl: 'assets/art/player_moon.svg',
     ),
   ];
 
@@ -218,8 +212,7 @@ class _GameShellState extends State<GameShell> {
       title: '왕궁 입성',
       speaker: '나레이션',
       line: '세력 균형이 무너지는 왕궁. 당신의 선택이 모두의 운명을 바꾼다.',
-      backgroundUrl:
-          'https://images.unsplash.com/photo-1518002054494-3a6f94352e9d?auto=format&fit=crop&w=1600&q=80',
+      backgroundUrl: 'assets/art/story_castle.svg',
       choices: [
         StoryChoice(
           label: '엘리안과 경비 계획을 점검한다',
@@ -243,8 +236,7 @@ class _GameShellState extends State<GameShell> {
       title: '가면무도회',
       speaker: '세레나',
       line: '누구와 춤을 출지에 따라 동맹의 방향이 달라질 거예요.',
-      backgroundUrl:
-          'https://images.unsplash.com/photo-1522673607200-164d1b6ce486?auto=format&fit=crop&w=1600&q=80',
+      backgroundUrl: 'assets/art/story_ballroom.svg',
       choices: [
         StoryChoice(
           label: '세레나와 정치적 연합을 맺는다',
@@ -268,8 +260,7 @@ class _GameShellState extends State<GameShell> {
       title: '마탑의 밤',
       speaker: '루시안',
       line: '지금 이 결계를 선택하면, 누군가는 당신 편이 되고 누군가는 멀어집니다.',
-      backgroundUrl:
-          'https://images.unsplash.com/photo-1518562180175-34a163b1a9a6?auto=format&fit=crop&w=1600&q=80',
+      backgroundUrl: 'assets/art/story_tower.svg',
       choices: [
         StoryChoice(
           label: '루시안의 실험을 허가한다',
@@ -450,6 +441,18 @@ class _GameShellState extends State<GameShell> {
     );
   }
 
+  Widget _svgCircleAvatar(String assetPath, double radius) {
+    final size = radius * 2;
+    return ClipOval(
+      child: Container(
+        width: size,
+        height: size,
+        color: Colors.white24,
+        child: SvgPicture.asset(assetPath, fit: BoxFit.cover),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     if (!_loaded) {
@@ -502,31 +505,30 @@ class _GameShellState extends State<GameShell> {
           height: 220,
           decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(16),
-            image: const DecorationImage(
-              image: NetworkImage(
-                'https://images.unsplash.com/photo-1447069387593-a5de0862481e?auto=format&fit=crop&w=1600&q=80',
-              ),
-              fit: BoxFit.cover,
-            ),
           ),
-          child: Container(
-            decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(16),
-              color: Colors.black.withOpacity(0.32),
-            ),
-            padding: const EdgeInsets.all(14),
-            child: Row(
+          child: ClipRRect(
+            borderRadius: BorderRadius.circular(16),
+            child: Stack(
               children: [
-                CircleAvatar(radius: 46, backgroundImage: NetworkImage(_playerAvatar)),
-                const SizedBox(width: 14),
-                Expanded(
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    crossAxisAlignment: CrossAxisAlignment.start,
+                Positioned.fill(child: SvgPicture.asset('assets/art/home_bg.svg', fit: BoxFit.cover)),
+                Container(
+                  color: Colors.black.withOpacity(0.32),
+                  padding: const EdgeInsets.all(14),
+                  child: Row(
                     children: [
-                      const Text('주인공 상태', style: TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.w700)),
-                      Text('착용: ${outfit.name}', style: const TextStyle(color: Colors.white70)),
-                      Text('총 매력: $_totalCharm (기본 $_baseCharm + 장착 $_equippedCharm)', style: const TextStyle(color: Colors.white70)),
+                      _svgCircleAvatar(_playerAvatar, 46),
+                      const SizedBox(width: 14),
+                      Expanded(
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            const Text('주인공 상태', style: TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.w700)),
+                            Text('착용: ${outfit.name}', style: const TextStyle(color: Colors.white70)),
+                            Text('총 매력: $_totalCharm (기본 $_baseCharm + 장착 $_equippedCharm)', style: const TextStyle(color: Colors.white70)),
+                          ],
+                        ),
+                      ),
                     ],
                   ),
                 ),
@@ -587,7 +589,7 @@ class _GameShellState extends State<GameShell> {
 
     return Stack(
       children: [
-        Positioned.fill(child: Image.network(beat.backgroundUrl, fit: BoxFit.cover)),
+        Positioned.fill(child: SvgPicture.asset(beat.backgroundUrl, fit: BoxFit.cover)),
         Positioned.fill(child: Container(color: Colors.black.withOpacity(0.28))),
         Positioned(left: 16, bottom: 170, child: _characterPanel(_characters[0])),
         Positioned(right: 16, bottom: 170, child: _characterPanel(_characters[1])),
@@ -642,7 +644,7 @@ class _GameShellState extends State<GameShell> {
         ),
         child: Column(
           children: [
-            CircleAvatar(radius: 34, backgroundImage: NetworkImage(c.portraitUrl)),
+            _svgCircleAvatar(c.portraitUrl, 34),
             const SizedBox(height: 6),
             Text(c.name, style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
             Text('❤ ${c.affection}', style: const TextStyle(color: Colors.white70)),
@@ -693,7 +695,7 @@ class _GameShellState extends State<GameShell> {
         const SizedBox(height: 8),
         ..._outfits.map((o) => Card(
               child: ListTile(
-                leading: CircleAvatar(backgroundImage: NetworkImage(o.avatarUrl)),
+                leading: _svgCircleAvatar(o.avatarUrl, 20),
                 title: Text('${o.name}  (+${o.charmBonus} 매력)'),
                 subtitle: Text(o.price == 0 ? '기본 의상' : '${o.price} G'),
                 trailing: FilledButton(
@@ -750,7 +752,7 @@ class _GameShellState extends State<GameShell> {
         const SizedBox(height: 8),
         ..._characters.map((c) => Card(
               child: ListTile(
-                leading: CircleAvatar(backgroundImage: NetworkImage(c.portraitUrl)),
+                leading: _svgCircleAvatar(c.portraitUrl, 20),
                 title: Text('${c.name} (${c.role})'),
                 subtitle: Text('호감도 ${c.affection}'),
                 trailing: FilledButton(

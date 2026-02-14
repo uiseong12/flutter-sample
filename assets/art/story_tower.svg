@@ -1,0 +1,23 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1600 900">
+  <defs>
+    <linearGradient id="night" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#3f4e74"/>
+      <stop offset="1" stop-color="#1f2538"/>
+    </linearGradient>
+    <style>
+      .line { stroke:#4a2e24; stroke-width:8; stroke-linecap:round; stroke-linejoin:round; }
+    </style>
+  </defs>
+  <rect width="1600" height="900" fill="url(#night)"/>
+  <circle cx="260" cy="140" r="66" fill="#f9e9b3" class="line"/>
+  <rect y="650" width="1600" height="250" fill="#3a2d2a"/>
+  <g class="line" fill="#7b7792">
+    <rect x="670" y="80" width="260" height="620" rx="24"/>
+    <rect x="610" y="40" width="110" height="160"/>
+    <rect x="880" y="40" width="110" height="160"/>
+    <polygon points="610,40 665,0 720,40" fill="#63617a"/>
+    <polygon points="880,40 935,0 990,40" fill="#63617a"/>
+    <path d="M740 700 Q800 580 860 700 Z" fill="#5d3845"/>
+  </g>
+  <path d="M80 650 h1440" class="line" fill="none"/>
+</svg>

@@ -1,0 +1,28 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1600 900">
+  <defs>
+    <linearGradient id="wall" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#f1dcc3"/>
+      <stop offset="1" stop-color="#d1ad87"/>
+    </linearGradient>
+    <linearGradient id="floor" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#8a5f45"/>
+      <stop offset="1" stop-color="#6d4936"/>
+    </linearGradient>
+    <style>
+      .line { stroke:#4a2e24; stroke-width:8; stroke-linecap:round; stroke-linejoin:round; }
+    </style>
+  </defs>
+  <rect width="1600" height="900" fill="url(#wall)"/>
+  <rect y="560" width="1600" height="340" fill="url(#floor)"/>
+  <g class="line" fill="#b45a52">
+    <rect x="170" y="120" width="220" height="390" rx="110"/>
+    <rect x="690" y="120" width="220" height="390" rx="110"/>
+    <rect x="1210" y="120" width="220" height="390" rx="110"/>
+  </g>
+  <g class="line" fill="#f9e9b3">
+    <circle cx="300" cy="120" r="70"/>
+    <circle cx="800" cy="120" r="70"/>
+    <circle cx="1300" cy="120" r="70"/>
+  </g>
+  <path d="M0 560 Q240 500 400 560 T800 560 T1200 560 T1600 560" class="line" fill="none"/>
+</svg>

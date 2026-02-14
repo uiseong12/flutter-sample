@@ -7,8 +7,10 @@ dependencies:
   flutter:
     sdk: flutter
   shared_preferences: ^2.2.3
+  flutter_svg: ^2.0.10+1
 
 flutter:
   uses-material-design: true
   assets:
     - assets/story_events.json
+    - assets/art/

@@ -1,0 +1,27 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1600 900">
+  <defs>
+    <linearGradient id="sky" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#f3e6d5"/>
+      <stop offset="1" stop-color="#d8b48a"/>
+    </linearGradient>
+    <linearGradient id="courtyard" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0" stop-color="#b58d67"/>
+      <stop offset="1" stop-color="#8f6a4c"/>
+    </linearGradient>
+    <style>
+      .line { stroke:#4a2e24; stroke-width:8; stroke-linecap:round; stroke-linejoin:round; }
+    </style>
+  </defs>
+  <rect width="1600" height="900" fill="url(#sky)"/>
+  <circle cx="1290" cy="180" r="78" fill="#f9e9b3" class="line"/>
+  <rect x="0" y="570" width="1600" height="330" fill="url(#courtyard)"/>
+  <path d="M0 640 L220 560 L420 640 L610 560 L820 640 L1010 560 L1210 640 L1400 560 L1600 640 L1600 900 L0 900 Z" fill="#c9a17a"/>
+  <g class="line" fill="#b45a52">
+    <rect x="500" y="180" width="600" height="420" rx="22"/>
+    <rect x="735" y="115" width="130" height="80"/>
+    <rect x="560" y="250" width="120" height="180" fill="#5d3845"/>
+    <rect x="920" y="250" width="120" height="180" fill="#5d3845"/>
+    <path d="M735 600 Q800 490 865 600 Z" fill="#5d3845"/>
+  </g>
+  <path d="M110 635 h1380" class="line" fill="none"/>
+</svg>
