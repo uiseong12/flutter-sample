@@ -17,6 +17,7 @@ flutter:
     - story_nodes_30.json
     - stat_balance_table.json
     - premium_choices_v1.json
+    - unlock_content_schema_v1.json
     - assets/story_events.json
     - assets/art/
     - assets/generated/bg_castle/001-medieval-fantasy-royal-castle-courtyard-.png

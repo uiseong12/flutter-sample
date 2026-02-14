@@ -216,6 +216,7 @@ class _GameShellState extends State<GameShell> {
     'military': 30,
     'surveillance': 10,
   };
+  final List<int> _surveillanceTimeline = [10, 10, 10, 10, 10];
   final Map<String, bool> _keyFlags = {
     'publicly_supported_me': false,
     'saved_in_ceremony': false,
@@ -229,6 +230,7 @@ class _GameShellState extends State<GameShell> {
   Map<String, dynamic> _endingRules = {};
   Map<String, dynamic> _statBalanceTable = {};
   Map<String, dynamic> _premiumCatalog = {};
+  Map<String, dynamic> _unlockContentSchema = {};
   final Map<String, int> _dailyAdViews = {};
 
   final List<Character> _characters = [
@@ -794,6 +796,11 @@ class _GameShellState extends State<GameShell> {
       _politicalStats[key] = next;
     });
     _logs.insert(0, '[$source] 정치수치 변동: ${delta.entries.map((e) => '${e.key}${e.value >= 0 ? '+' : ''}${e.value}').join(', ')}');
+    final s = _politicalStats['surveillance'] ?? 0;
+    _surveillanceTimeline.insert(0, s);
+    while (_surveillanceTimeline.length > 5) {
+      _surveillanceTimeline.removeLast();
+    }
   }
 
   void _applyStoryMetaFlags(StoryChoice choice) {
@@ -1037,6 +1044,9 @@ class _GameShellState extends State<GameShell> {
     try {
       _premiumCatalog = jsonDecode(await rootBundle.loadString('premium_choices_v1.json')) as Map<String, dynamic>;
     } catch (_) {}
+    try {
+      _unlockContentSchema = jsonDecode(await rootBundle.loadString('unlock_content_schema_v1.json')) as Map<String, dynamic>;
+    } catch (_) {}
   }
 
   Future<void> _load() async {
@@ -1102,6 +1112,12 @@ class _GameShellState extends State<GameShell> {
       _dailyAdViews
         ..clear()
         ..addAll(adRaw.map((k, v) => MapEntry(k, v as int)));
+      final surRaw = (m['surveillanceTimeline'] as List<dynamic>? ?? const []);
+      if (surRaw.isNotEmpty) {
+        _surveillanceTimeline
+          ..clear()
+          ..addAll(surRaw.map((e) => e as int));
+      }
     }
 
     _lockRouteAtNode15IfNeeded();
@@ -1140,6 +1156,7 @@ class _GameShellState extends State<GameShell> {
         'evidenceOwned': _evidenceOwned.toList(),
         'costumeTags': _costumeTags.toList(),
         'dailyAdViews': _dailyAdViews,
+        'surveillanceTimeline': _surveillanceTimeline,
       }),
     );
   }
@@ -1295,6 +1312,7 @@ class _GameShellState extends State<GameShell> {
 
     _lockRouteAtNode15IfNeeded();
     await _evaluateEndingIfNeeded(pickedNodeIndex, choice.result);
+    await _maybeShowCrisisRescue();
     _refreshAllRelationshipStates(source: '메이저 선택');
 
     _beginBeatLine();
@@ -1432,8 +1450,38 @@ class _GameShellState extends State<GameShell> {
     _logs.insert(0, '[아르바이트:${_selectedWork.name}] 점수 $_workScore, 골드 +$reward');
     _playReward();
     await _save();
-    if (_menuIndex == 2) {
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('아르바이트 완료! +$reward G')));
+    if (_menuIndex == 3 && mounted) {
+      await showDialog(
+        context: context,
+        builder: (_) => AlertDialog(
+          title: const Text('미니게임 결과'),
+          content: Text('점수: $_workScore\n보상: 금화 $reward / 재료 2개'),
+          actions: [
+            TextButton(onPressed: () => Navigator.pop(context), child: const Text('돌아가기')),
+            TextButton(
+              onPressed: () async {
+                Navigator.pop(context);
+                final ok = await _consumeAdView('after_minigame_double', 8);
+                if (!ok || !mounted) return;
+                _gold += reward;
+                ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('광고 보상: 미니게임 보상 2배 적용')));
+                setState(() {});
+              },
+              child: const Text('보상 2배(광고)'),
+            ),
+            TextButton(
+              onPressed: () async {
+                Navigator.pop(context);
+                final ok = await _consumeAdView('after_minigame_extra', 5);
+                if (!ok || !mounted) return;
+                _workTimeLeft = 0;
+                _startWorkMiniGame();
+              },
+              child: const Text('추가 알바 1회(광고)'),
+            ),
+          ],
+        ),
+      );
       setState(() {});
     }
   }
@@ -1749,6 +1797,44 @@ class _GameShellState extends State<GameShell> {
       'surveillance': -2,
     }, '프리미엄 선택');
     _refreshRelationshipStateFor(target, source: '프리미엄');
+    await _save();
+    if (mounted) setState(() {});
+  }
+
+  Future<void> _maybeShowCrisisRescue() async {
+    final s = _politicalStats['surveillance'] ?? 0;
+    if (s < 80 || !mounted) return;
+
+    final choice = await showDialog<String>(
+      context: context,
+      builder: (_) => AlertDialog(
+        title: const Text('[위기] 감시망 포착'),
+        content: const Text('당신은 고발당했습니다. 대응이 필요합니다.'),
+        actions: [
+          TextButton(onPressed: () => Navigator.pop(context, 'evidence'), child: const Text('증거 제출(1장 소모)')),
+          TextButton(onPressed: () => Navigator.pop(context, 'gold'), child: const Text('금화로 무마(500G)')),
+          TextButton(onPressed: () => Navigator.pop(context, 'ad'), child: const Text('긴급 변호인(광고 1회/일)')),
+        ],
+      ),
+    );
+    if (choice == null) return;
+
+    if (choice == 'evidence') {
+      if (_evidenceOwned.isNotEmpty) {
+        _evidenceOwned.remove(_evidenceOwned.first);
+        _applyPoliticalDelta({'surveillance': -8}, '위기 구제');
+      }
+    } else if (choice == 'gold') {
+      if (_gold >= 500) {
+        _gold -= 500;
+        _applyPoliticalDelta({'surveillance': -10}, '위기 구제');
+      }
+    } else {
+      final ok = await _consumeAdView('crisis_lawyer', 1);
+      if (ok) {
+        _applyPoliticalDelta({'surveillance': -12, 'publicTrust': 2}, '긴급 변호인');
+      }
+    }
     await _save();
     if (mounted) setState(() {});
   }
@@ -2737,7 +2823,9 @@ class _GameShellState extends State<GameShell> {
     return ListView(
       padding: const EdgeInsets.all(12),
       children: [
-        const Text('의상 상점 (착용 시 외형/매력 변화)', style: TextStyle(fontWeight: FontWeight.bold)),
+        const Text('의상/제작 상점 (외형/매력 + 연출/대사 변화)', style: TextStyle(fontWeight: FontWeight.bold)),
+        const SizedBox(height: 4),
+        const Text('예: 은등회 베일 세트 → 원장 데이트 대사 2종 추가', style: TextStyle(fontSize: 12, color: Colors.black54)),
         const SizedBox(height: 8),
         ..._outfits.map((o) => Card(
               child: ListTile(
@@ -2785,19 +2873,63 @@ class _GameShellState extends State<GameShell> {
   }
 
   Widget _datePage() {
+    int toNext(Character c) {
+      final now = _relationshipStates[c.name] ?? RelationshipState.strange;
+      final nextIdx = min(RelationshipState.values.length - 1, now.index + 1);
+      final need = _affectionThreshold(RelationshipState.values[nextIdx]);
+      return max(0, need - c.affection);
+    }
+
     return ListView(
       padding: const EdgeInsets.all(12),
       children: [
         const Text('데이트', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
         const SizedBox(height: 6),
-        const Text('호감도 구간에 따라 랜덤 이벤트 연출이 달라집니다.'),
+        const Text('짧은 데이트(2~3분) / 사건 데이트(5~7분) 중 선택하세요.'),
         const SizedBox(height: 8),
         ..._characters.map((c) => Card(
-              child: ListTile(
-                leading: SizedBox(width: 40, height: 54, child: _characterImageWithExpression(c, width: 36)),
-                title: Text('${c.name} (${c.role})'),
-                subtitle: Text('호감도 ${c.affection} · 관계 ${_relationshipLabel(_relationshipStates[c.name] ?? RelationshipState.strange)}'),
-                trailing: FilledButton(onPressed: () => _dateRandom(c), child: const Text('데이트')),
+              child: Padding(
+                padding: const EdgeInsets.all(10),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      children: [
+                        SizedBox(width: 40, height: 54, child: _characterImageWithExpression(c, width: 36)),
+                        const SizedBox(width: 8),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text('${c.name} (${c.role})', style: const TextStyle(fontWeight: FontWeight.w700)),
+                              Text('호감도 ${c.affection} · 관계 ${_relationshipLabel(_relationshipStates[c.name] ?? RelationshipState.strange)}'),
+                              Text('다음 해금까지 +${toNext(c)}', style: const TextStyle(fontSize: 12, color: Colors.indigo)),
+                            ],
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 8),
+                    Row(
+                      children: [
+                        Expanded(child: OutlinedButton(onPressed: () => _dateRandom(c), child: const Text('짧은 데이트'))),
+                        const SizedBox(width: 8),
+                        Expanded(
+                          child: FilledButton(
+                            onPressed: () async {
+                              await _dateRandom(c);
+                              await _addAffection(c, 4, '[사건데이트]');
+                              _applyPoliticalDelta({'publicTrust': 2}, '사건데이트');
+                              await _save();
+                              if (mounted) setState(() {});
+                            },
+                            child: const Text('사건 데이트'),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
               ),
             )),
       ],
@@ -2822,10 +2954,24 @@ class _GameShellState extends State<GameShell> {
               ),
             )),
         const SizedBox(height: 10),
-        const Text('증거 카드', style: TextStyle(fontWeight: FontWeight.bold)),
+        const Text('감시도 타임라인(최근 5회)', style: TextStyle(fontWeight: FontWeight.bold)),
+        const SizedBox(height: 6),
+        ..._surveillanceTimeline.asMap().entries.map((e) => Padding(
+              padding: const EdgeInsets.only(bottom: 6),
+              child: Row(
+                children: [
+                  SizedBox(width: 44, child: Text('D-${e.key}')),
+                  Expanded(child: LinearProgressIndicator(value: e.value / 100, minHeight: 7)),
+                  const SizedBox(width: 8),
+                  Text('${e.value}'),
+                ],
+              ),
+            )),
+        const SizedBox(height: 10),
+        const Text('증거 카드 (필터: 길드/은등회/왕실)', style: TextStyle(fontWeight: FontWeight.bold)),
         Wrap(spacing: 6, runSpacing: 6, children: _evidenceOwned.map((e) => Chip(label: Text(e))).toList()),
         const SizedBox(height: 10),
-        const Text('최근 로그(5개)', style: TextStyle(fontWeight: FontWeight.bold)),
+        const Text('플래그 로그(요약)', style: TextStyle(fontWeight: FontWeight.bold)),
         const SizedBox(height: 6),
         ..._logs.take(5).map((e) => Text('• $e')),
       ],
@@ -2839,10 +2985,10 @@ class _GameShellState extends State<GameShell> {
       children: [
         const Text('도감', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
         const SizedBox(height: 8),
-        ListTile(title: const Text('보이스'), subtitle: Text('해금 ${_keyFlags.values.where((e) => e).length}/20')),
-        ListTile(title: const Text('CG'), subtitle: Text('해금 ${_evidenceOwned.length}/30')),
-        ListTile(title: const Text('엔딩'), subtitle: Text(_endingRuleId == null ? '실루엣 상태' : '최근 해금: $_endingRuleId')),
-        ListTile(title: const Text('POV'), subtitle: Text('해금 진행도 $unlocked/40')),
+        ListTile(title: const Text('보이스'), subtitle: Text('해금 ${_keyFlags.values.where((e) => e).length}/20 · 조건 힌트 제공')),
+        ListTile(title: const Text('CG'), subtitle: Text('해금 ${_evidenceOwned.length}/30 · 잠금 항목은 힌트만 노출')),
+        ListTile(title: const Text('엔딩'), subtitle: Text(_endingRuleId == null ? '실루엣 상태 + 달성 힌트' : '최근 해금: $_endingRuleId')),
+        ListTile(title: const Text('POV'), subtitle: Text('해금 진행도 $unlocked/40 (예: 2/3 충족)')),
       ],
     );
   }
@@ -2868,6 +3014,10 @@ class _GameShellState extends State<GameShell> {
         ListTile(
           title: const Text('광고/과금 원칙'),
           subtitle: const Text('감정씬 직전·직후 강제 광고 없음\n보상형 광고 중심으로 노출'),
+        ),
+        ListTile(
+          title: const Text('데이터 스키마'),
+          subtitle: Text(_unlockContentSchema.isEmpty ? '미로드' : 'unlock_content_schema_v1 로드됨'),
         ),
       ],
     );

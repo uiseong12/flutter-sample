@@ -1,0 +1,50 @@
+{
+  "meta": { "gameId": "violet_codex", "version": "1.0.0", "schema": "unlock-v1" },
+  "currencies": {
+    "gold": { "type": "soft" },
+    "silk": { "type": "rare" },
+    "sealShard": { "type": "premium" },
+    "choiceToken": { "type": "premium" }
+  },
+  "playerState": {
+    "stats": { "legitimacy": 0, "economy": 0, "publicTrust": 0, "militaryTrust": 0, "surveillance": 0 },
+    "affinity": { "knight": 0, "guildMaster": 0, "abbess": 0, "rival": 0 },
+    "relationshipStage": { "knight": 0, "guildMaster": 0, "abbess": 0, "rival": 0 },
+    "flags": {},
+    "inventory": { "items": [], "evidenceCards": [] },
+    "progress": { "clearedNodes": [], "seenContents": [] }
+  },
+  "nodes": [
+    {
+      "nodeId": "N05",
+      "title": "기사단장의 선택",
+      "type": "story",
+      "playtimeMin": 7,
+      "entryRequirements": { "all": [{ "type": "clearedNode", "value": "N04" }] },
+      "choices": [
+        { "choiceId": "N05_C1", "label": "감사한다", "kind": "free", "effects": [{ "type": "affinityAdd", "target": "knight", "amount": 3 }], "next": "N06" },
+        { "choiceId": "N05_P1", "label": "그의 갑옷 끈을 직접 매어준다", "kind": "premium", "premium": { "unlock": { "any": [{ "type": "currencySpend", "id": "choiceToken", "amount": 1 }, { "type": "watchAd", "placement": "after_node_clear_bonus", "limitPerDay": 3 }] } }, "next": "N06" }
+      ]
+    }
+  ],
+  "contents": [
+    {
+      "contentId": "VO_KNIGHT_01",
+      "type": "voice",
+      "title": "차갑지 않다",
+      "unlockRequirements": { "all": [{ "type": "flag", "key": "touch_trust", "value": true }] }
+    }
+  ],
+  "ads": {
+    "placements": [
+      { "id": "after_node_clear_bonus", "type": "rewarded", "cooldownSec": 60, "dailyLimit": 10 },
+      { "id": "after_minigame_double", "type": "rewarded", "cooldownSec": 90, "dailyLimit": 8 }
+    ]
+  },
+  "iap": {
+    "products": [
+      { "productId": "pass_season_1", "type": "season_pass", "title": "시즌 패스 1" },
+      { "productId": "bundle_knight_voice", "type": "bundle", "title": "기사단장 보이스 팩" }
+    ]
+  }
+}
