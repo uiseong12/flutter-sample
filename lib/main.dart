@@ -231,7 +231,7 @@ class _GameShellState extends State<GameShell> {
   final List<_Sparkle> _sparkles = [];
   final Map<String, int> _lastDelta = {};
   final Map<String, String> _dateModeByCharacter = {};
-  final Map<int, List<Map<String, String>>> _nodeDialogues = {};
+  final Map<int, List<Map<String, dynamic>>> _nodeDialogues = {};
   final Map<int, List<Map<String, dynamic>>> _nodeCheckpoints = {};
   final Map<int, Set<int>> _resolvedCheckpointAts = {};
   int _nodeDialogueIndex = 0;
@@ -1090,6 +1090,7 @@ class _GameShellState extends State<GameShell> {
           return {
             'speaker': l['speaker']?.toString() ?? '나',
             'line': l['line']?.toString() ?? '',
+            'cond': l['cond'],
           };
         }).toList();
         _nodeDialogues[id] = lines;
@@ -1238,15 +1239,40 @@ class _GameShellState extends State<GameShell> {
     _expressions[name] = expression;
   }
 
-  List<Map<String, String>> _currentDialogueLines() {
-    final lines = _nodeDialogues[_storyIndex + 1];
-    if (lines == null || lines.isEmpty) {
+  bool _lineCondOk(dynamic condRaw) {
+    if (condRaw == null) return true;
+    if (condRaw is! Map<String, dynamic>) return true;
+
+    final partner = condRaw['partner_lock']?.toString();
+    if (partner != null) {
+      final locked = _lockedRouteCharacterName;
+      final code = locked == '엘리안' ? 'elian' : locked == '루시안' ? 'lucian' : locked == '세레나' ? 'serena' : null;
+      if (code != partner) return false;
+    }
+
+    final flag = condRaw['flag']?.toString();
+    if (flag != null && !(_keyFlags[flag] ?? false)) return false;
+
+    final stat = condRaw['stat']?.toString();
+    if (stat != null) {
+      final minV = (condRaw['min'] as num?)?.toInt() ?? 0;
+      if ((_politicalStats[stat] ?? 0) < minV) return false;
+    }
+
+    return true;
+  }
+
+  List<Map<String, dynamic>> _currentDialogueLines() {
+    final raw = _nodeDialogues[_storyIndex + 1];
+    if (raw == null || raw.isEmpty) {
       final b = _story[_storyIndex];
       return [
         {'speaker': b.speaker, 'line': b.line}
       ];
     }
-    return lines;
+    final filtered = raw.where((e) => _lineCondOk(e['cond'])).toList();
+    if (filtered.isEmpty) return raw;
+    return filtered;
   }
 
   String _currentSpeaker() {
