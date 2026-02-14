@@ -2020,57 +2020,20 @@ class _GameShellState extends State<GameShell> {
           Positioned.fill(child: Image.asset('assets/ui/bottom_nav_frame_v3.png', fit: BoxFit.fill)),
           Positioned.fill(
             child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-              children: List.generate(items.length, (i) {
-                final selected = i == _menuIndex;
-                return Expanded(
-                  child: InkWell(
+              children: List.generate(
+                items.length,
+                (i) => Expanded(
+                  child: _BottomNavItem(
+                    iconPath: items[i].$1,
+                    label: items[i].$2,
+                    selected: i == _menuIndex,
                     onTap: () {
                       _playClick();
                       setState(() => _menuIndex = i);
                     },
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Stack(
-                          alignment: Alignment.center,
-                          children: [
-                            if (selected)
-                              Container(
-                                width: 34,
-                                height: 34,
-                                decoration: BoxDecoration(
-                                  shape: BoxShape.circle,
-                                  color: const Color(0x447E67FF),
-                                  boxShadow: const [BoxShadow(color: Color(0xAA7E67FF), blurRadius: 8)],
-                                ),
-                              ),
-                            Image.asset(items[i].$1, width: 20),
-                          ],
-                        ),
-                        const SizedBox(height: 3),
-                        Text(
-                          items[i].$2,
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                          style: TextStyle(
-                            fontSize: 11,
-                            color: selected ? const Color(0xFFF6F1E8) : const Color(0xCCF6F1E8),
-                            fontWeight: selected ? FontWeight.w700 : FontWeight.w500,
-                          ),
-                        ),
-                        if (selected)
-                          Container(
-                            margin: const EdgeInsets.only(top: 2),
-                            width: 6,
-                            height: 6,
-                            decoration: const BoxDecoration(color: Color(0xFFE9D7A1), shape: BoxShape.circle),
-                          ),
-                      ],
-                    ),
                   ),
-                );
-              }),
+                ),
+              ),
             ),
           ),
         ],
@@ -3304,6 +3267,86 @@ class _GameShellState extends State<GameShell> {
   }
 }
 
+class _BottomNavItem extends StatefulWidget {
+  const _BottomNavItem({required this.iconPath, required this.label, required this.selected, required this.onTap});
+
+  final String iconPath;
+  final String label;
+  final bool selected;
+  final VoidCallback onTap;
+
+  @override
+  State<_BottomNavItem> createState() => _BottomNavItemState();
+}
+
+class _BottomNavItemState extends State<_BottomNavItem> {
+  bool _hover = false;
+  bool _pressed = false;
+
+  @override
+  Widget build(BuildContext context) {
+    return MouseRegion(
+      onEnter: (_) => setState(() => _hover = true),
+      onExit: (_) => setState(() => _hover = false),
+      child: GestureDetector(
+        onTapDown: (_) => setState(() => _pressed = true),
+        onTapUp: (_) => setState(() => _pressed = false),
+        onTapCancel: () => setState(() => _pressed = false),
+        onTap: widget.onTap,
+        child: AnimatedContainer(
+          duration: const Duration(milliseconds: 90),
+          transform: Matrix4.translationValues(0, _pressed ? 2 : 0, 0),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Stack(
+                alignment: Alignment.center,
+                children: [
+                  if (widget.selected || _hover)
+                    Container(
+                      width: 34,
+                      height: 34,
+                      decoration: BoxDecoration(
+                        shape: BoxShape.circle,
+                        color: widget.selected ? const Color(0x447E67FF) : const Color(0x335F4A8A),
+                        boxShadow: [
+                          BoxShadow(
+                            color: widget.selected ? const Color(0xAA7E67FF) : const Color(0x665F4A8A),
+                            blurRadius: widget.selected ? 9 : 5,
+                          ),
+                        ],
+                      ),
+                    ),
+                  Image.asset(widget.iconPath, width: 20),
+                ],
+              ),
+              const SizedBox(height: 3),
+              Text(
+                widget.label,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: TextStyle(
+                  fontSize: 11,
+                  color: widget.selected ? const Color(0xFFF6F1E8) : const Color(0xCCF6F1E8),
+                  fontWeight: widget.selected ? FontWeight.w700 : FontWeight.w500,
+                  shadows: const [Shadow(color: Color(0x99000000), blurRadius: 4)],
+                ),
+              ),
+              if (widget.selected)
+                Container(
+                  margin: const EdgeInsets.only(top: 2),
+                  width: 6,
+                  height: 6,
+                  decoration: const BoxDecoration(color: Color(0xFFE9D7A1), shape: BoxShape.circle),
+                ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
 class _SealButton extends StatefulWidget {
   const _SealButton({required this.label, required this.onPressed, required this.onClickSfx});
 
@@ -3321,68 +3364,91 @@ class _SealButtonState extends State<_SealButton> {
   @override
   Widget build(BuildContext context) {
     final enabled = widget.onPressed != null;
-    return Opacity(
-      opacity: enabled ? 1 : 0.45,
-      child: GestureDetector(
-        onTapDown: enabled
-            ? (_) {
-                widget.onClickSfx();
-                setState(() => _pressed = true);
-              }
-            : null,
-        onTapCancel: enabled ? () => setState(() => _pressed = false) : null,
-        onTapUp: enabled ? (_) => setState(() => _pressed = false) : null,
-        onTap: widget.onPressed,
-        child: AnimatedContainer(
-          duration: const Duration(milliseconds: 90),
-          transform: Matrix4.translationValues(0, _pressed ? 2 : 0, 0),
-          decoration: BoxDecoration(
-            boxShadow: enabled
-                ? [
-                    BoxShadow(color: const Color(0x887E67FF), blurRadius: _pressed ? 4 : 10, offset: Offset(0, _pressed ? 1 : 3)),
-                  ]
-                : null,
-          ),
-          child: Stack(
-            alignment: Alignment.center,
-            children: [
-              Positioned.fill(
-                child: ClipRRect(
-                  borderRadius: BorderRadius.circular(34),
-                  child: Image.asset(
-                    'assets/ui/button_primary_seal_v2.png',
-                    fit: BoxFit.fill,
-                    centerSlice: const Rect.fromLTWH(140, 24, 240, 90),
+    final body = GestureDetector(
+      onTapDown: enabled
+          ? (_) {
+              widget.onClickSfx();
+              setState(() => _pressed = true);
+            }
+          : null,
+      onTapCancel: enabled ? () => setState(() => _pressed = false) : null,
+      onTapUp: enabled ? (_) => setState(() => _pressed = false) : null,
+      onTap: widget.onPressed,
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 90),
+        transform: Matrix4.translationValues(0, _pressed ? 2 : 0, 0),
+        decoration: BoxDecoration(
+          boxShadow: enabled
+              ? [
+                  BoxShadow(color: const Color(0x887E67FF), blurRadius: _pressed ? 4 : 10, offset: Offset(0, _pressed ? 1 : 3)),
+                ]
+              : null,
+        ),
+        child: Stack(
+          alignment: Alignment.center,
+          children: [
+            Positioned.fill(
+              child: ClipRRect(
+                borderRadius: BorderRadius.circular(34),
+                child: Image.asset(
+                  'assets/ui/button_primary_seal_v2.png',
+                  fit: BoxFit.fill,
+                  centerSlice: const Rect.fromLTWH(140, 24, 240, 90),
+                ),
+              ),
+            ),
+            Positioned(
+              top: 10,
+              child: Container(
+                width: 120,
+                height: 8,
+                decoration: BoxDecoration(
+                  gradient: const LinearGradient(colors: [Color(0x55FFFFFF), Color(0x00FFFFFF)]),
+                  borderRadius: BorderRadius.circular(12),
+                ),
+              ),
+            ),
+            Positioned.fill(
+              child: Align(
+                alignment: const Alignment(0, -0.25),
+                child: Wrap(
+                  spacing: 10,
+                  children: List.generate(
+                    7,
+                    (i) => Container(
+                      width: 4,
+                      height: 4,
+                      decoration: const BoxDecoration(color: Color(0xFFE9D7A1), shape: BoxShape.circle),
+                    ),
                   ),
                 ),
               ),
-              Positioned(
-                top: 10,
-                child: Container(
-                  width: 120,
-                  height: 8,
-                  decoration: BoxDecoration(
-                    gradient: const LinearGradient(colors: [Color(0x55FFFFFF), Color(0x00FFFFFF)]),
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                ),
-              ),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: List.generate(3, (i) => Container(margin: const EdgeInsets.symmetric(horizontal: 3), width: 4, height: 4, decoration: const BoxDecoration(color: Color(0xFFE9D7A1), shape: BoxShape.circle))),
-              ),
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
+            ),
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
+              child: Align(
+                alignment: Alignment.center,
                 child: Text(
                   widget.label,
                   textAlign: TextAlign.center,
                   style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w700, color: Color(0xFFF6F1E8), shadows: [Shadow(color: Color(0x99000000), blurRadius: 6)]),
                 ),
               ),
-            ],
-          ),
+            ),
+          ],
         ),
       ),
+    );
+
+    if (enabled) return body;
+    return ColorFiltered(
+      colorFilter: const ColorFilter.matrix(<double>[
+        0.2126, 0.7152, 0.0722, 0, 0,
+        0.2126, 0.7152, 0.0722, 0, 0,
+        0.2126, 0.7152, 0.0722, 0, 0,
+        0, 0, 0, 1, 0,
+      ]),
+      child: Opacity(opacity: 0.55, child: body),
     );
   }
 }
