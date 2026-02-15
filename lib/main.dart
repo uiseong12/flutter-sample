@@ -3880,46 +3880,86 @@ class _GameShellState extends State<GameShell> with TickerProviderStateMixin {
     );
   }
 
+  Widget _topHudOverlay() {
+    return SafeArea(
+      bottom: false,
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Padding(
+            padding: const EdgeInsets.fromLTRB(10, 6, 10, 0),
+            child: _glassPanel(
+              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+              child: Row(
+                children: [
+                  _currencyChip(
+                    icon: Icons.monetization_on,
+                    value: _gold.toString(),
+                    tint: const Color(0xFFE0B44B),
+                    onTap: () => setState(() => _hudTooltipText = '골드: 상점 구매, 일부 선택지/컨텐츠 개방에 사용'),
+                  ),
+                  const SizedBox(width: 8),
+                  _currencyChip(
+                    icon: Icons.auto_awesome,
+                    value: _evidenceOwned.length.toString(),
+                    tint: const Color(0xFFC7BEDA),
+                    onTap: () => setState(() => _hudTooltipText = '증거/수집: 엔딩 조건, 도감 해금, 루트 분기 체크에 영향'),
+                  ),
+                  const SizedBox(width: 8),
+                  _currencyChip(
+                    icon: Icons.circle,
+                    value: _premiumTokens.toString(),
+                    tint: const Color(0xFF9C6DFF),
+                    onTap: () => setState(() => _hudTooltipText = '프리미엄 토큰: 프리미엄 선택지/추가 장면 오픈에 사용'),
+                  ),
+                  const SizedBox(width: 8),
+                  _currencyChip(
+                    icon: Icons.vpn_key_rounded,
+                    value: _storyOpenCurrency.toString(),
+                    tint: const Color(0xFFE7B96D),
+                    onTap: () => setState(() => _hudTooltipText = '열쇠 재화: 잠긴 스토리 노드를 즉시 개방 (6시간마다 +1 충전)'),
+                  ),
+                  const Spacer(),
+                  const Text('📘1  💗1  🔧1', maxLines: 1, overflow: TextOverflow.ellipsis, style: TextStyle(fontSize: 12, color: Color(0xCCF6F1E8))),
+                ],
+              ),
+            ),
+          ),
+          if (_hudTooltipText != null)
+            Padding(
+              padding: const EdgeInsets.fromLTRB(10, 8, 10, 0),
+              child: _glassPanel(
+                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+                child: Text(_hudTooltipText!, style: const TextStyle(fontSize: 12, color: Color(0xFFF6F1E8))),
+              ),
+            ),
+        ],
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     if (!_loaded) return const Scaffold(body: Center(child: CircularProgressIndicator()));
 
     return Scaffold(
-      appBar: _menuIndex == 0
-          ? null
-          : AppBar(
-              toolbarHeight: 64,
-              title: SizedBox(
-                height: 56,
-                child: Row(
-                  children: [
-                    _currencyChip(icon: Icons.monetization_on, value: _gold.toString(), tint: const Color(0xFFE0B44B)),
-                    const SizedBox(width: 8),
-                    _currencyChip(icon: Icons.auto_awesome, value: _evidenceOwned.length.toString(), tint: const Color(0xFFC7BEDA)),
-                    const SizedBox(width: 8),
-                    _currencyChip(icon: Icons.circle, value: _premiumTokens.toString(), tint: const Color(0xFF9C6DFF)),
-                    const SizedBox(width: 8),
-                    const Text('📘1  💗1  🔧1', maxLines: 1, overflow: TextOverflow.ellipsis, style: TextStyle(fontSize: 12, color: Color(0xCCF6F1E8))),
-                    const Spacer(),
-                    IconButton(
-                      style: IconButton.styleFrom(backgroundColor: Colors.black.withOpacity(0.22)),
-                      onPressed: () => setState(() => _menuIndex = 7),
-                      icon: const Icon(Icons.add, color: Color(0xFFF6F1E8), size: 18),
-                    ),
-                  ],
-                ),
-              ),
-            ),
       body: Stack(
         children: [
-          AnimatedSwitcher(
-            duration: const Duration(milliseconds: 260),
-            transitionBuilder: (child, animation) => FadeTransition(
-              opacity: animation,
-              child: ScaleTransition(scale: Tween<double>(begin: 0.985, end: 1).animate(animation), child: child),
+          Listener(
+            behavior: HitTestBehavior.translucent,
+            onPointerDown: (_) {
+              if (_hudTooltipText != null) setState(() => _hudTooltipText = null);
+            },
+            child: AnimatedSwitcher(
+              duration: const Duration(milliseconds: 260),
+              transitionBuilder: (child, animation) => FadeTransition(
+                opacity: animation,
+                child: ScaleTransition(scale: Tween<double>(begin: 0.985, end: 1).animate(animation), child: child),
+              ),
+              child: KeyedSubtree(key: ValueKey(_menuIndex), child: _buildMenuPage(_menuIndex)),
             ),
-            child: KeyedSubtree(key: ValueKey(_menuIndex), child: _buildMenuPage(_menuIndex)),
           ),
+          if (!_menuOverlayOpen) Positioned(left: 0, right: 0, top: 0, child: _topHudOverlay()),
           if (_menuOverlayOpen)
             Positioned(
               left: 0,
@@ -4086,75 +4126,14 @@ class _GameShellState extends State<GameShell> with TickerProviderStateMixin {
             ? const Color(0x5586B6FF)
             : const Color(0x44CDA8FF);
 
-    return Listener(
-      behavior: HitTestBehavior.translucent,
-      onPointerDown: (_) {
-        if (_hudTooltipText != null) {
-          setState(() => _hudTooltipText = null);
-        }
-      },
-      child: SafeArea(
-        child: Stack(
+    return SafeArea(
+      child: Stack(
         children: [
           Positioned.fill(
             child: Image.asset('assets/generated/bg_castle/001-medieval-fantasy-royal-castle-courtyard-.png', fit: BoxFit.cover),
           ),
           Positioned.fill(child: Container(color: Colors.black.withOpacity(0.18))),
           Positioned.fill(child: Container(color: phaseTint)),
-
-          // compact top HUD
-          Positioned(
-            left: 10,
-            right: 10,
-            top: 6,
-            child: _glassPanel(
-              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
-              child: Row(
-                children: [
-                  _currencyChip(
-                    icon: Icons.monetization_on,
-                    value: _gold.toString(),
-                    tint: const Color(0xFFE0B44B),
-                    onTap: () => setState(() => _hudTooltipText = '골드: 상점 구매, 일부 선택지/컨텐츠 개방에 사용'),
-                  ),
-                  const SizedBox(width: 8),
-                  _currencyChip(
-                    icon: Icons.auto_awesome,
-                    value: _evidenceOwned.length.toString(),
-                    tint: const Color(0xFFC7BEDA),
-                    onTap: () => setState(() => _hudTooltipText = '증거/수집: 엔딩 조건, 도감 해금, 루트 분기 체크에 영향'),
-                  ),
-                  const SizedBox(width: 8),
-                  _currencyChip(
-                    icon: Icons.circle,
-                    value: _premiumTokens.toString(),
-                    tint: const Color(0xFF9C6DFF),
-                    onTap: () => setState(() => _hudTooltipText = '프리미엄 토큰: 프리미엄 선택지/추가 장면 오픈에 사용'),
-                  ),
-                  const SizedBox(width: 8),
-                  _currencyChip(
-                    icon: Icons.vpn_key_rounded,
-                    value: _storyOpenCurrency.toString(),
-                    tint: const Color(0xFFE7B96D),
-                    onTap: () => setState(() => _hudTooltipText = '열쇠 재화: 잠긴 스토리 노드를 즉시 개방 (6시간마다 +1 충전)'),
-                  ),
-                  const Spacer(),
-                  const Text('📘1  💗1  🔧1', maxLines: 1, overflow: TextOverflow.ellipsis, style: TextStyle(fontSize: 12, color: Color(0xCCF6F1E8))),
-                ],
-              ),
-            ),
-          ),
-
-          if (_hudTooltipText != null)
-            Positioned(
-              left: 10,
-              right: 10,
-              top: 50,
-              child: _glassPanel(
-                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
-                child: Text(_hudTooltipText!, style: const TextStyle(fontSize: 12, color: Color(0xFFF6F1E8))),
-              ),
-            ),
 
           // character stage
           Positioned.fill(
@@ -4298,8 +4277,7 @@ class _GameShellState extends State<GameShell> with TickerProviderStateMixin {
             ),
         ],
       ),
-    ),
-  );
+    );
   }
 
   ButtonStyle _fantasyButtonStyle({bool filled = true}) {
