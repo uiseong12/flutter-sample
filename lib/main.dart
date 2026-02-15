@@ -3850,16 +3850,23 @@ class _GameShellState extends State<GameShell> with TickerProviderStateMixin {
     );
   }
 
+  Widget _tabToneFrame({required List<Color> colors, required Widget child}) {
+    return Container(
+      decoration: BoxDecoration(gradient: LinearGradient(begin: Alignment.topCenter, end: Alignment.bottomCenter, colors: colors)),
+      child: child,
+    );
+  }
+
   Widget _buildMenuPage(int index) {
     switch (index) {
       case 0:
         return _homePage();
       case 1:
-        return _storyRootPage();
+        return _tabToneFrame(colors: const [Color(0xFF161426), Color(0xFF241D36)], child: _storyRootPage());
       case 2:
-        return _datePage();
+        return _tabToneFrame(colors: const [Color(0xFF251B24), Color(0xFF39263A)], child: _datePage());
       case 3:
-        return _workPage();
+        return _tabToneFrame(colors: const [Color(0xFF1B1629), Color(0xFF2B2238)], child: _workPage());
       case 4:
         return _shopPage();
       case 5:
@@ -3870,6 +3877,18 @@ class _GameShellState extends State<GameShell> with TickerProviderStateMixin {
       default:
         return _settingsPage();
     }
+  }
+
+  Widget _loopChip(String label, bool active) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+      decoration: BoxDecoration(
+        color: active ? const Color(0xFF7E67FF) : const Color(0x334B3A65),
+        borderRadius: BorderRadius.circular(999),
+        border: Border.all(color: active ? const Color(0xFFE9D7A1) : const Color(0x66FFFFFF)),
+      ),
+      child: Text(label, style: TextStyle(fontSize: 11, color: const Color(0xFFF6F1E8), fontWeight: active ? FontWeight.w700 : FontWeight.w500)),
+    );
   }
 
   Widget _homePage() {
@@ -3960,9 +3979,35 @@ class _GameShellState extends State<GameShell> with TickerProviderStateMixin {
             ),
           ),
 
+          // ecosystem loop visual (메인↔스토리↔데이트↔미니게임 순환)
+          Positioned(
+            left: 10,
+            right: 10,
+            top: 52,
+            child: _glassPanel(
+              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+              child: SingleChildScrollView(
+                scrollDirection: Axis.horizontal,
+                child: Row(
+                  children: [
+                    _loopChip('미니게임', _menuIndex == 3),
+                    const Padding(padding: EdgeInsets.symmetric(horizontal: 6), child: Text('→', style: TextStyle(color: Color(0xB3F6F1E8)))),
+                    _loopChip('재화', false),
+                    const Padding(padding: EdgeInsets.symmetric(horizontal: 6), child: Text('→', style: TextStyle(color: Color(0xB3F6F1E8)))),
+                    _loopChip('스토리', _menuIndex == 1),
+                    const Padding(padding: EdgeInsets.symmetric(horizontal: 6), child: Text('→', style: TextStyle(color: Color(0xB3F6F1E8)))),
+                    _loopChip('데이트', _menuIndex == 2),
+                    const Padding(padding: EdgeInsets.symmetric(horizontal: 6), child: Text('→', style: TextStyle(color: Color(0xB3F6F1E8)))),
+                    _loopChip('코스튬/허브', _menuIndex == 0),
+                  ],
+                ),
+              ),
+            ),
+          ),
+
           // character stage
           Positioned.fill(
-            top: 72,
+            top: 96,
             bottom: 108,
             child: Stack(
               children: [
