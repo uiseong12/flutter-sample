@@ -4131,28 +4131,57 @@ class _GameShellState extends State<GameShell> {
     );
   }
 
-  Widget _workHubTab({required String label, required bool active, required VoidCallback onTap}) {
+  Widget _workHubTab({required String icon, required String label, required bool active, String? badge, required VoidCallback onTap}) {
     return InkWell(
       onTap: () {
         _playClick();
         onTap();
       },
-      child: AnimatedContainer(
-        duration: const Duration(milliseconds: 160),
-        height: 42,
-        alignment: Alignment.center,
-        decoration: BoxDecoration(
-          color: active ? const Color(0xFF2C253D) : const Color(0xFF5B4A37),
-          borderRadius: const BorderRadius.vertical(top: Radius.circular(14), bottom: Radius.circular(4)),
-          border: Border.all(color: active ? const Color(0xFFE9D7A1) : const Color(0xFF8E7557)),
-          boxShadow: active ? [const BoxShadow(color: Color(0x557E67FF), blurRadius: 7, offset: Offset(0, -1))] : null,
-        ),
-        child: Text(
-          label,
-          maxLines: 1,
-          overflow: TextOverflow.ellipsis,
-          style: TextStyle(color: const Color(0xFFF6F1E8), fontWeight: active ? FontWeight.w800 : FontWeight.w600, fontSize: 13),
-        ),
+      child: Stack(
+        clipBehavior: Clip.none,
+        children: [
+          AnimatedContainer(
+            duration: const Duration(milliseconds: 160),
+            height: 44,
+            padding: const EdgeInsets.symmetric(horizontal: 10),
+            decoration: BoxDecoration(
+              color: active ? const Color(0xFF2C253D) : const Color(0xFF4A3F33),
+              borderRadius: const BorderRadius.vertical(top: Radius.circular(16), bottom: Radius.circular(3)),
+              border: Border(
+                left: BorderSide(color: active ? const Color(0xFFE9D7A1) : const Color(0xFF8E7557)),
+                top: BorderSide(color: active ? const Color(0xFFE9D7A1) : const Color(0xFF8E7557)),
+                right: BorderSide(color: active ? const Color(0xFFE9D7A1) : const Color(0xFF8E7557)),
+                bottom: BorderSide(color: active ? const Color(0xFF2C253D) : const Color(0xFF8E7557), width: active ? 0 : 1),
+              ),
+              boxShadow: active ? [const BoxShadow(color: Color(0x447E67FF), blurRadius: 7, offset: Offset(0, -1))] : null,
+            ),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Text(icon, style: TextStyle(fontSize: active ? 14 : 13)),
+                const SizedBox(width: 7),
+                Flexible(
+                  child: Text(
+                    label,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: TextStyle(color: const Color(0xFFF6F1E8), fontWeight: active ? FontWeight.w800 : FontWeight.w600, fontSize: 13),
+                  ),
+                ),
+              ],
+            ),
+          ),
+          if (badge != null)
+            Positioned(
+              top: -6,
+              right: 6,
+              child: Container(
+                padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                decoration: BoxDecoration(color: const Color(0xFF8A67FF), borderRadius: BorderRadius.circular(999), border: Border.all(color: const Color(0xFFE9D7A1))),
+                child: Text(badge, style: const TextStyle(fontSize: 9, color: Color(0xFFF6F1E8), fontWeight: FontWeight.w700)),
+              ),
+            ),
+        ],
       ),
     );
   }
@@ -4163,11 +4192,11 @@ class _GameShellState extends State<GameShell> {
       _selectedWork = WorkMiniGame.herbSort;
     }
 
-    final sceneBg = switch (_selectedWork) {
-      WorkMiniGame.herbSort => 'assets/ui/minigame_herbfield_bg.png',
-      WorkMiniGame.smithTiming => 'assets/ui/minigame_stable_bg.png',
-      WorkMiniGame.haggling => 'assets/ui/minigame_market_bg.png',
-      _ => 'assets/ui/minigame_herbfield_bg.png',
+    final thumb = switch (_selectedWork) {
+      WorkMiniGame.herbSort => 'assets/ui/work_thumbs_tmp/herb_thumb.jpg',
+      WorkMiniGame.smithTiming => 'assets/ui/work_thumbs_tmp/forge_thumb.jpg',
+      WorkMiniGame.haggling => 'assets/ui/work_thumbs_tmp/inn_thumb.jpg',
+      _ => 'assets/ui/work_thumbs_tmp/herb_thumb.jpg',
     };
 
     final title = switch (_selectedWork) {
@@ -4178,31 +4207,47 @@ class _GameShellState extends State<GameShell> {
     };
 
     final desc = switch (_selectedWork) {
-      WorkMiniGame.herbSort => '숨은 약초를 찾아 빠르게 짝을 맞추세요. 가끔 희귀 약초가 등장해요!',
-      WorkMiniGame.smithTiming => '타이밍에 맞춰 단조를 완성하세요. 연속 성공 시 보상이 상승합니다.',
-      WorkMiniGame.haggling => '지저분한 곳을 빠르게 정리하세요. 연속 정리로 추가 팁을 노려보세요.',
-      _ => '숨은 약초를 찾아 빠르게 짝을 맞추세요.',
+      WorkMiniGame.herbSort => '숨은 약초를 찾아 짝을 맞추세요! 가끔 희귀 약초가 반짝 등장해요 ✨',
+      WorkMiniGame.smithTiming => '타이밍에 맞춰 쾅! 완벽 단조면 보상이 업그레이드돼요 🔥',
+      WorkMiniGame.haggling => '먼지를 싹싹! 연속 정리로 팁 보너스를 노려보세요 🧼',
+      _ => '숨은 약초를 찾아 짝을 맞추세요!',
     };
 
     final chips = switch (_selectedWork) {
-      WorkMiniGame.herbSort => const ['⏱ 28~68초', '⭐ 희귀 약초', '🎁 코인+콤보'],
-      WorkMiniGame.smithTiming => const ['⏱ 20초', '🎯 타이밍', '🎁 강화 재료'],
-      WorkMiniGame.haggling => const ['⏱ 20초', '🧼 청소 콤보', '🎁 팁(코인)'],
-      _ => const ['⏱ 20초', '🎮 미니게임', '🎁 보상'],
+      WorkMiniGame.herbSort => const [
+          (Icons.schedule, '28~68초', Color(0xFF5CA5FF)),
+          (Icons.auto_awesome, '희귀 약초', Color(0xFFE3B44E)),
+          (Icons.card_giftcard, '코인+콤보', Color(0xFF9B79FF)),
+        ],
+      WorkMiniGame.smithTiming => const [
+          (Icons.schedule, '20초', Color(0xFF5CA5FF)),
+          (Icons.gps_fixed, '타이밍', Color(0xFFE3B44E)),
+          (Icons.construction, '강화 재료', Color(0xFF9B79FF)),
+        ],
+      WorkMiniGame.haggling => const [
+          (Icons.schedule, '20초', Color(0xFF5CA5FF)),
+          (Icons.cleaning_services, '청소 콤보', Color(0xFFE3B44E)),
+          (Icons.attach_money, '팁(코인)', Color(0xFF9B79FF)),
+        ],
+      _ => const [
+          (Icons.schedule, '20초', Color(0xFF5CA5FF)),
+          (Icons.games, '미니게임', Color(0xFFE3B44E)),
+          (Icons.card_giftcard, '보상', Color(0xFF9B79FF)),
+        ],
     };
 
     return ListView(
       padding: const EdgeInsets.fromLTRB(16, 12, 16, 16),
       children: [
         const Text('미니게임', style: TextStyle(fontSize: 20, fontWeight: FontWeight.w800)),
-        const SizedBox(height: 8),
-
-        // Chrome-like tab strip
+        const SizedBox(height: 10),
         Row(
           children: [
             Expanded(
               child: _workHubTab(
-                label: '🌿 약초 채집',
+                icon: '🌿',
+                label: '약초 채집',
+                badge: '추천',
                 active: _selectedWork == WorkMiniGame.herbSort,
                 onTap: () => setState(() => _selectedWork = WorkMiniGame.herbSort),
               ),
@@ -4210,7 +4255,9 @@ class _GameShellState extends State<GameShell> {
             const SizedBox(width: 8),
             Expanded(
               child: _workHubTab(
-                label: '🔨 대장간 단조',
+                icon: '🔨',
+                label: '대장간 단조',
+                badge: 'EVENT',
                 active: _selectedWork == WorkMiniGame.smithTiming,
                 onTap: () => setState(() => _selectedWork = WorkMiniGame.smithTiming),
               ),
@@ -4218,7 +4265,8 @@ class _GameShellState extends State<GameShell> {
             const SizedBox(width: 8),
             Expanded(
               child: _workHubTab(
-                label: '🧹 여관 청소',
+                icon: '🧹',
+                label: '여관 청소',
                 active: _selectedWork == WorkMiniGame.haggling,
                 onTap: () => setState(() => _selectedWork = WorkMiniGame.haggling),
               ),
@@ -4226,95 +4274,112 @@ class _GameShellState extends State<GameShell> {
           ],
         ),
 
-        // Preview card
-        Container(
-          margin: const EdgeInsets.only(top: 0),
-          padding: const EdgeInsets.fromLTRB(12, 12, 12, 14),
-          decoration: BoxDecoration(
-            color: const Color(0xFF2C253D),
-            borderRadius: const BorderRadius.vertical(bottom: Radius.circular(16), top: Radius.circular(10)),
-            border: Border.all(color: const Color(0x66FFFFFF)),
+        AnimatedSwitcher(
+          duration: const Duration(milliseconds: 190),
+          transitionBuilder: (child, anim) => FadeTransition(
+            opacity: anim,
+            child: SlideTransition(position: Tween<Offset>(begin: const Offset(0.02, 0), end: Offset.zero).animate(anim), child: child),
           ),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              ClipRRect(
-                borderRadius: BorderRadius.circular(14),
-                child: SizedBox(
-                  height: 190,
-                  child: Stack(
-                    children: [
-                      Positioned.fill(child: Image.asset(sceneBg, fit: BoxFit.cover)),
-                      Positioned.fill(
-                        child: DecoratedBox(
-                          decoration: BoxDecoration(
-                            gradient: LinearGradient(
-                              begin: Alignment.topCenter,
-                              end: Alignment.bottomCenter,
-                              colors: [Colors.transparent, Colors.black.withOpacity(0.45)],
+          child: Container(
+            key: ValueKey(_selectedWork),
+            margin: const EdgeInsets.only(top: 0),
+            padding: const EdgeInsets.fromLTRB(12, 12, 12, 14),
+            decoration: BoxDecoration(
+              color: const Color(0xFF2C253D),
+              borderRadius: const BorderRadius.vertical(bottom: Radius.circular(16), top: Radius.circular(8)),
+              border: Border.all(color: const Color(0x66FFFFFF)),
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                ClipRRect(
+                  borderRadius: BorderRadius.circular(16),
+                  child: SizedBox(
+                    height: 198,
+                    child: Stack(
+                      children: [
+                        Positioned.fill(
+                          child: Container(
+                            decoration: const BoxDecoration(
+                              gradient: LinearGradient(colors: [Color(0x22FFFFFF), Color(0x11000000)], begin: Alignment.topLeft, end: Alignment.bottomRight),
                             ),
                           ),
                         ),
-                      ),
-                      Positioned(
-                        left: 10,
-                        top: 10,
-                        child: Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                          decoration: BoxDecoration(
-                            color: const Color(0xCC7E67FF),
-                            borderRadius: BorderRadius.circular(999),
-                            border: Border.all(color: const Color(0xFFE9D7A1)),
-                          ),
-                          child: Text(
-                            _selectedWork == WorkMiniGame.herbSort ? '오늘 추천' : '주간 이벤트',
-                            style: const TextStyle(fontSize: 11, color: Color(0xFFF6F1E8), fontWeight: FontWeight.w700),
+                        Positioned.fill(child: Image.asset(thumb, fit: BoxFit.cover)),
+                        Positioned.fill(
+                          child: DecoratedBox(
+                            decoration: BoxDecoration(
+                              gradient: LinearGradient(begin: Alignment.topCenter, end: Alignment.bottomCenter, colors: [Colors.transparent, Colors.black.withOpacity(0.5)]),
+                            ),
                           ),
                         ),
-                      ),
-                      Positioned(
-                        left: 12,
-                        right: 12,
-                        bottom: 10,
-                        child: Text(title, style: const TextStyle(color: Color(0xFFF6F1E8), fontSize: 18, fontWeight: FontWeight.w800)),
-                      ),
-                    ],
+                        Positioned(
+                          left: 10,
+                          top: 10,
+                          child: TweenAnimationBuilder<double>(
+                            tween: Tween(begin: 0.85, end: 1),
+                            duration: const Duration(milliseconds: 3800),
+                            curve: Curves.easeInOut,
+                            builder: (_, v, child) => Transform.scale(scale: v, child: child),
+                            child: Container(
+                              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                              decoration: BoxDecoration(
+                                color: const Color(0xCC7E67FF),
+                                borderRadius: BorderRadius.circular(999),
+                                border: Border.all(color: const Color(0xFFE9D7A1)),
+                                boxShadow: const [BoxShadow(color: Color(0x55000000), blurRadius: 6)],
+                              ),
+                              child: Text(_selectedWork == WorkMiniGame.herbSort ? '오늘 추천' : '주간 이벤트', style: const TextStyle(fontSize: 11, color: Color(0xFFF6F1E8), fontWeight: FontWeight.w700)),
+                            ),
+                          ),
+                        ),
+                        const Positioned(right: 10, top: 10, child: Text('✦', style: TextStyle(color: Color(0xCCF6F1E8)))),
+                        Positioned(left: 12, right: 12, bottom: 10, child: Text(title, style: const TextStyle(color: Color(0xFFF6F1E8), fontSize: 18, fontWeight: FontWeight.w800))),
+                      ],
+                    ),
                   ),
                 ),
-              ),
-              const SizedBox(height: 10),
-              Text(desc, maxLines: 2, overflow: TextOverflow.ellipsis, style: const TextStyle(color: Color(0xDDF6F1E8), fontSize: 13)),
-              const SizedBox(height: 8),
-              Wrap(
-                spacing: 8,
-                runSpacing: 6,
-                children: chips
-                    .map(
-                      (e) => Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-                        decoration: BoxDecoration(color: const Color(0x334B3A65), borderRadius: BorderRadius.circular(999), border: Border.all(color: const Color(0x66FFFFFF))),
-                        child: Text(e, style: const TextStyle(fontSize: 12, color: Color(0xFFF6F1E8))),
-                      ),
-                    )
-                    .toList(),
-              ),
-              const SizedBox(height: 12),
-              SizedBox(
-                width: double.infinity,
-                child: ElevatedButton(
-                  onPressed: _workTimeLeft > 0 ? null : _startFlameGame,
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: const Color(0xFF8A67FF),
-                    foregroundColor: const Color(0xFFF6F1E8),
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
-                    padding: const EdgeInsets.symmetric(vertical: 14),
-                  ),
-                  child: const Text('플레이 시작', style: TextStyle(fontSize: 17, fontWeight: FontWeight.w800)),
+                const SizedBox(height: 10),
+                Text(desc, maxLines: 2, overflow: TextOverflow.ellipsis, style: const TextStyle(color: Color(0xDDF6F1E8), fontSize: 13)),
+                const SizedBox(height: 8),
+                Wrap(
+                  spacing: 8,
+                  runSpacing: 6,
+                  children: chips
+                      .map(
+                        (e) => Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                          decoration: BoxDecoration(
+                            gradient: LinearGradient(colors: [e.$3.withOpacity(0.28), e.$3.withOpacity(0.18)]),
+                            borderRadius: BorderRadius.circular(999),
+                            border: Border.all(color: const Color(0x88FFFFFF)),
+                          ),
+                          child: Row(mainAxisSize: MainAxisSize.min, children: [Icon(e.$1, size: 13, color: const Color(0xFFF6F1E8)), const SizedBox(width: 5), Text(e.$2, style: const TextStyle(fontSize: 12, color: Color(0xFFF6F1E8)))]),
+                        ),
+                      )
+                      .toList(),
                 ),
-              ),
-              const SizedBox(height: 6),
-              const Text('플레이하면 바로 시작돼요 · 보상 자동 지급', style: TextStyle(fontSize: 12, color: Color(0xB3F6F1E8))),
-            ],
+                const SizedBox(height: 12),
+                SizedBox(
+                  width: double.infinity,
+                  child: ElevatedButton.icon(
+                    onPressed: _workTimeLeft > 0 ? null : _startFlameGame,
+                    icon: const Icon(Icons.play_arrow_rounded, size: 20),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: const Color(0xFF8A67FF),
+                      foregroundColor: const Color(0xFFF6F1E8),
+                      elevation: 7,
+                      shadowColor: const Color(0x55281353),
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+                      padding: const EdgeInsets.symmetric(vertical: 14),
+                    ),
+                    label: const Text('플레이 시작', style: TextStyle(fontSize: 17, fontWeight: FontWeight.w800)),
+                  ),
+                ),
+                const SizedBox(height: 10),
+                const Text('플레이하면 바로 시작돼요! (보상 자동 지급)', style: TextStyle(fontSize: 12, color: Color(0xB3F6F1E8))),
+              ],
+            ),
           ),
         ),
       ],
