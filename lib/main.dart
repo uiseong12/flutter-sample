@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:convert';
 import 'dart:math';
+import 'dart:ui' show ImageFilter;
 
 import 'package:flame/game.dart';
 import 'package:flutter/material.dart';
@@ -2645,6 +2646,8 @@ class _GameShellState extends State<GameShell> {
               _currencyChip(icon: Icons.auto_awesome, value: _evidenceOwned.length.toString(), tint: const Color(0xFFC7BEDA)),
               const SizedBox(width: 8),
               _currencyChip(icon: Icons.circle, value: _premiumTokens.toString(), tint: const Color(0xFF9C6DFF)),
+              const SizedBox(width: 8),
+              const Text('📘1  💗1  🔧1', maxLines: 1, overflow: TextOverflow.ellipsis, style: TextStyle(fontSize: 12, color: Color(0xCCF6F1E8))),
               const Spacer(),
               IconButton(
                 style: IconButton.styleFrom(backgroundColor: Colors.black.withOpacity(0.22)),
@@ -2672,7 +2675,7 @@ class _GameShellState extends State<GameShell> {
               bottom: 0,
               child: SafeArea(top: false, child: _buildBottomNav()),
             ),
-          if (_menuOverlayOpen)
+          if (_menuOverlayOpen && _menuIndex != 0)
             Positioned(
               right: 14,
               bottom: 158,
@@ -2696,7 +2699,7 @@ class _GameShellState extends State<GameShell> {
                 ),
               ),
             ),
-          if (!_menuOverlayOpen)
+          if (!_menuOverlayOpen && _menuIndex != 0)
             Positioned(
               right: 12,
               bottom: 14,
@@ -2758,41 +2761,7 @@ class _GameShellState extends State<GameShell> {
     return SafeArea(
       child: Column(
         children: [
-          Padding(
-            padding: const EdgeInsets.fromLTRB(12, 8, 12, 6),
-            child: Row(
-              children: [
-                Expanded(
-                  child: Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
-                    decoration: BoxDecoration(color: Colors.black.withOpacity(0.45), borderRadius: BorderRadius.circular(10)),
-                    child: Wrap(
-                      spacing: 6,
-                      runSpacing: 6,
-                      children: const [
-                        Chip(label: Text('📘 1', style: TextStyle(fontSize: 11))),
-                        Chip(label: Text('💗 1', style: TextStyle(fontSize: 11))),
-                        Chip(label: Text('🔧 1', style: TextStyle(fontSize: 11))),
-                      ],
-                    ),
-                  ),
-                ),
-                const SizedBox(width: 8),
-                Container(
-                  width: 170,
-                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
-                  decoration: BoxDecoration(color: Colors.white.withOpacity(0.88), borderRadius: BorderRadius.circular(10)),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text('장착: ${outfit.name}', style: const TextStyle(color: Colors.black87, fontSize: 12, fontWeight: FontWeight.bold)),
-                      Text('총 매력: $_totalCharm', style: const TextStyle(color: Colors.black87, fontSize: 12)),
-                    ],
-                  ),
-                ),
-              ],
-            ),
-          ),
+          const SizedBox.shrink(),
           Expanded(
             child: Stack(
               children: [
@@ -2869,42 +2838,76 @@ class _GameShellState extends State<GameShell> {
               ],
             ),
           ),
-          Container(
-            width: double.infinity,
+          Padding(
             padding: EdgeInsets.fromLTRB(12, 8, 12, MediaQuery.of(context).padding.bottom + 12),
-            decoration: BoxDecoration(color: Colors.black.withOpacity(0.6)),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Container(
-                  width: double.infinity,
-                  padding: const EdgeInsets.all(12),
-                  decoration: BoxDecoration(color: Colors.black.withOpacity(0.7), borderRadius: BorderRadius.circular(16)),
-                  child: const Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
+            child: _glassPanel(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text('오늘의 추천', style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: Color(0xE6F6F1E8))),
+                  const SizedBox(height: 4),
+                  const Text('추천 데이트: 신뢰 + 관계 상승', maxLines: 2, overflow: TextOverflow.ellipsis, style: TextStyle(fontSize: 13, color: Color(0xBFF6F1E8))),
+                  const SizedBox(height: 2),
+                  const Text('추천 알바: 골드/재료', maxLines: 1, overflow: TextOverflow.ellipsis, style: TextStyle(fontSize: 13, color: Color(0x99F6F1E8))),
+                  const SizedBox(height: 6),
+                  Text('장착: ${outfit.name} · 총 매력 $_totalCharm', maxLines: 1, overflow: TextOverflow.ellipsis, style: const TextStyle(fontSize: 12, color: Color(0x99F6F1E8))),
+                  const SizedBox(height: 10),
+                  Row(
                     children: [
-                      Text('오늘의 추천', style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: Colors.amber)),
-                      SizedBox(height: 4),
-                      Text('추천 데이트: 신뢰 + 관계 상승', maxLines: 2, overflow: TextOverflow.ellipsis, style: TextStyle(fontSize: 13, color: Color(0xFFF6F1E8))),
-                      SizedBox(height: 2),
-                      Text('추천 알바: 골드/재료', maxLines: 1, overflow: TextOverflow.ellipsis, style: TextStyle(fontSize: 13, color: Color(0xFFF6F1E8))),
+                      Expanded(
+                        child: SizedBox(
+                          height: 56,
+                          child: ElevatedButton(
+                            onPressed: () => setState(() => _menuIndex = 1),
+                            style: ElevatedButton.styleFrom(shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16))),
+                            child: const Text('다음 노드', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600)),
+                          ),
+                        ),
+                      ),
+                      const SizedBox(width: 8),
+                      SizedBox(
+                        width: 56,
+                        height: 56,
+                        child: ElevatedButton(
+                          onPressed: () {
+                            _playClick();
+                            setState(() => _menuOverlayOpen = !_menuOverlayOpen);
+                          },
+                          style: ElevatedButton.styleFrom(
+                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                            backgroundColor: const Color(0xFF6A4BFF),
+                            foregroundColor: const Color(0xFFF6F1E8),
+                            padding: EdgeInsets.zero,
+                          ),
+                          child: Icon(_menuOverlayOpen ? Icons.close : Icons.grid_view_rounded, size: 22),
+                        ),
+                      ),
                     ],
                   ),
-                ),
-                const SizedBox(height: 12),
-                SizedBox(
-                  width: double.infinity,
-                  height: 56,
-                  child: ElevatedButton(
-                    onPressed: () => setState(() => _menuIndex = 1),
-                    style: ElevatedButton.styleFrom(shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16))),
-                    child: const Text('다음 노드', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600)),
-                  ),
-                ),
-              ],
+                ],
+              ),
             ),
           ),
         ],
+      ),
+    );
+  }
+
+  Widget _glassPanel({required Widget child, EdgeInsets padding = const EdgeInsets.all(12)}) {
+    return ClipRRect(
+      borderRadius: BorderRadius.circular(16),
+      child: BackdropFilter(
+        filter: ImageFilter.blur(sigmaX: 5, sigmaY: 5),
+        child: Container(
+          padding: padding,
+          decoration: BoxDecoration(
+            color: Colors.black.withOpacity(0.58),
+            borderRadius: BorderRadius.circular(16),
+            border: Border.all(color: Colors.white24, width: 1),
+          ),
+          child: child,
+        ),
       ),
     );
   }
