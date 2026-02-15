@@ -190,6 +190,7 @@ class _GameShellState extends State<GameShell> with TickerProviderStateMixin {
   int _premiumTokens = 0;
   int _storyOpenCurrency = 5;
   DateTime? _storyOpenRechargeAt;
+  String? _hudTooltipText;
   int _storyIndex = 0;
   int _baseCharm = 12;
   bool _loaded = false;
@@ -1756,7 +1757,7 @@ class _GameShellState extends State<GameShell> with TickerProviderStateMixin {
         title: const Text('결과'),
         content: Text('${choice.result}\n\n획득: 금화 +${10 + (_totalCharm ~/ 2)} / 민심 +1'),
         actions: [
-          TextButton(onPressed: () => Navigator.pop(context), child: const Text('다음 노드로')),
+          TextButton(onPressed: () => Navigator.pop(context), child: const Text('노드맵으로 돌아가기')),
           TextButton(
             onPressed: () async {
               Navigator.pop(context);
@@ -1779,7 +1780,9 @@ class _GameShellState extends State<GameShell> with TickerProviderStateMixin {
         ],
       ),
     );
-    setState(() {});
+    setState(() {
+      _inStoryScene = false;
+    });
   }
 
   Future<void> _buyGift(ShopItem item, Character target) async {
@@ -4083,8 +4086,15 @@ class _GameShellState extends State<GameShell> with TickerProviderStateMixin {
             ? const Color(0x5586B6FF)
             : const Color(0x44CDA8FF);
 
-    return SafeArea(
-      child: Stack(
+    return Listener(
+      behavior: HitTestBehavior.translucent,
+      onPointerDown: (_) {
+        if (_hudTooltipText != null) {
+          setState(() => _hudTooltipText = null);
+        }
+      },
+      child: SafeArea(
+        child: Stack(
         children: [
           Positioned.fill(
             child: Image.asset('assets/generated/bg_castle/001-medieval-fantasy-royal-castle-courtyard-.png', fit: BoxFit.cover),
@@ -4101,19 +4111,50 @@ class _GameShellState extends State<GameShell> with TickerProviderStateMixin {
               padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
               child: Row(
                 children: [
-                  _currencyChip(icon: Icons.monetization_on, value: _gold.toString(), tint: const Color(0xFFE0B44B)),
+                  _currencyChip(
+                    icon: Icons.monetization_on,
+                    value: _gold.toString(),
+                    tint: const Color(0xFFE0B44B),
+                    onTap: () => setState(() => _hudTooltipText = '골드: 상점 구매, 일부 선택지/컨텐츠 개방에 사용'),
+                  ),
                   const SizedBox(width: 8),
-                  _currencyChip(icon: Icons.auto_awesome, value: _evidenceOwned.length.toString(), tint: const Color(0xFFC7BEDA)),
+                  _currencyChip(
+                    icon: Icons.auto_awesome,
+                    value: _evidenceOwned.length.toString(),
+                    tint: const Color(0xFFC7BEDA),
+                    onTap: () => setState(() => _hudTooltipText = '증거/수집: 엔딩 조건, 도감 해금, 루트 분기 체크에 영향'),
+                  ),
                   const SizedBox(width: 8),
-                  _currencyChip(icon: Icons.circle, value: _premiumTokens.toString(), tint: const Color(0xFF9C6DFF)),
+                  _currencyChip(
+                    icon: Icons.circle,
+                    value: _premiumTokens.toString(),
+                    tint: const Color(0xFF9C6DFF),
+                    onTap: () => setState(() => _hudTooltipText = '프리미엄 토큰: 프리미엄 선택지/추가 장면 오픈에 사용'),
+                  ),
                   const SizedBox(width: 8),
-                  _currencyChip(icon: Icons.vpn_key_rounded, value: _storyOpenCurrency.toString(), tint: const Color(0xFFE7B96D)),
+                  _currencyChip(
+                    icon: Icons.vpn_key_rounded,
+                    value: _storyOpenCurrency.toString(),
+                    tint: const Color(0xFFE7B96D),
+                    onTap: () => setState(() => _hudTooltipText = '열쇠 재화: 잠긴 스토리 노드를 즉시 개방 (6시간마다 +1 충전)'),
+                  ),
                   const Spacer(),
                   const Text('📘1  💗1  🔧1', maxLines: 1, overflow: TextOverflow.ellipsis, style: TextStyle(fontSize: 12, color: Color(0xCCF6F1E8))),
                 ],
               ),
             ),
           ),
+
+          if (_hudTooltipText != null)
+            Positioned(
+              left: 10,
+              right: 10,
+              top: 50,
+              child: _glassPanel(
+                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+                child: Text(_hudTooltipText!, style: const TextStyle(fontSize: 12, color: Color(0xFFF6F1E8))),
+              ),
+            ),
 
           // character stage
           Positioned.fill(
@@ -4257,7 +4298,8 @@ class _GameShellState extends State<GameShell> with TickerProviderStateMixin {
             ),
         ],
       ),
-    );
+    ),
+  );
   }
 
   ButtonStyle _fantasyButtonStyle({bool filled = true}) {
@@ -4295,8 +4337,8 @@ class _GameShellState extends State<GameShell> with TickerProviderStateMixin {
     );
   }
 
-  Widget _currencyChip({required IconData icon, required String value, required Color tint}) {
-    return Container(
+  Widget _currencyChip({required IconData icon, required String value, required Color tint, VoidCallback? onTap}) {
+    final chip = Container(
       height: 32,
       padding: const EdgeInsets.symmetric(horizontal: 10),
       decoration: BoxDecoration(color: Colors.black.withOpacity(0.28), borderRadius: BorderRadius.circular(16), border: Border.all(color: Colors.white24)),
@@ -4308,6 +4350,8 @@ class _GameShellState extends State<GameShell> with TickerProviderStateMixin {
         ],
       ),
     );
+    if (onTap == null) return chip;
+    return GestureDetector(onTap: onTap, child: chip);
   }
 
   Widget _menuCard(String title, IconData icon, Color color, VoidCallback onTap) {
