@@ -2966,20 +2966,20 @@ class _GameShellState extends State<GameShell> {
                 Positioned(
                   left: 0,
                   right: 0,
-                  top: 92,
+                  top: 148,
                   bottom: 128,
                   child: _branchRouteMap(),
                 ),
                 Positioned(
                   left: 12,
                   right: 12,
-                  bottom: 96,
+                  top: 96,
                   child: SafeArea(
-                    top: false,
+                    bottom: false,
                     child: Container(
                       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
                       decoration: BoxDecoration(
-                        color: Colors.black.withOpacity(0.36),
+                        color: Colors.black.withOpacity(0.42),
                         borderRadius: BorderRadius.circular(10),
                         border: Border.all(color: Colors.white24),
                       ),
