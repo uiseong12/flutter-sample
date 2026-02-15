@@ -2767,175 +2767,157 @@ class _GameShellState extends State<GameShell> {
   Widget _homePage() {
     final outfit = _outfits.firstWhere((e) => e.id == _equippedOutfitId);
 
-    return Stack(
-      children: [
-        Positioned.fill(
-          child: Image.asset(
-            'assets/generated/bg_castle/001-medieval-fantasy-royal-castle-courtyard-.png',
-            fit: BoxFit.cover,
-          ),
-        ),
-        Positioned.fill(child: Container(color: Colors.black.withOpacity(0.18))),
-        Positioned.fill(child: _topBottomScrim()),
-
-        Center(
-          child: Stack(
-            alignment: Alignment.center,
-            children: [
-              Positioned(bottom: 20, child: Image.asset('assets/ui/ground_shadow.png', width: 320)),
-              AnimatedSwitcher(
-                duration: const Duration(milliseconds: 260),
-                child: SizedBox(
-                  key: ValueKey(_playerAvatar),
-                  child: _fullBodySprite(_playerAvatar, width: 250),
-                ),
-              ),
-              Positioned(left: 18, top: 120, child: GestureDetector(onTap: _showQuickInventory, child: Image.asset('assets/ui/equip_slot_ring.png', width: 48))),
-              Positioned(right: 18, top: 120, child: GestureDetector(onTap: _showQuickInventory, child: Image.asset('assets/ui/equip_slot_brooch.png', width: 48))),
-              Positioned(left: 24, bottom: 120, child: GestureDetector(onTap: _showQuickInventory, child: Image.asset('assets/ui/equip_slot_cloak.png', width: 48))),
-              Positioned(right: 24, bottom: 120, child: GestureDetector(onTap: _showQuickInventory, child: Image.asset('assets/ui/equip_slot_dress.png', width: 48))),
-            ],
-          ),
-        ),
-
-        Positioned(
-          top: 18,
-          left: 12,
-          child: Container(
-            width: 186,
-            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
-            decoration: BoxDecoration(image: const DecorationImage(image: AssetImage('assets/ui/panel_parchment_dark.png'), fit: BoxFit.fill), borderRadius: BorderRadius.circular(10)),
-            child: Wrap(
-              spacing: 6,
-              runSpacing: 6,
-              children: const [
-                Chip(label: Text('📘 1', style: TextStyle(fontSize: 11))),
-                Chip(label: Text('💗 1', style: TextStyle(fontSize: 11))),
-                Chip(label: Text('🔧 1', style: TextStyle(fontSize: 11))),
-              ],
-            ),
-          ),
-        ),
-
-        Positioned(
-          top: 16,
-          right: 12,
-          child: Container(
-            width: 190,
-            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
-            decoration: BoxDecoration(image: DecorationImage(image: AssetImage('assets/ui/mini_inventory_sheet.png'), fit: BoxFit.fill)),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
+    return SafeArea(
+      child: Column(
+        children: [
+          Padding(
+            padding: const EdgeInsets.fromLTRB(12, 8, 12, 6),
+            child: Row(
               children: [
-                Text('장착: ${outfit.name}', style: const TextStyle(color: Colors.black87, fontSize: 12, fontWeight: FontWeight.bold)),
-                Text('총 매력: $_totalCharm', style: const TextStyle(color: Colors.black87, fontSize: 12)),
-              ],
-            ),
-          ),
-        ),
-
-        const SizedBox.shrink(),
-
-        Positioned.fill(child: IgnorePointer(child: Image.asset('assets/ui/foreground_vignette.png', fit: BoxFit.cover))),
-
-        Positioned(
-          left: 12,
-          right: 12,
-          bottom: 70,
-          child: Card(
-            color: Colors.black.withOpacity(0.56),
-            child: Padding(
-              padding: const EdgeInsets.all(10),
-              child: Row(
-                children: [
-                  const Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text('오늘의 추천', style: TextStyle(color: Colors.amber, fontWeight: FontWeight.bold)),
-                        SizedBox(height: 4),
-                        Row(children: [Icon(Icons.favorite, size: 14, color: Colors.pinkAccent), SizedBox(width: 4), Text('추천 데이트: 신뢰 + 관계 진전', style: TextStyle(color: Color(0xFFF6F1E8), fontSize: 12))]),
-                        SizedBox(height: 2),
-                        Row(children: [Icon(Icons.construction, size: 14, color: Colors.orangeAccent), SizedBox(width: 4), Text('추천 알바: 골드/재료', style: TextStyle(color: Color(0xFFF6F1E8), fontSize: 12))]),
+                Expanded(
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+                    decoration: BoxDecoration(color: Colors.black.withOpacity(0.45), borderRadius: BorderRadius.circular(10)),
+                    child: Wrap(
+                      spacing: 6,
+                      runSpacing: 6,
+                      children: const [
+                        Chip(label: Text('📘 1', style: TextStyle(fontSize: 11))),
+                        Chip(label: Text('💗 1', style: TextStyle(fontSize: 11))),
+                        Chip(label: Text('🔧 1', style: TextStyle(fontSize: 11))),
                       ],
                     ),
                   ),
-                  SizedBox(
-                    width: 180,
-                    child: _sealPrimaryButton('다음 노드', () {
-                      setState(() => _menuIndex = 1);
-                    }),
+                ),
+                const SizedBox(width: 8),
+                Container(
+                  width: 170,
+                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+                  decoration: BoxDecoration(color: Colors.white.withOpacity(0.88), borderRadius: BorderRadius.circular(10)),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text('장착: ${outfit.name}', style: const TextStyle(color: Colors.black87, fontSize: 12, fontWeight: FontWeight.bold)),
+                      Text('총 매력: $_totalCharm', style: const TextStyle(color: Colors.black87, fontSize: 12)),
+                    ],
                   ),
-                ],
-              ),
+                ),
+              ],
             ),
           ),
-        ),
-
-        // 호감도 패널은 '오늘의 추천'보다 위 레이어/위치에 표시
-        Positioned(
-          left: 12,
-          right: 12,
-          top: 84,
-          child: AnimatedSlide(
-            duration: const Duration(milliseconds: 220),
-            offset: _showAffectionOverlay ? Offset.zero : const Offset(0, -0.16),
-            child: AnimatedOpacity(
-              duration: const Duration(milliseconds: 180),
-              opacity: _showAffectionOverlay ? 1 : 0,
-              child: Container(
-                padding: const EdgeInsets.all(12),
-                decoration: BoxDecoration(
-                  color: Colors.black.withOpacity(0.72),
-                  borderRadius: BorderRadius.circular(12),
-                  border: Border.all(color: Colors.white24),
+          Expanded(
+            child: Stack(
+              children: [
+                Positioned.fill(
+                  child: Image.asset('assets/generated/bg_castle/001-medieval-fantasy-royal-castle-courtyard-.png', fit: BoxFit.cover),
                 ),
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: _characters
-                      .map(
-                        (c) => Padding(
-                          padding: const EdgeInsets.only(bottom: 8),
-                          child: Row(
-                            children: [
-                              SizedBox(width: 36, child: Text(c.name, style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold))),
-                              const SizedBox(width: 8),
-                              SizedBox(
-                                width: 66,
-                                child: Text(
-                                  _relationshipLabel(_relationshipStates[c.name] ?? RelationshipState.strange),
-                                  style: const TextStyle(color: Colors.amberAccent, fontSize: 11),
-                                ),
-                              ),
-                              const SizedBox(width: 8),
-                              Expanded(child: LinearProgressIndicator(value: c.affection / 100, minHeight: 8)),
-                              const SizedBox(width: 8),
-                              SizedBox(width: 30, child: Text('${c.affection}', style: const TextStyle(color: Colors.white))),
-                              SizedBox(width: 32, child: _deltaBadge(c.name)),
-                            ],
-                          ),
+                Positioned.fill(child: Container(color: Colors.black.withOpacity(0.2))),
+                Align(
+                  alignment: Alignment.center,
+                  child: Stack(
+                    alignment: Alignment.center,
+                    children: [
+                      Positioned(bottom: 20, child: Image.asset('assets/ui/ground_shadow.png', width: 320)),
+                      AnimatedSwitcher(
+                        duration: const Duration(milliseconds: 260),
+                        child: SizedBox(
+                          key: ValueKey(_playerAvatar),
+                          child: _fullBodySprite(_playerAvatar, width: 250),
                         ),
-                      )
-                      .toList(),
+                      ),
+                      Positioned(left: 18, top: 120, child: GestureDetector(onTap: _showQuickInventory, child: Image.asset('assets/ui/equip_slot_ring.png', width: 48))),
+                      Positioned(right: 18, top: 120, child: GestureDetector(onTap: _showQuickInventory, child: Image.asset('assets/ui/equip_slot_brooch.png', width: 48))),
+                      Positioned(left: 24, bottom: 120, child: GestureDetector(onTap: _showQuickInventory, child: Image.asset('assets/ui/equip_slot_cloak.png', width: 48))),
+                      Positioned(right: 24, bottom: 120, child: GestureDetector(onTap: _showQuickInventory, child: Image.asset('assets/ui/equip_slot_dress.png', width: 48))),
+                    ],
+                  ),
                 ),
-              ),
+                Positioned(
+                  left: 12,
+                  bottom: 10,
+                  child: FilledButton.icon(
+                    onPressed: () {
+                      _playClick();
+                      setState(() => _showAffectionOverlay = !_showAffectionOverlay);
+                    },
+                    icon: Icon(_showAffectionOverlay ? Icons.expand_more : Icons.expand_less),
+                    label: Text(_showAffectionOverlay ? '호감도 닫기' : '호감도 열기'),
+                  ),
+                ),
+                Positioned(
+                  left: 12,
+                  right: 12,
+                  top: 12,
+                  child: AnimatedOpacity(
+                    duration: const Duration(milliseconds: 180),
+                    opacity: _showAffectionOverlay ? 1 : 0,
+                    child: IgnorePointer(
+                      ignoring: !_showAffectionOverlay,
+                      child: Container(
+                        padding: const EdgeInsets.all(12),
+                        decoration: BoxDecoration(color: Colors.black.withOpacity(0.72), borderRadius: BorderRadius.circular(12), border: Border.all(color: Colors.white24)),
+                        child: Column(
+                          mainAxisSize: MainAxisSize.min,
+                          children: _characters.map((c) => Padding(
+                            padding: const EdgeInsets.only(bottom: 8),
+                            child: Row(
+                              children: [
+                                SizedBox(width: 36, child: Text(c.name, style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold))),
+                                const SizedBox(width: 8),
+                                SizedBox(width: 66, child: Text(_relationshipLabel(_relationshipStates[c.name] ?? RelationshipState.strange), style: const TextStyle(color: Colors.amberAccent, fontSize: 11))),
+                                const SizedBox(width: 8),
+                                Expanded(child: LinearProgressIndicator(value: c.affection / 100, minHeight: 8)),
+                                const SizedBox(width: 8),
+                                SizedBox(width: 30, child: Text('${c.affection}', style: const TextStyle(color: Colors.white))),
+                                SizedBox(width: 32, child: _deltaBadge(c.name)),
+                              ],
+                            ),
+                          )).toList(),
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+              ],
             ),
           ),
-        ),
-
-        Positioned(
-          left: 12,
-          bottom: 12,
-          child: FilledButton.icon(
-            onPressed: () {
-              _playClick();
-              setState(() => _showAffectionOverlay = !_showAffectionOverlay);
-            },
-            icon: Icon(_showAffectionOverlay ? Icons.expand_more : Icons.expand_less),
-            label: Text(_showAffectionOverlay ? '호감도 닫기' : '호감도 열기'),
+          Container(
+            width: double.infinity,
+            padding: const EdgeInsets.fromLTRB(12, 8, 12, 12),
+            decoration: BoxDecoration(color: Colors.black.withOpacity(0.6)),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Container(
+                  width: double.infinity,
+                  padding: const EdgeInsets.all(12),
+                  decoration: BoxDecoration(color: Colors.black.withOpacity(0.7), borderRadius: BorderRadius.circular(16)),
+                  child: const Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text('오늘의 추천', style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: Colors.amber)),
+                      SizedBox(height: 4),
+                      Text('추천 데이트: 신뢰 + 관계 상승', maxLines: 2, overflow: TextOverflow.ellipsis, style: TextStyle(fontSize: 13, color: Color(0xFFF6F1E8))),
+                      SizedBox(height: 2),
+                      Text('추천 알바: 골드/재료', maxLines: 1, overflow: TextOverflow.ellipsis, style: TextStyle(fontSize: 13, color: Color(0xFFF6F1E8))),
+                    ],
+                  ),
+                ),
+                const SizedBox(height: 12),
+                SizedBox(
+                  width: double.infinity,
+                  height: 56,
+                  child: ElevatedButton(
+                    onPressed: () => setState(() => _menuIndex = 1),
+                    style: ElevatedButton.styleFrom(shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16))),
+                    child: const Text('다음 노드', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600)),
+                  ),
+                ),
+              ],
+            ),
           ),
-        ),
-      ],
+        ],
+      ),
     );
   }
 
