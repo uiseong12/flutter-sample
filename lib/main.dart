@@ -1834,6 +1834,7 @@ class _GameShellState extends State<GameShell> {
     int rows = roundSizes[0].$1;
     int cols = roundSizes[0].$2;
     int total = rows * cols;
+    int roundStartScore = 0;
 
     List<int> faces = [];
     List<int> tileState = []; // 0 hidden, 1 revealed, 2 matched
@@ -1857,7 +1858,7 @@ class _GameShellState extends State<GameShell> {
     final popupTimers = <Timer>[];
     bool initialized = false;
     StateSetter? modalSet;
-    late Future<void> Function({required bool cleared}) finishGame;
+    late Future<void> Function({required bool cleared, bool timedOut}) finishGame;
 
     void setupRound({bool keepTimer = true}) {
       rows = roundSizes[round].$1;
@@ -1881,6 +1882,7 @@ class _GameShellState extends State<GameShell> {
       hintUsed = false;
       shuffleUsed = false;
       remaining = roundTime[round];
+      roundStartScore = score;
 
       if (keepTimer) {
         roundTimer?.cancel();
@@ -1889,7 +1891,7 @@ class _GameShellState extends State<GameShell> {
           remaining = max(0, remaining - 1);
           modalSet?.call(() {});
           if (remaining <= 0) {
-            finishGame(cleared: false);
+            finishGame(cleared: false, timedOut: true);
           }
         });
       }
@@ -1913,7 +1915,7 @@ class _GameShellState extends State<GameShell> {
       }));
     }
 
-    finishGame = ({required bool cleared}) async {
+    finishGame = ({required bool cleared, bool timedOut = false}) async {
       if (finished) return;
       finished = true;
       cleanup();
@@ -1930,7 +1932,13 @@ class _GameShellState extends State<GameShell> {
       _workScore = score;
       _combo = combo;
       _workTimeLeft = 0;
+      if (mounted) {
+        setState(() => _menuIndex = 2);
+      }
       await _finishWorkMiniGame();
+      if (timedOut && mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('시간 초과! 아르바이트 탭으로 돌아갑니다.')));
+      }
     };
 
     Future<void> judge() async {
@@ -1974,17 +1982,40 @@ class _GameShellState extends State<GameShell> {
       if (tileState.every((e) => e == 2)) {
         score += remaining * (3 + round);
         if (round < roundSizes.length - 1) {
-          round += 1;
-          setupRound(keepTimer: false);
+          final roundGain = score - roundStartScore;
           roundTimer?.cancel();
-          roundTimer = Timer.periodic(const Duration(seconds: 1), (_) {
-            if (finished) return;
-            remaining = max(0, remaining - 1);
-            modalSet?.call(() {});
-            if (remaining <= 0) {
-              finishGame(cleared: false);
+          final choice = await showDialog<String>(
+            context: context,
+            barrierDismissible: false,
+            builder: (dialogContext) => AlertDialog(
+              title: Text('라운드 ${round + 1} 클리어'),
+              content: Text('이번 라운드 점수 +$roundGain\n다음 라운드로 진행할까요?'),
+              actions: [
+                TextButton(onPressed: () => Navigator.pop(dialogContext, 'end'), child: const Text('끝내기')),
+                TextButton(onPressed: () => Navigator.pop(dialogContext, 'continue'), child: const Text('계속하기')),
+                TextButton(onPressed: () => Navigator.pop(dialogContext, 'ad2x'), child: const Text('광고 보고 2배 + 계속')),
+              ],
+            ),
+          );
+
+          if (!mounted || finished) return;
+
+          if (choice == 'end') {
+            finishGame(cleared: false);
+            return;
+          }
+
+          if (choice == 'ad2x') {
+            final ok = await _consumeAdView('herb_round_double', 8);
+            if (ok) {
+              score += roundGain;
+              modalSet?.call(() {});
+              ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('광고 보상: 라운드 점수 2배 적용')));
             }
-          });
+          }
+
+          round += 1;
+          setupRound(keepTimer: true);
           modalSet?.call(() {});
         } else {
           finishGame(cleared: true);
@@ -2092,62 +2123,71 @@ class _GameShellState extends State<GameShell> {
                     ),
                   ),
                   Expanded(
-                    child: Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 12),
-                      child: Container(
-                        padding: const EdgeInsets.all(10),
-                        decoration: BoxDecoration(
-                          color: const Color(0x44FFFFFF),
-                          borderRadius: BorderRadius.circular(20),
-                          border: Border.all(color: const Color(0x66FFFFFF)),
-                        ),
-                        child: GridView.builder(
-                          physics: const NeverScrollableScrollPhysics(),
-                          itemCount: total,
-                          gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                            crossAxisCount: cols,
-                            mainAxisSpacing: 8,
-                            crossAxisSpacing: 8,
-                            childAspectRatio: 1,
-                          ),
-                          itemBuilder: (_, i) {
-                            final angle = ((((i * 37) + (round * 11)) % 7) - 3) * 0.012;
-                            return Transform.rotate(
-                              angle: angle,
-                              child: Stack(
-                                alignment: Alignment.center,
-                                children: [
-                                  Positioned.fill(
-                                    child: Container(
-                                      decoration: BoxDecoration(
-                                        color: const Color(0x22FFFFFF),
-                                        borderRadius: BorderRadius.circular(14),
-                                        border: Border.all(color: const Color(0x33B58C46)),
-                                      ),
-                                    ),
-                                  ),
-                                  _HerbFlipTile(
-                                    key: ValueKey('r${round}_$i'),
-                                    state: tileState[i],
-                                    faceIcon: icons[faces[i] % icons.length],
-                                    shakeNonce: shakeNonce[i],
-                                    sparkNonce: sparkNonce[i],
-                                    onTap: () => onTapTile(i),
-                                  ),
-                                  IgnorePointer(
-                                    child: AnimatedOpacity(
-                                      duration: const Duration(milliseconds: 200),
-                                      opacity: popupOpacity[i],
-                                      child: Transform.translate(
-                                        offset: const Offset(0, -18),
-                                        child: Text(popText[i], style: const TextStyle(color: Color(0xFFFFD98E), fontWeight: FontWeight.w700)),
-                                      ),
-                                    ),
-                                  ),
-                                ],
+                    child: Center(
+                      child: ConstrainedBox(
+                        constraints: const BoxConstraints(maxWidth: 760, maxHeight: 760),
+                        child: AspectRatio(
+                          aspectRatio: cols / rows,
+                          child: Padding(
+                            padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 8),
+                            child: Container(
+                              padding: const EdgeInsets.all(14),
+                              decoration: BoxDecoration(
+                                color: const Color(0x44FFFFFF),
+                                borderRadius: BorderRadius.circular(20),
+                                border: Border.all(color: const Color(0x66FFFFFF)),
                               ),
-                            );
-                          },
+                              child: GridView.builder(
+                                physics: const NeverScrollableScrollPhysics(),
+                                itemCount: total,
+                                gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                                  crossAxisCount: cols,
+                                  mainAxisSpacing: 8,
+                                  crossAxisSpacing: 8,
+                                  childAspectRatio: 1,
+                                ),
+                                itemBuilder: (_, i) {
+                                  final angle = ((((i * 37) + (round * 11)) % 7) - 3) * 0.008;
+                                  return Transform.rotate(
+                                    angle: angle,
+                                    child: Stack(
+                                      alignment: Alignment.center,
+                                      children: [
+                                        Positioned.fill(
+                                          child: Container(
+                                            margin: const EdgeInsets.all(3),
+                                            decoration: BoxDecoration(
+                                              color: const Color(0x22FFFFFF),
+                                              borderRadius: BorderRadius.circular(14),
+                                              border: Border.all(color: const Color(0x33B58C46)),
+                                            ),
+                                          ),
+                                        ),
+                                        _HerbFlipTile(
+                                          key: ValueKey('r${round}_$i'),
+                                          state: tileState[i],
+                                          faceIcon: icons[faces[i] % icons.length],
+                                          shakeNonce: shakeNonce[i],
+                                          sparkNonce: sparkNonce[i],
+                                          onTap: () => onTapTile(i),
+                                        ),
+                                        IgnorePointer(
+                                          child: AnimatedOpacity(
+                                            duration: const Duration(milliseconds: 200),
+                                            opacity: popupOpacity[i],
+                                            child: Transform.translate(
+                                              offset: const Offset(0, -14),
+                                              child: Text(popText[i], style: const TextStyle(fontSize: 11, color: Color(0xFFFFD98E), fontWeight: FontWeight.w700)),
+                                            ),
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  );
+                                },
+                              ),
+                            ),
+                          ),
                         ),
                       ),
                     ),
@@ -4677,7 +4717,7 @@ class _HerbFlipTileState extends State<_HerbFlipTile> with TickerProviderStateMi
               ],
             ),
             child: Center(
-              child: Icon(widget.faceIcon, color: matched ? const Color(0xFFFFD98E) : const Color(0xFFF6F1E8), size: 30),
+              child: Icon(widget.faceIcon, color: matched ? const Color(0xFFFFD98E) : const Color(0xFFF6F1E8), size: 22),
             ),
           );
 
@@ -4688,7 +4728,7 @@ class _HerbFlipTileState extends State<_HerbFlipTile> with TickerProviderStateMi
               border: Border.all(color: Colors.white24),
             ),
             child: const Center(
-              child: Icon(Icons.help_outline, color: Color(0x66F6F1E8), size: 24),
+              child: Icon(Icons.help_outline, color: Color(0x66F6F1E8), size: 18),
             ),
           );
 
