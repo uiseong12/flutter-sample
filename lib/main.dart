@@ -162,6 +162,18 @@ class _Sparkle {
   final Color color;
 }
 
+class _SmithSpark {
+  _SmithSpark({required this.id, required this.x, required this.y, required this.dx, required this.dy, required this.life, required this.size, required this.opacity});
+  final int id;
+  double x;
+  double y;
+  final double dx;
+  final double dy;
+  double life;
+  final double size;
+  final double opacity;
+}
+
 class GameShell extends StatefulWidget {
   const GameShell({super.key});
 
@@ -1853,6 +1865,9 @@ class _GameShellState extends State<GameShell> with TickerProviderStateMixin {
     Timer? judgeResetTimer;
     Timer? overdriveTimer;
     Timer? fxResetTimer;
+    Timer? sparkTimer;
+    int sparkSeq = 0;
+    final sparks = <_SmithSpark>[];
     StateSetter? modalSet;
 
     String itemName() {
@@ -1931,6 +1946,7 @@ class _GameShellState extends State<GameShell> with TickerProviderStateMixin {
       judgeResetTimer?.cancel();
       overdriveTimer?.cancel();
       fxResetTimer?.cancel();
+      sparkTimer?.cancel();
 
       final hitTotal = perfectCount + goodCount + missCount;
       final perfectRatio = hitTotal == 0 ? 0.0 : perfectCount / hitTotal;
@@ -2008,6 +2024,47 @@ class _GameShellState extends State<GameShell> with TickerProviderStateMixin {
       });
     }
 
+    void spawnSparks({int minCount = 5, int maxCount = 8, double intensity = 1}) {
+      final size = MediaQuery.of(context).size;
+      final cx = size.width * 0.5;
+      final cy = size.height * 0.78;
+      final count = minCount + _random.nextInt(max(1, maxCount - minCount + 1));
+      for (int i = 0; i < count; i++) {
+        final ang = (_random.nextDouble() * pi) + pi;
+        final speed = (1.2 + _random.nextDouble() * 2.8) * intensity;
+        sparks.add(
+          _SmithSpark(
+            id: sparkSeq++,
+            x: cx + (_random.nextDouble() * 26 - 13),
+            y: cy + (_random.nextDouble() * 18 - 9),
+            dx: cos(ang) * speed,
+            dy: sin(ang) * speed,
+            life: 1,
+            size: 2 + _random.nextDouble() * 4,
+            opacity: 0.18 + _random.nextDouble() * 0.24,
+          ),
+        );
+      }
+      if (sparks.length > 90) {
+        sparks.removeRange(0, sparks.length - 90);
+      }
+      modalSet?.call(() {});
+    }
+
+    void updateSparks() {
+      for (final s in sparks) {
+        s.x += s.dx;
+        s.y += s.dy;
+        s.life -= 0.08;
+      }
+      sparks.removeWhere((s) => s.life <= 0);
+      if (_random.nextDouble() < 0.22) {
+        spawnSparks(minCount: 1, maxCount: 2, intensity: 0.55);
+      } else {
+        modalSet?.call(() {});
+      }
+    }
+
     void triggerOverdrive() {
       overdrive = true;
       overdriveShield = 1;
@@ -2043,6 +2100,7 @@ class _GameShellState extends State<GameShell> with TickerProviderStateMixin {
         add = (base * (1 + (heat / 220))).round();
         setJudge('PERFECT', const Color(0xFFF6D978));
         playFx('✦', const Color(0xCCFFD76A), scale: 1.18);
+        spawnSparks(minCount: 6, maxCount: 8, intensity: 1.0);
         HapticFeedback.lightImpact();
       } else if (good) {
         goodCount += 1;
@@ -2052,6 +2110,7 @@ class _GameShellState extends State<GameShell> with TickerProviderStateMixin {
         add = (goodBase() * (1 + (heat / 300))).round();
         setJudge('GOOD', const Color(0xFF8BE2B7));
         playFx('•', const Color(0xCC8BE2B7), scale: 1.08);
+        spawnSparks(minCount: 4, maxCount: 6, intensity: 0.75);
       } else {
         missCount += 1;
         combo = 0;
@@ -2065,6 +2124,7 @@ class _GameShellState extends State<GameShell> with TickerProviderStateMixin {
           lives = max(0, lives - 1);
           setJudge('MISS', const Color(0xFFFF9AA5));
           playFx('✖', const Color(0xCCFF9AA5), scale: 1.12);
+          spawnSparks(minCount: 3, maxCount: 5, intensity: 0.6);
           HapticFeedback.heavyImpact();
         }
       }
@@ -2096,6 +2156,7 @@ class _GameShellState extends State<GameShell> with TickerProviderStateMixin {
           if (zoneCycleTimer == null) {
             scheduleZoneMove();
           }
+          sparkTimer ??= Timer.periodic(const Duration(milliseconds: 80), (_) => updateSparks());
 
           final pW = perfectWidth();
           final goodW = goodWidth();
@@ -2105,8 +2166,10 @@ class _GameShellState extends State<GameShell> with TickerProviderStateMixin {
             body: SafeArea(
               child: Padding(
                 padding: const EdgeInsets.fromLTRB(14, 10, 14, 12),
-                child: Column(
+                child: Stack(
                   children: [
+                    Column(
+                      children: [
                     Container(
                       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
                       decoration: BoxDecoration(color: const Color(0xFF1F1B2E), borderRadius: BorderRadius.circular(14), border: Border.all(color: const Color(0xFF3D355D))),
@@ -2372,9 +2435,36 @@ class _GameShellState extends State<GameShell> with TickerProviderStateMixin {
                     ),
                   ],
                 ),
-              ),
+                Positioned.fill(
+                  child: IgnorePointer(
+                    child: Stack(
+                      children: sparks
+                          .map(
+                            (s) => Positioned(
+                              left: s.x,
+                              top: s.y,
+                              child: Opacity(
+                                opacity: (s.life * s.opacity).clamp(0, 1),
+                                child: Container(
+                                  width: s.size,
+                                  height: s.size,
+                                  decoration: const BoxDecoration(
+                                    color: Color(0x88FFD06A),
+                                    shape: BoxShape.circle,
+                                  ),
+                                ),
+                              ),
+                            ),
+                          )
+                          .toList(),
+                    ),
+                  ),
+                ),
+              ],
             ),
-          );
+          ),
+        ),
+      );
         },
       ),
     ).then((_) {
@@ -2383,6 +2473,7 @@ class _GameShellState extends State<GameShell> with TickerProviderStateMixin {
       judgeResetTimer?.cancel();
       overdriveTimer?.cancel();
       fxResetTimer?.cancel();
+      sparkTimer?.cancel();
       swing.dispose();
     });
   }
