@@ -1841,23 +1841,52 @@ class _GameShellState extends State<GameShell> with TickerProviderStateMixin {
 
     String judgeText = 'READY';
     Color judgeColor = const Color(0xFFD5CDB8);
+    String fxText = '✦';
+    Color fxColor = const Color(0x66FFD76A);
+    double fxOpacity = 0;
+    double judgeScale = 1;
+    double panelShakeX = 0;
 
     Timer? zoneCycleTimer;
     Timer? zoneWarnTimer;
     Timer? judgeResetTimer;
     Timer? overdriveTimer;
+    Timer? fxResetTimer;
     StateSetter? modalSet;
 
-    final swing = AnimationController(vsync: this, duration: const Duration(milliseconds: 1180));
+    String itemName() {
+      final r = _random.nextInt(3);
+      return r == 0 ? '단검' : (r == 1 ? '도끼' : '갑옷');
+    }
+
+    final craftedItem = itemName();
+    final baseMs = craftedItem == '단검'
+        ? 980
+        : (craftedItem == '도끼' ? 1120 : 1280);
+    final profilePerfectMul = craftedItem == '단검'
+        ? 1.14
+        : (craftedItem == '도끼' ? 1.0 : 0.86);
+    final profileScoreMul = craftedItem == '단검'
+        ? 0.94
+        : (craftedItem == '도끼' ? 1.0 : 1.22);
+    final zoneMoveSec = craftedItem == '단검'
+        ? 5
+        : (craftedItem == '도끼' ? 6 : 7);
+
+    final swing = AnimationController(vsync: this, duration: Duration(milliseconds: baseMs));
     swing.repeat(reverse: true);
 
     double pointerPos() => 0.08 + (swing.value * 0.84);
 
     double perfectWidth() {
-      if (combo >= 15) return 0.07;
-      if (combo >= 10) return 0.10;
-      if (combo >= 5) return 0.14;
-      return 0.18;
+      final base = combo >= 15
+          ? 0.07
+          : combo >= 10
+              ? 0.10
+              : combo >= 5
+                  ? 0.14
+                  : 0.18;
+      return (base * profilePerfectMul).clamp(0.06, 0.22);
     }
 
     double goodWidth() {
@@ -1868,12 +1897,12 @@ class _GameShellState extends State<GameShell> with TickerProviderStateMixin {
 
     void applyDifficultyByCombo() {
       final dur = combo >= 15
-          ? const Duration(milliseconds: 680)
+          ? Duration(milliseconds: (baseMs * 0.58).round())
           : combo >= 10
-              ? const Duration(milliseconds: 800)
+              ? Duration(milliseconds: (baseMs * 0.69).round())
               : combo >= 5
-                  ? const Duration(milliseconds: 960)
-                  : const Duration(milliseconds: 1180);
+                  ? Duration(milliseconds: (baseMs * 0.82).round())
+                  : Duration(milliseconds: baseMs);
       if (swing.duration != dur) {
         final t = swing.value;
         swing.duration = dur;
@@ -1882,25 +1911,14 @@ class _GameShellState extends State<GameShell> with TickerProviderStateMixin {
     }
 
     int perfectBase() {
-      if (combo >= 15) return 200;
-      if (combo >= 10) return 150;
-      if (combo >= 5) return 120;
-      return 100;
+      final base = combo >= 15 ? 200 : (combo >= 10 ? 150 : (combo >= 5 ? 120 : 100));
+      return (base * profileScoreMul).round();
     }
 
     int goodBase() {
-      if (combo >= 15) return 30;
-      if (combo >= 10) return 40;
-      if (combo >= 5) return 50;
-      return 60;
+      final base = combo >= 15 ? 30 : (combo >= 10 ? 40 : (combo >= 5 ? 50 : 60));
+      return (base * profileScoreMul).round();
     }
-
-    String itemName() {
-      final r = _random.nextInt(3);
-      return r == 0 ? '단검' : (r == 1 ? '도끼' : '갑옷');
-    }
-
-    final craftedItem = itemName();
 
     Future<void> finishRound() async {
       if (finished) return;
@@ -1909,6 +1927,7 @@ class _GameShellState extends State<GameShell> with TickerProviderStateMixin {
       zoneWarnTimer?.cancel();
       judgeResetTimer?.cancel();
       overdriveTimer?.cancel();
+      fxResetTimer?.cancel();
 
       final hitTotal = perfectCount + goodCount + missCount;
       final perfectRatio = hitTotal == 0 ? 0.0 : perfectCount / hitTotal;
@@ -1945,7 +1964,7 @@ class _GameShellState extends State<GameShell> with TickerProviderStateMixin {
 
     void scheduleZoneMove() {
       zoneCycleTimer?.cancel();
-      zoneCycleTimer = Timer.periodic(const Duration(seconds: 6), (_) {
+      zoneCycleTimer = Timer.periodic(Duration(seconds: zoneMoveSec), (_) {
         if (finished) return;
         zoneWarning = true;
         modalSet?.call(() {});
@@ -1967,6 +1986,21 @@ class _GameShellState extends State<GameShell> with TickerProviderStateMixin {
       judgeResetTimer = Timer(const Duration(milliseconds: 320), () {
         judgeText = 'TAP!';
         judgeColor = const Color(0xFFD5CDB8);
+        judgeScale = 1;
+        modalSet?.call(() {});
+      });
+    }
+
+    void playFx(String text, Color color, {double scale = 1.14}) {
+      fxText = text;
+      fxColor = color;
+      fxOpacity = 1;
+      judgeScale = scale;
+      fxResetTimer?.cancel();
+      fxResetTimer = Timer(const Duration(milliseconds: 260), () {
+        fxOpacity = 0;
+        judgeScale = 1;
+        panelShakeX = 0;
         modalSet?.call(() {});
       });
     }
@@ -2005,6 +2039,8 @@ class _GameShellState extends State<GameShell> with TickerProviderStateMixin {
         final base = overdrive ? 300 : perfectBase();
         add = (base * (1 + (heat / 220))).round();
         setJudge('PERFECT', const Color(0xFFF6D978));
+        playFx('✦', const Color(0xCCFFD76A), scale: 1.18);
+        HapticFeedback.lightImpact();
       } else if (good) {
         goodCount += 1;
         combo += 1;
@@ -2012,16 +2048,21 @@ class _GameShellState extends State<GameShell> with TickerProviderStateMixin {
         heat = min(100, heat + 4);
         add = (goodBase() * (1 + (heat / 300))).round();
         setJudge('GOOD', const Color(0xFF8BE2B7));
+        playFx('•', const Color(0xCC8BE2B7), scale: 1.08);
       } else {
         missCount += 1;
         combo = 0;
         heat = max(0, heat - 20);
+        panelShakeX = panelShakeX == 0 ? 9 : -panelShakeX;
         if (overdrive && overdriveShield > 0) {
           overdriveShield -= 1;
           setJudge('MISS GUARD', const Color(0xFFB7A7FF));
+          playFx('◌', const Color(0xCCB7A7FF), scale: 1.06);
         } else {
           lives = max(0, lives - 1);
           setJudge('MISS', const Color(0xFFFF9AA5));
+          playFx('✖', const Color(0xCCFF9AA5), scale: 1.12);
+          HapticFeedback.heavyImpact();
         }
       }
 
@@ -2077,7 +2118,9 @@ class _GameShellState extends State<GameShell> with TickerProviderStateMixin {
                       ),
                     ),
                     const SizedBox(height: 12),
-                    Container(
+                    AnimatedContainer(
+                      duration: const Duration(milliseconds: 120),
+                      transform: v64.Matrix4.translationValues(panelShakeX, 0, 0),
                       padding: const EdgeInsets.all(12),
                       decoration: BoxDecoration(color: const Color(0xFF1A1728), borderRadius: BorderRadius.circular(18), border: Border.all(color: const Color(0xFF3A3454))),
                       child: Column(
@@ -2085,13 +2128,29 @@ class _GameShellState extends State<GameShell> with TickerProviderStateMixin {
                         children: [
                           Text('오늘의 주문: $craftedItem', style: const TextStyle(color: Color(0xFFF6F1E8), fontSize: 20, fontWeight: FontWeight.w800)),
                           const SizedBox(height: 4),
-                          const Text('PERFECT 존이 좌/중/우로 이동합니다. 예고를 보고 두드리세요!', style: TextStyle(color: Color(0xFFD2CCE0), fontSize: 13)),
+                          Text('패턴: ${craftedItem == '단검' ? '고속 템포 · 넓은 PERFECT' : craftedItem == '도끼' ? '균형 템포 · 표준 PERFECT' : '중장 템포 · 좁은 PERFECT'}', style: const TextStyle(color: Color(0xFFD2CCE0), fontSize: 13)),
                           const SizedBox(height: 10),
                           Center(
-                            child: AnimatedDefaultTextStyle(
-                              duration: const Duration(milliseconds: 140),
-                              style: TextStyle(color: judgeColor, fontSize: 42, fontWeight: FontWeight.w900),
-                              child: Text(judgeText),
+                            child: Stack(
+                              alignment: Alignment.center,
+                              children: [
+                                AnimatedOpacity(
+                                  duration: const Duration(milliseconds: 180),
+                                  opacity: fxOpacity,
+                                  child: Transform.scale(
+                                    scale: judgeScale + 0.08,
+                                    child: Text(fxText, style: TextStyle(color: fxColor, fontSize: 52, fontWeight: FontWeight.w900)),
+                                  ),
+                                ),
+                                Transform.scale(
+                                  scale: judgeScale,
+                                  child: AnimatedDefaultTextStyle(
+                                    duration: const Duration(milliseconds: 120),
+                                    style: TextStyle(color: judgeColor, fontSize: 42, fontWeight: FontWeight.w900),
+                                    child: Text(judgeText),
+                                  ),
+                                ),
+                              ],
                             ),
                           ),
                           const SizedBox(height: 8),
@@ -2227,6 +2286,7 @@ class _GameShellState extends State<GameShell> with TickerProviderStateMixin {
       zoneWarnTimer?.cancel();
       judgeResetTimer?.cancel();
       overdriveTimer?.cancel();
+      fxResetTimer?.cancel();
       swing.dispose();
     });
   }
