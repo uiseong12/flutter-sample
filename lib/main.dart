@@ -1838,18 +1838,16 @@ class _GameShellState extends State<GameShell> with TickerProviderStateMixin {
     int score = 0;
     int combo = 0;
     int maxCombo = 0;
-    int lives = 5;
+    int lives = 3;
     int perfectCount = 0;
     int goodCount = 0;
     int missCount = 0;
     int guaranteedGood = 0;
-    int overdriveShield = 0;
     int perfectShrinkStack = 0;
 
     double heat = 24; // 0..100
     double zoneCenter = 0.5;
     bool zoneWarning = false;
-    bool overdrive = false;
     bool finished = false;
 
     String judgeText = 'TAP!';
@@ -1864,7 +1862,6 @@ class _GameShellState extends State<GameShell> with TickerProviderStateMixin {
     Timer? zoneCycleTimer;
     Timer? zoneWarnTimer;
     Timer? judgeResetTimer;
-    Timer? overdriveTimer;
     Timer? fxResetTimer;
     Timer? sparkTimer;
     int sparkSeq = 0;
@@ -1896,15 +1893,11 @@ class _GameShellState extends State<GameShell> with TickerProviderStateMixin {
     double pointerPos() => 0.08 + (swing.value * 0.84);
 
     double perfectWidth() {
-      final base = combo >= 15
-          ? 0.07
-          : combo >= 10
-              ? 0.10
-              : combo >= 5
-                  ? 0.14
-                  : 0.18;
-      final shrunk = (base * profilePerfectMul) - (perfectShrinkStack * 0.0032);
-      return shrunk.clamp(0.05, 0.22);
+      final base = craftedItem == '단검'
+          ? 0.17
+          : (craftedItem == '도끼' ? 0.14 : 0.11);
+      final shrunk = (base * profilePerfectMul) - (perfectShrinkStack * 0.0035);
+      return shrunk.clamp(0.045, 0.22);
     }
 
     double goodWidth() {
@@ -1933,7 +1926,6 @@ class _GameShellState extends State<GameShell> with TickerProviderStateMixin {
       zoneCycleTimer?.cancel();
       zoneWarnTimer?.cancel();
       judgeResetTimer?.cancel();
-      overdriveTimer?.cancel();
       fxResetTimer?.cancel();
       sparkTimer?.cancel();
 
@@ -2054,15 +2046,7 @@ class _GameShellState extends State<GameShell> with TickerProviderStateMixin {
       }
     }
 
-    void triggerOverdrive() {
-      overdrive = true;
-      overdriveShield = 1;
-      overdriveTimer?.cancel();
-      overdriveTimer = Timer(const Duration(seconds: 5), () {
-        overdrive = false;
-        modalSet?.call(() {});
-      });
-    }
+    // overdrive shield removed by design.
 
     void onTapForge() {
       if (finished) return;
@@ -2086,7 +2070,7 @@ class _GameShellState extends State<GameShell> with TickerProviderStateMixin {
         maxCombo = max(maxCombo, combo);
         perfectShrinkStack = min(28, perfectShrinkStack + 1);
         heat = min(100, heat + 10);
-        final base = overdrive ? 300 : perfectBase();
+        final base = perfectBase();
         add = (base * (1 + (heat / 220))).round();
         setJudge('PERFECT', const Color(0xFFF6D978));
         playFx('✦', const Color(0xCCFFD76A), scale: 1.18);
@@ -2106,26 +2090,18 @@ class _GameShellState extends State<GameShell> with TickerProviderStateMixin {
         combo = 0;
         heat = max(0, heat - 20);
         panelShakeX = panelShakeX == 0 ? 9 : -panelShakeX;
-        if (overdrive && overdriveShield > 0) {
-          overdriveShield -= 1;
-          setJudge('MISS GUARD', const Color(0xFFB7A7FF));
-          playFx('◌', const Color(0xCCB7A7FF), scale: 1.06);
-        } else {
-          lives = max(0, lives - 1);
-          setJudge('MISS', const Color(0xFFFF9AA5));
-          playFx('✖', const Color(0xCCFF9AA5), scale: 1.12);
-          spawnSparks(minCount: 3, maxCount: 5, intensity: 0.6);
-          HapticFeedback.heavyImpact();
-        }
+        lives = max(0, lives - 1);
+        setJudge('MISS', const Color(0xFFFF9AA5));
+        playFx('✖', const Color(0xCCFF9AA5), scale: 1.12);
+        spawnSparks(minCount: 3, maxCount: 5, intensity: 0.6);
+        HapticFeedback.heavyImpact();
       }
 
       if (combo > 0 && combo % 3 == 0) {
         guaranteedGood = min(1, guaranteedGood + 1);
       }
 
-      if (heat >= 100 && !overdrive) {
-        triggerOverdrive();
-      }
+      if (heat > 100) heat = 100;
 
       score += add;
       applyDifficultyByCombo();
@@ -2279,8 +2255,8 @@ class _GameShellState extends State<GameShell> with TickerProviderStateMixin {
                                             alignment: Alignment((zoneCenter * 2) - 1, 0),
                                             child: AnimatedContainer(
                                               duration: const Duration(milliseconds: 220),
-                                              width: zoneWarning ? 120 : (pW * 420),
-                                              height: zoneWarning ? 44 : 36,
+                                              width: pW * 420,
+                                              height: 36,
                                               decoration: BoxDecoration(
                                                 borderRadius: BorderRadius.circular(12),
                                                 gradient: LinearGradient(
@@ -2338,27 +2314,64 @@ class _GameShellState extends State<GameShell> with TickerProviderStateMixin {
                                         return Expanded(
                                           child: Container(
                                             margin: EdgeInsets.only(right: i == 3 ? 0 : 4),
-                                            height: 10,
+                                            height: 12,
                                             decoration: BoxDecoration(
-                                              color: filled ? (overdrive ? const Color(0xFFFF5B4A) : const Color(0xFFFF9248)) : const Color(0xFF2A2640),
-                                              borderRadius: BorderRadius.circular(3),
+                                              borderRadius: BorderRadius.circular(4),
+                                              border: Border.all(color: const Color(0x66443A57)),
+                                              gradient: filled
+                                                  ? const LinearGradient(colors: [Color(0xFFFFB15E), Color(0xFFFF7D3C)])
+                                                  : const LinearGradient(colors: [Color(0xFF242039), Color(0xFF1A1730)]),
                                             ),
                                           ),
                                         );
                                       }),
                                     )
                                   else
-                                    ClipRRect(
-                                      borderRadius: BorderRadius.circular(craftedItem == '갑옷' ? 6 : 999),
-                                      child: LinearProgressIndicator(
-                                        value: heat / 100,
-                                        minHeight: craftedItem == '갑옷' ? 13 : 11,
-                                        backgroundColor: const Color(0xFF2A2640),
-                                        valueColor: AlwaysStoppedAnimation(overdrive ? const Color(0xFFFF5B4A) : const Color(0xFFFF9248)),
+                                    Container(
+                                      height: craftedItem == '갑옷' ? 14 : 12,
+                                      decoration: BoxDecoration(
+                                        borderRadius: BorderRadius.circular(craftedItem == '갑옷' ? 6 : 999),
+                                        color: const Color(0xFF221F36),
+                                        border: Border.all(color: const Color(0x66443A57)),
+                                      ),
+                                      child: LayoutBuilder(
+                                        builder: (_, c) {
+                                          final w = c.maxWidth * (heat / 100);
+                                          return Stack(
+                                            children: [
+                                              Positioned(
+                                                left: 0,
+                                                top: 0,
+                                                bottom: 0,
+                                                width: w,
+                                                child: Container(
+                                                  decoration: BoxDecoration(
+                                                    borderRadius: BorderRadius.circular(craftedItem == '갑옷' ? 6 : 999),
+                                                    gradient: const LinearGradient(colors: [Color(0xFFFFB560), Color(0xFFFF7E42)]),
+                                                    boxShadow: const [BoxShadow(color: Color(0x66FF8D4A), blurRadius: 8)],
+                                                  ),
+                                                ),
+                                              ),
+                                              Positioned(
+                                                left: (w - 6).clamp(0, c.maxWidth - 6),
+                                                top: -1,
+                                                child: Container(
+                                                  width: 6,
+                                                  height: craftedItem == '갑옷' ? 16 : 14,
+                                                  decoration: BoxDecoration(
+                                                    color: const Color(0xFFFFD38A),
+                                                    borderRadius: BorderRadius.circular(999),
+                                                    boxShadow: const [BoxShadow(color: Color(0x88FFD38A), blurRadius: 6)],
+                                                  ),
+                                                ),
+                                              ),
+                                            ],
+                                          );
+                                        },
                                       ),
                                     ),
                                   const SizedBox(height: 4),
-                                  Text(overdrive ? '🔥 가열 폭발 모드 (MISS 1회 무효)' : 'HEAT ${(heat).toStringAsFixed(0)}', style: const TextStyle(color: Color(0xFFD8D2E7))),
+                                  Text('HEAT ${(heat).toStringAsFixed(0)}', style: const TextStyle(color: Color(0xFFD8D2E7))),
                                 ],
                               );
                             },
@@ -2486,7 +2499,6 @@ class _GameShellState extends State<GameShell> with TickerProviderStateMixin {
       zoneCycleTimer?.cancel();
       zoneWarnTimer?.cancel();
       judgeResetTimer?.cancel();
-      overdriveTimer?.cancel();
       fxResetTimer?.cancel();
       sparkTimer?.cancel();
       swing.dispose();
