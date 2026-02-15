@@ -1844,6 +1844,7 @@ class _GameShellState extends State<GameShell> with TickerProviderStateMixin {
     int missCount = 0;
     int guaranteedGood = 0;
     int overdriveShield = 0;
+    int perfectShrinkStack = 0;
 
     double heat = 24; // 0..100
     double zoneCenter = 0.5;
@@ -1902,7 +1903,8 @@ class _GameShellState extends State<GameShell> with TickerProviderStateMixin {
               : combo >= 5
                   ? 0.14
                   : 0.18;
-      return (base * profilePerfectMul).clamp(0.06, 0.22);
+      final shrunk = (base * profilePerfectMul) - (perfectShrinkStack * 0.0032);
+      return shrunk.clamp(0.05, 0.22);
     }
 
     double goodWidth() {
@@ -1912,20 +1914,7 @@ class _GameShellState extends State<GameShell> with TickerProviderStateMixin {
     }
 
     void applyDifficultyByCombo() {
-      final dur = combo >= 15
-          ? Duration(milliseconds: (baseMs * 0.58).round())
-          : combo >= 10
-              ? Duration(milliseconds: (baseMs * 0.69).round())
-              : combo >= 5
-                  ? Duration(milliseconds: (baseMs * 0.82).round())
-                  : Duration(milliseconds: baseMs);
-      if (swing.duration != dur) {
-        final t = swing.value;
-        swing.stop();
-        swing.duration = dur;
-        swing.repeat(reverse: true);
-        swing.value = t;
-      }
+      // Keep controller loop stable to prevent freeze; difficulty is handled by zone size/position/reward.
     }
 
     int perfectBase() {
@@ -2095,6 +2084,7 @@ class _GameShellState extends State<GameShell> with TickerProviderStateMixin {
         perfectCount += 1;
         combo += 1;
         maxCombo = max(maxCombo, combo);
+        perfectShrinkStack = min(28, perfectShrinkStack + 1);
         heat = min(100, heat + 10);
         final base = overdrive ? 300 : perfectBase();
         add = (base * (1 + (heat / 220))).round();
@@ -2160,6 +2150,8 @@ class _GameShellState extends State<GameShell> with TickerProviderStateMixin {
 
           final pW = perfectWidth();
           final goodW = goodWidth();
+          final railRadius = craftedItem == '도끼' ? 10.0 : (craftedItem == '갑옷' ? 24.0 : 18.0);
+          final railHeight = craftedItem == '도끼' ? 68.0 : (craftedItem == '갑옷' ? 78.0 : 74.0);
 
           return Scaffold(
             backgroundColor: const Color(0xFF0F0D18),
@@ -2268,10 +2260,16 @@ class _GameShellState extends State<GameShell> with TickerProviderStateMixin {
                                 children: [
                                   // single forge rail
                                   Container(
-                                    height: 74,
+                                    height: railHeight,
                                     decoration: BoxDecoration(
-                                      borderRadius: BorderRadius.circular(18),
-                                      gradient: const LinearGradient(colors: [Color(0xFF141125), Color(0xFF1B1630)]),
+                                      borderRadius: BorderRadius.circular(railRadius),
+                                      gradient: LinearGradient(
+                                        colors: craftedItem == '도끼'
+                                            ? const [Color(0xFF17132A), Color(0xFF251B33)]
+                                            : craftedItem == '갑옷'
+                                                ? const [Color(0xFF121623), Color(0xFF1F2538)]
+                                                : const [Color(0xFF141125), Color(0xFF1B1630)],
+                                      ),
                                       border: Border.all(color: const Color(0xFF3A3356)),
                                     ),
                                     child: Stack(
@@ -2299,10 +2297,10 @@ class _GameShellState extends State<GameShell> with TickerProviderStateMixin {
                                           child: Align(
                                             alignment: Alignment((zoneCenter * 2) - 1, 0),
                                             child: Container(
-                                              width: goodW * 420,
-                                              height: 28,
+                                              width: (craftedItem == '도끼' ? goodW * 360 : goodW * 420),
+                                              height: craftedItem == '갑옷' ? 32 : 28,
                                               decoration: BoxDecoration(
-                                                borderRadius: BorderRadius.circular(10),
+                                                borderRadius: BorderRadius.circular(craftedItem == '도끼' ? 4 : 10),
                                                 color: const Color(0x3329A36E),
                                               ),
                                             ),
@@ -2333,15 +2331,32 @@ class _GameShellState extends State<GameShell> with TickerProviderStateMixin {
                                     ),
                                   ),
                                   const SizedBox(height: 10),
-                                  ClipRRect(
-                                    borderRadius: BorderRadius.circular(999),
-                                    child: LinearProgressIndicator(
-                                      value: heat / 100,
-                                      minHeight: 11,
-                                      backgroundColor: const Color(0xFF2A2640),
-                                      valueColor: AlwaysStoppedAnimation(overdrive ? const Color(0xFFFF5B4A) : const Color(0xFFFF9248)),
+                                  if (craftedItem == '도끼')
+                                    Row(
+                                      children: List.generate(4, (i) {
+                                        final filled = (heat / 100) > ((i + 1) / 4);
+                                        return Expanded(
+                                          child: Container(
+                                            margin: EdgeInsets.only(right: i == 3 ? 0 : 4),
+                                            height: 10,
+                                            decoration: BoxDecoration(
+                                              color: filled ? (overdrive ? const Color(0xFFFF5B4A) : const Color(0xFFFF9248)) : const Color(0xFF2A2640),
+                                              borderRadius: BorderRadius.circular(3),
+                                            ),
+                                          ),
+                                        );
+                                      }),
+                                    )
+                                  else
+                                    ClipRRect(
+                                      borderRadius: BorderRadius.circular(craftedItem == '갑옷' ? 6 : 999),
+                                      child: LinearProgressIndicator(
+                                        value: heat / 100,
+                                        minHeight: craftedItem == '갑옷' ? 13 : 11,
+                                        backgroundColor: const Color(0xFF2A2640),
+                                        valueColor: AlwaysStoppedAnimation(overdrive ? const Color(0xFFFF5B4A) : const Color(0xFFFF9248)),
+                                      ),
                                     ),
-                                  ),
                                   const SizedBox(height: 4),
                                   Text(overdrive ? '🔥 가열 폭발 모드 (MISS 1회 무효)' : 'HEAT ${(heat).toStringAsFixed(0)}', style: const TextStyle(color: Color(0xFFD8D2E7))),
                                 ],
