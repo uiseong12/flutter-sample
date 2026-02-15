@@ -2674,15 +2674,13 @@ class _GameShellState extends State<GameShell> {
             Positioned(
               left: 0,
               right: 0,
-              // 홈 화면에서는 하단 HUD를 완전히 피해서 위에 표시
-              bottom: _menuIndex == 0 ? (MediaQuery.of(context).padding.bottom + 190) : 0,
-              child: SafeArea(top: false, bottom: _menuIndex != 0, child: _buildBottomNav()),
+              bottom: 0,
+              child: SafeArea(top: false, child: _buildBottomNav()),
             ),
           if (_menuOverlayOpen)
             Positioned(
               right: 12,
-              // 홈에서는 올린 메뉴 오버레이의 상단 근처에 배치
-              bottom: _menuIndex == 0 ? (MediaQuery.of(context).padding.bottom + 322) : 158,
+              bottom: 158,
               child: GestureDetector(
                 onTap: () {
                   _playClick();
@@ -2858,43 +2856,43 @@ class _GameShellState extends State<GameShell> {
           ),
 
           // bottom integrated HUD
-          Positioned(
-            left: 12,
-            right: 12,
-            bottom: MediaQuery.of(context).padding.bottom + 8,
-            child: _glassPanel(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Text('오늘의 추천 · 장착 ${outfit.name} · 총 매력 $_totalCharm', maxLines: 1, overflow: TextOverflow.ellipsis, style: const TextStyle(fontSize: 12, color: Color(0xBFF6F1E8))),
-                  const SizedBox(height: 10),
-                  SizedBox(
-                    width: double.infinity,
-                    height: 56,
-                    child: ElevatedButton(
-                      onPressed: () => setState(() => _menuIndex = 1),
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: const Color(0xFF8A67FF),
-                        foregroundColor: const Color(0xFFF6F1E8),
-                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+          if (!_menuOverlayOpen)
+            Positioned(
+              left: 12,
+              right: 12,
+              bottom: MediaQuery.of(context).padding.bottom + 8,
+              child: _glassPanel(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Text('오늘의 추천 · 장착 ${outfit.name} · 총 매력 $_totalCharm', maxLines: 1, overflow: TextOverflow.ellipsis, style: const TextStyle(fontSize: 12, color: Color(0xBFF6F1E8))),
+                    const SizedBox(height: 10),
+                    SizedBox(
+                      width: double.infinity,
+                      height: 56,
+                      child: ElevatedButton(
+                        onPressed: () => setState(() => _menuIndex = 1),
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: const Color(0xFF8A67FF),
+                          foregroundColor: const Color(0xFFF6F1E8),
+                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                        ),
+                        child: const Text('다음 노드 진입', style: TextStyle(fontSize: 17, fontWeight: FontWeight.w700)),
                       ),
-                      child: const Text('다음 노드 진입', style: TextStyle(fontSize: 17, fontWeight: FontWeight.w700)),
                     ),
-                  ),
-                  const SizedBox(height: 8),
-                  Row(
-                    children: [
-                      TextButton.icon(
-                        onPressed: () {
-                          _playClick();
-                          setState(() => _showAffectionOverlay = !_showAffectionOverlay);
-                        },
-                        icon: Icon(_showAffectionOverlay ? Icons.expand_less : Icons.expand_more, color: const Color(0xCCF6F1E8)),
-                        label: Text(_showAffectionOverlay ? '호감도 닫기' : '호감도 열기', style: const TextStyle(color: Color(0xCCF6F1E8))),
-                      ),
-                      const Spacer(),
-                      if (!_menuOverlayOpen)
+                    const SizedBox(height: 8),
+                    Row(
+                      children: [
+                        TextButton.icon(
+                          onPressed: () {
+                            _playClick();
+                            setState(() => _showAffectionOverlay = !_showAffectionOverlay);
+                          },
+                          icon: Icon(_showAffectionOverlay ? Icons.expand_less : Icons.expand_more, color: const Color(0xCCF6F1E8)),
+                          label: Text(_showAffectionOverlay ? '호감도 닫기' : '호감도 열기', style: const TextStyle(color: Color(0xCCF6F1E8))),
+                        ),
+                        const Spacer(),
                         IconButton(
                           onPressed: () {
                             _playClick();
@@ -2902,12 +2900,12 @@ class _GameShellState extends State<GameShell> {
                           },
                           icon: const Icon(Icons.grid_view_rounded, color: Color(0xFFF6F1E8)),
                         ),
-                    ],
-                  ),
-                ],
+                      ],
+                    ),
+                  ],
+                ),
               ),
             ),
-          ),
         ],
       ),
     );
