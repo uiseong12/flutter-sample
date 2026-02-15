@@ -4624,10 +4624,44 @@ class _GameShellState extends State<GameShell> with TickerProviderStateMixin {
                           ),
                         ),
                         Positioned.fill(child: Image.asset(thumb, fit: BoxFit.cover)),
+                        // card texture + inner shadow feel
                         Positioned.fill(
                           child: DecoratedBox(
                             decoration: BoxDecoration(
-                              gradient: LinearGradient(begin: Alignment.topCenter, end: Alignment.bottomCenter, colors: [Colors.transparent, Colors.black.withOpacity(0.5)]),
+                              gradient: LinearGradient(
+                                begin: Alignment.topCenter,
+                                end: Alignment.bottomCenter,
+                                colors: [
+                                  Colors.white.withOpacity(0.06),
+                                  Colors.transparent,
+                                  Colors.transparent,
+                                  Colors.black.withOpacity(0.32),
+                                ],
+                                stops: const [0.0, 0.16, 0.62, 1.0],
+                              ),
+                            ),
+                          ),
+                        ),
+                        Positioned.fill(
+                          child: DecoratedBox(
+                            decoration: BoxDecoration(
+                              border: Border.all(color: const Color(0x66FFFFFF), width: 1.1),
+                              boxShadow: const [
+                                BoxShadow(color: Color(0x66000000), blurRadius: 12, spreadRadius: -6, offset: Offset(0, 2)),
+                              ],
+                            ),
+                          ),
+                        ),
+                        Positioned.fill(
+                          child: IgnorePointer(
+                            child: DecoratedBox(
+                              decoration: BoxDecoration(
+                                gradient: LinearGradient(
+                                  begin: Alignment.topCenter,
+                                  end: Alignment.bottomCenter,
+                                  colors: [Colors.transparent, Colors.black.withOpacity(0.5)],
+                                ),
+                              ),
                             ),
                           ),
                         ),
