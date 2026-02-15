@@ -3886,52 +3886,61 @@ class _GameShellState extends State<GameShell> with TickerProviderStateMixin {
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Padding(
-            padding: const EdgeInsets.fromLTRB(10, 6, 10, 0),
-            child: _glassPanel(
-              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
-              child: Row(
-                children: [
-                  _currencyChip(
-                    icon: Icons.monetization_on,
-                    value: _gold.toString(),
-                    tint: const Color(0xFFE0B44B),
-                    onTap: () => setState(() => _hudTooltipText = '골드: 상점 구매, 일부 선택지/컨텐츠 개방에 사용'),
-                  ),
-                  const SizedBox(width: 8),
-                  _currencyChip(
-                    icon: Icons.auto_awesome,
-                    value: _evidenceOwned.length.toString(),
-                    tint: const Color(0xFFC7BEDA),
-                    onTap: () => setState(() => _hudTooltipText = '증거/수집: 엔딩 조건, 도감 해금, 루트 분기 체크에 영향'),
-                  ),
-                  const SizedBox(width: 8),
-                  _currencyChip(
-                    icon: Icons.circle,
-                    value: _premiumTokens.toString(),
-                    tint: const Color(0xFF9C6DFF),
-                    onTap: () => setState(() => _hudTooltipText = '프리미엄 토큰: 프리미엄 선택지/추가 장면 오픈에 사용'),
-                  ),
-                  const SizedBox(width: 8),
-                  _currencyChip(
-                    icon: Icons.vpn_key_rounded,
-                    value: _storyOpenCurrency.toString(),
-                    tint: const Color(0xFFE7B96D),
-                    onTap: () => setState(() => _hudTooltipText = '열쇠 재화: 잠긴 스토리 노드를 즉시 개방 (6시간마다 +1 충전)'),
-                  ),
-                  const Spacer(),
-                  const Text('📘1  💗1  🔧1', maxLines: 1, overflow: TextOverflow.ellipsis, style: TextStyle(fontSize: 12, color: Color(0xCCF6F1E8))),
-                ],
+          Container(
+            padding: const EdgeInsets.fromLTRB(10, 6, 10, 8),
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                begin: Alignment.topCenter,
+                end: Alignment.bottomCenter,
+                colors: [const Color(0xCC140F22), const Color(0x99140F22), const Color(0x00140F22)],
               ),
+              border: const Border(bottom: BorderSide(color: Color(0x55FFFFFF))),
+            ),
+            child: Row(
+              children: [
+                _currencyChip(
+                  icon: Icons.monetization_on,
+                  value: _gold.toString(),
+                  tint: const Color(0xFFE0B44B),
+                  onTap: () => setState(() => _hudTooltipText = '골드: 상점 구매, 일부 선택지/컨텐츠 개방에 사용'),
+                ),
+                const SizedBox(width: 8),
+                _currencyChip(
+                  icon: Icons.auto_awesome,
+                  value: _evidenceOwned.length.toString(),
+                  tint: const Color(0xFFC7BEDA),
+                  onTap: () => setState(() => _hudTooltipText = '증거/수집: 엔딩 조건, 도감 해금, 루트 분기 체크에 영향'),
+                ),
+                const SizedBox(width: 8),
+                _currencyChip(
+                  icon: Icons.circle,
+                  value: _premiumTokens.toString(),
+                  tint: const Color(0xFF9C6DFF),
+                  onTap: () => setState(() => _hudTooltipText = '프리미엄 토큰: 프리미엄 선택지/추가 장면 오픈에 사용'),
+                ),
+                const SizedBox(width: 8),
+                _currencyChip(
+                  icon: Icons.vpn_key_rounded,
+                  value: _storyOpenCurrency.toString(),
+                  tint: const Color(0xFFE7B96D),
+                  onTap: () => setState(() => _hudTooltipText = '열쇠 재화: 잠긴 스토리 노드를 즉시 개방 (6시간마다 +1 충전)'),
+                ),
+                const Spacer(),
+                const Text('📘1  💗1  🔧1', maxLines: 1, overflow: TextOverflow.ellipsis, style: TextStyle(fontSize: 12, color: Color(0xCCF6F1E8))),
+              ],
             ),
           ),
           if (_hudTooltipText != null)
-            Padding(
-              padding: const EdgeInsets.fromLTRB(10, 8, 10, 0),
-              child: _glassPanel(
-                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
-                child: Text(_hudTooltipText!, style: const TextStyle(fontSize: 12, color: Color(0xFFF6F1E8))),
+            Container(
+              width: double.infinity,
+              margin: const EdgeInsets.fromLTRB(10, 0, 10, 0),
+              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+              decoration: BoxDecoration(
+                color: const Color(0xE0191327),
+                borderRadius: const BorderRadius.vertical(bottom: Radius.circular(10)),
+                border: Border.all(color: const Color(0x55FFFFFF)),
               ),
+              child: Text(_hudTooltipText!, style: const TextStyle(fontSize: 12, color: Color(0xFFF6F1E8))),
             ),
         ],
       ),
@@ -3941,7 +3950,7 @@ class _GameShellState extends State<GameShell> with TickerProviderStateMixin {
   @override
   Widget build(BuildContext context) {
     if (!_loaded) return const Scaffold(body: Center(child: CircularProgressIndicator()));
-    final contentTopInset = _menuIndex == 0 ? 0.0 : (_hudTooltipText != null ? 116.0 : 68.0);
+    final contentTopInset = _menuIndex == 0 ? 0.0 : (_hudTooltipText != null ? 104.0 : 60.0);
 
     return Scaffold(
       body: Stack(
