@@ -1933,14 +1933,11 @@ class _GameShellState extends State<GameShell> {
       _combo = combo;
       _workTimeLeft = 0;
       if (mounted) {
-        setState(() => _menuIndex = 2);
+        setState(() => _menuIndex = 3);
       }
       await _finishWorkMiniGame();
       if (mounted) {
-        setState(() => _menuIndex = 2);
-      }
-      if (timedOut && mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('시간 초과! 아르바이트 탭으로 돌아갑니다.')));
+        setState(() => _menuIndex = 3);
       }
     };
 
@@ -2128,7 +2125,7 @@ class _GameShellState extends State<GameShell> {
                   Expanded(
                     child: Center(
                       child: ConstrainedBox(
-                        constraints: const BoxConstraints(maxWidth: 760, maxHeight: 760),
+                        constraints: const BoxConstraints(maxWidth: 680, maxHeight: 680),
                         child: AspectRatio(
                           aspectRatio: cols / rows,
                           child: Padding(
@@ -2145,8 +2142,8 @@ class _GameShellState extends State<GameShell> {
                                 itemCount: total,
                                 gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
                                   crossAxisCount: cols,
-                                  mainAxisSpacing: 14,
-                                  crossAxisSpacing: 14,
+                                  mainAxisSpacing: 18,
+                                  crossAxisSpacing: 18,
                                   childAspectRatio: 1,
                                 ),
                                 itemBuilder: (_, i) {
@@ -2277,7 +2274,7 @@ class _GameShellState extends State<GameShell> {
     _prepareWorkRound();
 
     _workTimer = Timer.periodic(const Duration(milliseconds: 120), (timer) {
-      if (!mounted || _menuIndex != 2) {
+      if (!mounted || _menuIndex != 3) {
         timer.cancel();
         return;
       }
@@ -4720,7 +4717,7 @@ class _HerbFlipTileState extends State<_HerbFlipTile> with TickerProviderStateMi
               ],
             ),
             child: Center(
-              child: Icon(widget.faceIcon, color: matched ? const Color(0xFFFFD98E) : const Color(0xFFF6F1E8), size: 22),
+              child: Icon(widget.faceIcon, color: matched ? const Color(0xFFFFD98E) : const Color(0xFFF6F1E8), size: 19),
             ),
           );
 
@@ -4731,7 +4728,7 @@ class _HerbFlipTileState extends State<_HerbFlipTile> with TickerProviderStateMi
               border: Border.all(color: Colors.white24),
             ),
             child: const Center(
-              child: Icon(Icons.help_outline, color: Color(0x66F6F1E8), size: 18),
+              child: Icon(Icons.help_outline, color: Color(0x66F6F1E8), size: 16),
             ),
           );
 
