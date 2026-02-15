@@ -2684,6 +2684,30 @@ class _GameShellState extends State<GameShell> {
               bottom: 0,
               child: SafeArea(top: false, child: _buildBottomNav()),
             ),
+          if (_menuOverlayOpen)
+            Positioned(
+              right: 14,
+              bottom: 158,
+              child: SafeArea(
+                top: false,
+                child: GestureDetector(
+                  onTap: () {
+                    _playClick();
+                    setState(() => _menuOverlayOpen = false);
+                  },
+                  child: Container(
+                    width: 26,
+                    height: 26,
+                    decoration: BoxDecoration(
+                      color: const Color(0xCC1D132E),
+                      shape: BoxShape.circle,
+                      border: Border.all(color: const Color(0xFFB79C63)),
+                    ),
+                    child: const Icon(Icons.close, size: 15, color: Color(0xFFF6F1E8)),
+                  ),
+                ),
+              ),
+            ),
           Positioned(
             right: 12,
             bottom: 14,
@@ -2697,8 +2721,8 @@ class _GameShellState extends State<GameShell> {
                 },
                 backgroundColor: const Color(0xFF6A4BFF),
                 foregroundColor: const Color(0xFFF6F1E8),
-                icon: Icon(_menuOverlayOpen ? Icons.close : Icons.menu),
-                label: Text(_menuOverlayOpen ? '닫기' : '메뉴'),
+                icon: const Icon(Icons.menu),
+                label: const Text('메뉴'),
               ),
             ),
           ),
@@ -2959,15 +2983,10 @@ class _GameShellState extends State<GameShell> {
     final mapTop = panelH * 0.28;
     final mapBottom = panelH * 0.08;
 
-    return ListView(
-      padding: const EdgeInsets.all(14),
-      children: [
-        ClipRRect(
-          borderRadius: BorderRadius.circular(14),
-          child: SizedBox(
-            height: panelH,
-            child: Stack(
-              children: [
+    return SizedBox(
+      height: usableH,
+      child: Stack(
+        children: [
                 Positioned.fill(
                   child: AnimatedSwitcher(
                     duration: const Duration(milliseconds: 360),
@@ -3054,10 +3073,9 @@ class _GameShellState extends State<GameShell> {
                 ),
               ],
             ),
-          ),
+          ],
         ),
-      ],
-    );
+      );
   }
 
   String _nodeTypeIconAsset(int beat) {
