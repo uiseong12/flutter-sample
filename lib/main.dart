@@ -247,7 +247,9 @@ class _GameShellState extends State<GameShell> with TickerProviderStateMixin {
   String _homeAmbientLine = '오늘도 왕관은 무겁지만, 우아하게.';
   int _homeAmbientTick = 0;
   Timer? _homeAmbientTimer;
+  Timer? _storyLockTicker;
   int _weeklyWorkPlays = 0;
+  DateTime? _storyLockUntil;
   final List<String> _logs = [];
   final List<_Sparkle> _sparkles = [];
   final Map<String, int> _lastDelta = {};
@@ -1081,6 +1083,16 @@ class _GameShellState extends State<GameShell> with TickerProviderStateMixin {
         _homeAmbientTick += 1;
       });
     });
+    _storyLockTicker = Timer.periodic(const Duration(seconds: 1), (_) {
+      if (!mounted || _storyLockUntil == null) return;
+      if (_storyLockRemaining.inSeconds <= 0) {
+        setState(() {
+          _storyLockUntil = null;
+        });
+      } else {
+        setState(() {});
+      }
+    });
     _bootstrap();
   }
 
@@ -1089,6 +1101,7 @@ class _GameShellState extends State<GameShell> with TickerProviderStateMixin {
     _typingTimer?.cancel();
     _workTimer?.cancel();
     _homeAmbientTimer?.cancel();
+    _storyLockTicker?.cancel();
     super.dispose();
   }
 
@@ -1319,6 +1332,51 @@ class _GameShellState extends State<GameShell> with TickerProviderStateMixin {
   }
 
   int _scaledGain(int base) => base + (_totalCharm ~/ 5);
+
+  Duration get _storyLockRemaining {
+    if (_storyLockUntil == null) return Duration.zero;
+    final diff = _storyLockUntil!.difference(DateTime.now());
+    return diff.isNegative ? Duration.zero : diff;
+  }
+
+  String _fmtClock(Duration d) {
+    final h = d.inHours.toString().padLeft(2, '0');
+    final m = (d.inMinutes % 60).toString().padLeft(2, '0');
+    final s = (d.inSeconds % 60).toString().padLeft(2, '0');
+    return '$h:$m:$s';
+  }
+
+  Future<void> _shortenStoryLockByAd() async {
+    final ok = await _consumeAdView('story_lock_reduce', 8);
+    if (!ok) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('오늘 광고 단축 한도 도달')));
+      return;
+    }
+    _playReward();
+    setState(() {
+      if (_storyLockUntil != null) {
+        _storyLockUntil = _storyLockUntil!.subtract(const Duration(minutes: 30));
+        if (_storyLockRemaining.inSeconds <= 0) _storyLockUntil = null;
+      }
+    });
+    await _save();
+  }
+
+  Future<void> _unlockStoryNowByHearts() async {
+    const cost = 5;
+    if (_premiumTokens < cost) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('하트(토큰) 부족: 필요 $cost')));
+      return;
+    }
+    _playReward();
+    setState(() {
+      _premiumTokens -= cost;
+      _storyLockUntil = null;
+    });
+    await _save();
+  }
 
   void _setExpression(String name, Expression expression) {
     _expressions[name] = expression;
@@ -1652,6 +1710,9 @@ class _GameShellState extends State<GameShell> with TickerProviderStateMixin {
       _sceneKey += 1;
       _cameraSeed = '${_random.nextDouble()}';
       _transitionPreset = choice.sideDelta < 0 ? TransitionPreset.flash : TransitionPreset.slide;
+      if (_storyIndex > 0 && _storyIndex % 3 == 0) {
+        _storyLockUntil = DateTime.now().add(const Duration(hours: 3, minutes: 20));
+      }
     }
 
     _lockRouteAtNode15IfNeeded();
@@ -3922,17 +3983,7 @@ class _GameShellState extends State<GameShell> with TickerProviderStateMixin {
     }
   }
 
-  Widget _loopChip(String label, bool active) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
-      decoration: BoxDecoration(
-        color: active ? const Color(0xFF7E67FF) : const Color(0x334B3A65),
-        borderRadius: BorderRadius.circular(999),
-        border: Border.all(color: active ? const Color(0xFFE9D7A1) : const Color(0x66FFFFFF)),
-      ),
-      child: Text(label, style: TextStyle(fontSize: 11, color: const Color(0xFFF6F1E8), fontWeight: active ? FontWeight.w700 : FontWeight.w500)),
-    );
-  }
+  // removed loop chip helper (no explicit ecosystem ribbon on home)
 
   Widget _homePage() {
     Widget miniMood(Expression exp, String label) {
@@ -4228,6 +4279,7 @@ class _GameShellState extends State<GameShell> with TickerProviderStateMixin {
   Widget _storyProgressPage() {
     final cleared = _storySelections.where((e) => e != null).length;
     final preview = _story[_storyIndex];
+    final lockRem = _storyLockRemaining;
     final mq = MediaQuery.of(context);
     final usableH = mq.size.height - mq.padding.top - mq.padding.bottom;
     final panelH = (usableH * 0.72).clamp(520.0, 760.0);
@@ -4292,35 +4344,73 @@ class _GameShellState extends State<GameShell> with TickerProviderStateMixin {
                   top: startTop,
                   child: SafeArea(
                     bottom: false,
-                    child: Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
-                      decoration: BoxDecoration(
-                        color: Colors.black.withOpacity(0.42),
-                        borderRadius: BorderRadius.circular(10),
-                        border: Border.all(color: Colors.white24),
-                      ),
-                      child: Row(
-                        children: [
-                          Expanded(
-                            child: _sealPrimaryButton('선택 노드 시작', () {
-                              setState(() {
-                                _inStoryScene = true;
-                                _sceneKey += 1;
-                                _transitionPreset = TransitionPreset.fade;
-                              });
-                              _beginBeatLine();
-                            }),
+                    child: Column(
+                      children: [
+                        Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
+                          decoration: BoxDecoration(
+                            color: Colors.black.withOpacity(0.42),
+                            borderRadius: BorderRadius.circular(10),
+                            border: Border.all(color: Colors.white24),
                           ),
-                          const SizedBox(width: 8),
-                          const Expanded(
-                            child: Text(
-                              '현재 노드 재탭으로 즉시 시작',
-                              style: TextStyle(color: Color(0xFFF6F1E8), fontSize: 11, shadows: [Shadow(color: Color(0x99000000), blurRadius: 6)]),
-                              textAlign: TextAlign.center,
+                          child: Row(
+                            children: [
+                              Expanded(
+                                child: _sealPrimaryButton('선택 노드 시작', lockRem.inSeconds > 0 ? null : () {
+                                  setState(() {
+                                    _inStoryScene = true;
+                                    _sceneKey += 1;
+                                    _transitionPreset = TransitionPreset.fade;
+                                  });
+                                  _beginBeatLine();
+                                }),
+                              ),
+                              const SizedBox(width: 8),
+                              const Expanded(
+                                child: Text(
+                                  '현재 노드 재탭으로 즉시 시작',
+                                  style: TextStyle(color: Color(0xFFF6F1E8), fontSize: 11, shadows: [Shadow(color: Color(0x99000000), blurRadius: 6)]),
+                                  textAlign: TextAlign.center,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                        if (lockRem.inSeconds > 0)
+                          Container(
+                            margin: const EdgeInsets.only(top: 8),
+                            padding: const EdgeInsets.fromLTRB(10, 8, 10, 10),
+                            decoration: BoxDecoration(
+                              color: const Color(0xCC231A2C),
+                              borderRadius: BorderRadius.circular(10),
+                              border: Border.all(color: const Color(0xBBAE8A53)),
+                            ),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text('🔒 다음 노드 개방까지 ${_fmtClock(lockRem)}', style: const TextStyle(color: Color(0xFFF9E7C4), fontWeight: FontWeight.w700)),
+                                const SizedBox(height: 6),
+                                Row(
+                                  children: [
+                                    Expanded(
+                                      child: OutlinedButton(
+                                        onPressed: _shortenStoryLockByAd,
+                                        child: const Text('광고로 30분 단축'),
+                                      ),
+                                    ),
+                                    const SizedBox(width: 8),
+                                    Expanded(
+                                      child: FilledButton(
+                                        onPressed: _unlockStoryNowByHearts,
+                                        child: const Text('하트 5개 즉시 개방'),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ],
                             ),
                           ),
-                        ],
-                      ),
+                      ],
                     ),
                   ),
                 ),
@@ -5452,6 +5542,7 @@ class _GameShellState extends State<GameShell> with TickerProviderStateMixin {
 
   Widget _codexPage() {
     final unlocked = _evidenceOwned.length + _keyFlags.values.where((e) => e).length;
+    final badEndingUnlocked = _logs.any((e) => e.contains('[엔딩 판정]') && e.contains('(배드)')) || (_endingRuleId?.contains('bad') ?? false);
     Widget silhouetteGrid(int total, int opened) {
       return GridView.builder(
         shrinkWrap: true,
@@ -5476,6 +5567,11 @@ class _GameShellState extends State<GameShell> with TickerProviderStateMixin {
         ListTile(title: const Text('보이스'), subtitle: Text('해금 ${_keyFlags.values.where((e) => e).length}/20')),
         ListTile(title: const Text('CG'), subtitle: Text('해금 ${_evidenceOwned.length}/30')),
         ListTile(title: const Text('엔딩'), subtitle: Text(_endingRuleId == null ? '실루엣 상태 + 힌트' : '최근 해금: $_endingRuleId')),
+        ListTile(
+          title: const Text('배드엔딩 수집'),
+          subtitle: Text(badEndingUnlocked ? '수집 완료: 비극의 왕관 조각 1/1 (특별 회상 해금)' : '미수집: 실패 루트도 수집 자산입니다'),
+          trailing: badEndingUnlocked ? const Icon(Icons.auto_awesome, color: Color(0xFFB58BFF)) : const Icon(Icons.lock_outline),
+        ),
         ListTile(title: const Text('POV'), subtitle: Text('진행도 $unlocked/40 (2/3 충족 형식)')),
         const SizedBox(height: 8),
         silhouetteGrid(9, min(9, _evidenceOwned.length)),
