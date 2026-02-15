@@ -1777,6 +1777,11 @@ class _GameShellState extends State<GameShell> {
           Navigator.of(context).pop();
         }
         await _finishWorkMiniGame();
+        final returnIndex = _minigameReturnMenuIndex ?? _menuIndex;
+        if (mounted) {
+          setState(() => _menuIndex = returnIndex);
+          _minigameReturnMenuIndex = null;
+        }
       },
     );
 
@@ -4126,135 +4131,192 @@ class _GameShellState extends State<GameShell> {
     );
   }
 
+  Widget _workHubTab({required String label, required bool active, required VoidCallback onTap}) {
+    return InkWell(
+      onTap: () {
+        _playClick();
+        onTap();
+      },
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 160),
+        height: 42,
+        alignment: Alignment.center,
+        decoration: BoxDecoration(
+          color: active ? const Color(0xFF2C253D) : const Color(0xFF5B4A37),
+          borderRadius: const BorderRadius.vertical(top: Radius.circular(14), bottom: Radius.circular(4)),
+          border: Border.all(color: active ? const Color(0xFFE9D7A1) : const Color(0xFF8E7557)),
+          boxShadow: active ? [const BoxShadow(color: Color(0x557E67FF), blurRadius: 7, offset: Offset(0, -1))] : null,
+        ),
+        child: Text(
+          label,
+          maxLines: 1,
+          overflow: TextOverflow.ellipsis,
+          style: TextStyle(color: const Color(0xFFF6F1E8), fontWeight: active ? FontWeight.w800 : FontWeight.w600, fontSize: 13),
+        ),
+      ),
+    );
+  }
+
   Widget _workPage() {
+    const coreWorks = <WorkMiniGame>[WorkMiniGame.herbSort, WorkMiniGame.smithTiming, WorkMiniGame.haggling];
+    if (!coreWorks.contains(_selectedWork)) {
+      _selectedWork = WorkMiniGame.herbSort;
+    }
+
     final sceneBg = switch (_selectedWork) {
       WorkMiniGame.herbSort => 'assets/ui/minigame_herbfield_bg.png',
       WorkMiniGame.smithTiming => 'assets/ui/minigame_stable_bg.png',
       WorkMiniGame.haggling => 'assets/ui/minigame_market_bg.png',
-      WorkMiniGame.courierRun => 'assets/generated/bg_castle/001-medieval-fantasy-royal-castle-courtyard-.png',
-      WorkMiniGame.dateDance => 'assets/generated/bg_ballroom/001-luxurious-medieval-ballroom-interior-at-.png',
-      WorkMiniGame.gardenWalk => 'assets/ui/minigame_herbfield_bg.png',
+      _ => 'assets/ui/minigame_herbfield_bg.png',
+    };
+
+    final title = switch (_selectedWork) {
+      WorkMiniGame.herbSort => '🌿 약초 채집',
+      WorkMiniGame.smithTiming => '🔨 대장간 단조',
+      WorkMiniGame.haggling => '🧹 여관 청소',
+      _ => '🌿 약초 채집',
+    };
+
+    final desc = switch (_selectedWork) {
+      WorkMiniGame.herbSort => '숨은 약초를 찾아 빠르게 짝을 맞추세요. 가끔 희귀 약초가 등장해요!',
+      WorkMiniGame.smithTiming => '타이밍에 맞춰 단조를 완성하세요. 연속 성공 시 보상이 상승합니다.',
+      WorkMiniGame.haggling => '지저분한 곳을 빠르게 정리하세요. 연속 정리로 추가 팁을 노려보세요.',
+      _ => '숨은 약초를 찾아 빠르게 짝을 맞추세요.',
+    };
+
+    final chips = switch (_selectedWork) {
+      WorkMiniGame.herbSort => const ['⏱ 28~68초', '⭐ 희귀 약초', '🎁 코인+콤보'],
+      WorkMiniGame.smithTiming => const ['⏱ 20초', '🎯 타이밍', '🎁 강화 재료'],
+      WorkMiniGame.haggling => const ['⏱ 20초', '🧼 청소 콤보', '🎁 팁(코인)'],
+      _ => const ['⏱ 20초', '🎮 미니게임', '🎁 보상'],
     };
 
     return ListView(
-      padding: const EdgeInsets.all(14),
+      padding: const EdgeInsets.fromLTRB(16, 12, 16, 16),
       children: [
-        const Text('도트 액션 미니게임', style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
+        const Text('미니게임', style: TextStyle(fontSize: 20, fontWeight: FontWeight.w800)),
         const SizedBox(height: 8),
-        ClipRRect(
-          borderRadius: BorderRadius.circular(12),
-          child: Container(
-            height: 360,
-            color: Colors.black,
-            child: Stack(
-              children: [
-                Positioned.fill(child: Image.asset(sceneBg, fit: BoxFit.cover)),
-                Positioned.fill(child: Container(color: _failFlash ? const Color(0x66FF0000) : Colors.transparent)),
-                Positioned(
-                  top: 8,
-                  left: 8,
-                  right: 8,
-                  child: Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-                    decoration: BoxDecoration(color: Colors.black.withOpacity(0.5), borderRadius: BorderRadius.circular(10)),
-                    child: Row(
-                      children: [
-                        Text('⏱ $_workTimeLeft', style: const TextStyle(color: Colors.white)),
-                        const SizedBox(width: 10),
-                        Text('점수 $_workScore', style: const TextStyle(color: Colors.white)),
-                        const SizedBox(width: 10),
-                        Text('콤보 x$_combo', style: const TextStyle(color: Colors.amberAccent)),
-                        const Spacer(),
-                        SizedBox(width: 34, height: 34, child: _characterImageWithExpression(_characters.first, width: 28)),
-                      ],
-                    ),
-                  ),
-                ),
-                Positioned(
-                  top: 54,
-                  left: 10,
-                  right: 10,
-                  bottom: 74,
-                  child: ClipRRect(
-                    borderRadius: BorderRadius.circular(10),
-                    child: Container(
-                      color: Colors.black.withOpacity(0.35),
-                      alignment: Alignment.center,
-                      child: const Text('플레이 시작 시 전체화면 Flame 캔버스로 전환됩니다', style: TextStyle(color: Color(0xFFF6F1E8))),
-                    ),
-                  ),
-                ),
-                if (_cutinCharacter != null)
-                  Positioned(
-                    right: 12,
-                    top: 90,
-                    child: AnimatedSlide(
-                      duration: const Duration(milliseconds: 120),
-                      offset: _cutinTicks > 0 ? Offset.zero : const Offset(1, 0),
-                      child: Container(
-                        padding: const EdgeInsets.all(8),
-                        decoration: BoxDecoration(color: Colors.black.withOpacity(0.6), borderRadius: BorderRadius.circular(10), border: Border.all(color: const Color(0xFFE9D7A1))),
-                        child: Row(
-                          children: [
-                            _dotSprite(asset: _cutinSheet(_cutinCharacter!), row: 2, frame: _animTick % 4, scale: 1.6),
-                            const SizedBox(width: 6),
-                            Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text(_cutinCharacter!, style: const TextStyle(color: Color(0xFFF6F1E8), fontWeight: FontWeight.w700)),
-                                Text(_cutinLine, style: const TextStyle(color: Color(0xFFF6F1E8), fontSize: 11)),
-                              ],
-                            ),
-                          ],
-                        ),
-                      ),
-                    ),
-                  ),
-                Positioned(
-                  left: 12,
-                  right: 12,
-                  bottom: 12,
-                  child: Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-                    decoration: BoxDecoration(color: Colors.black.withOpacity(0.45), borderRadius: BorderRadius.circular(8)),
-                    child: const Text('좌하단 조이스틱 이동 · 우하단 액션 버튼', style: TextStyle(color: Color(0xFFF6F1E8), fontSize: 12)),
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ),
-        const SizedBox(height: 8),
+
+        // Chrome-like tab strip
         Row(
           children: [
-            Expanded(child: _workMiniCard('오늘 추천', '약초 채집', WorkMiniGame.herbSort)),
-            const SizedBox(width: 8),
-            Expanded(child: _workMiniCard('주간 이벤트', '대장간 단조', WorkMiniGame.smithTiming)),
-            const SizedBox(width: 8),
-            Expanded(child: _workMiniCard('자유 플레이', '시장 흥정', WorkMiniGame.haggling)),
-          ],
-        ),
-        Align(
-          alignment: Alignment.centerRight,
-          child: TextButton(
-            onPressed: () => showModalBottomSheet(
-              context: context,
-              builder: (_) => ListView(
-                padding: const EdgeInsets.all(12),
-                children: [
-                  _workTab('전달 임무', WorkMiniGame.courierRun),
-                  const SizedBox(height: 8),
-                  _workTab('무도회', WorkMiniGame.dateDance),
-                  const SizedBox(height: 8),
-                  _workTab('정원 산책', WorkMiniGame.gardenWalk),
-                ],
+            Expanded(
+              child: _workHubTab(
+                label: '🌿 약초 채집',
+                active: _selectedWork == WorkMiniGame.herbSort,
+                onTap: () => setState(() => _selectedWork = WorkMiniGame.herbSort),
               ),
             ),
-            child: const Text('더 보기'),
+            const SizedBox(width: 8),
+            Expanded(
+              child: _workHubTab(
+                label: '🔨 대장간 단조',
+                active: _selectedWork == WorkMiniGame.smithTiming,
+                onTap: () => setState(() => _selectedWork = WorkMiniGame.smithTiming),
+              ),
+            ),
+            const SizedBox(width: 8),
+            Expanded(
+              child: _workHubTab(
+                label: '🧹 여관 청소',
+                active: _selectedWork == WorkMiniGame.haggling,
+                onTap: () => setState(() => _selectedWork = WorkMiniGame.haggling),
+              ),
+            ),
+          ],
+        ),
+
+        // Preview card
+        Container(
+          margin: const EdgeInsets.only(top: 0),
+          padding: const EdgeInsets.fromLTRB(12, 12, 12, 14),
+          decoration: BoxDecoration(
+            color: const Color(0xFF2C253D),
+            borderRadius: const BorderRadius.vertical(bottom: Radius.circular(16), top: Radius.circular(10)),
+            border: Border.all(color: const Color(0x66FFFFFF)),
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              ClipRRect(
+                borderRadius: BorderRadius.circular(14),
+                child: SizedBox(
+                  height: 190,
+                  child: Stack(
+                    children: [
+                      Positioned.fill(child: Image.asset(sceneBg, fit: BoxFit.cover)),
+                      Positioned.fill(
+                        child: DecoratedBox(
+                          decoration: BoxDecoration(
+                            gradient: LinearGradient(
+                              begin: Alignment.topCenter,
+                              end: Alignment.bottomCenter,
+                              colors: [Colors.transparent, Colors.black.withOpacity(0.45)],
+                            ),
+                          ),
+                        ),
+                      ),
+                      Positioned(
+                        left: 10,
+                        top: 10,
+                        child: Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                          decoration: BoxDecoration(
+                            color: const Color(0xCC7E67FF),
+                            borderRadius: BorderRadius.circular(999),
+                            border: Border.all(color: const Color(0xFFE9D7A1)),
+                          ),
+                          child: Text(
+                            _selectedWork == WorkMiniGame.herbSort ? '오늘 추천' : '주간 이벤트',
+                            style: const TextStyle(fontSize: 11, color: Color(0xFFF6F1E8), fontWeight: FontWeight.w700),
+                          ),
+                        ),
+                      ),
+                      Positioned(
+                        left: 12,
+                        right: 12,
+                        bottom: 10,
+                        child: Text(title, style: const TextStyle(color: Color(0xFFF6F1E8), fontSize: 18, fontWeight: FontWeight.w800)),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+              const SizedBox(height: 10),
+              Text(desc, maxLines: 2, overflow: TextOverflow.ellipsis, style: const TextStyle(color: Color(0xDDF6F1E8), fontSize: 13)),
+              const SizedBox(height: 8),
+              Wrap(
+                spacing: 8,
+                runSpacing: 6,
+                children: chips
+                    .map(
+                      (e) => Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                        decoration: BoxDecoration(color: const Color(0x334B3A65), borderRadius: BorderRadius.circular(999), border: Border.all(color: const Color(0x66FFFFFF))),
+                        child: Text(e, style: const TextStyle(fontSize: 12, color: Color(0xFFF6F1E8))),
+                      ),
+                    )
+                    .toList(),
+              ),
+              const SizedBox(height: 12),
+              SizedBox(
+                width: double.infinity,
+                child: ElevatedButton(
+                  onPressed: _workTimeLeft > 0 ? null : _startFlameGame,
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: const Color(0xFF8A67FF),
+                    foregroundColor: const Color(0xFFF6F1E8),
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+                    padding: const EdgeInsets.symmetric(vertical: 14),
+                  ),
+                  child: const Text('플레이 시작', style: TextStyle(fontSize: 17, fontWeight: FontWeight.w800)),
+                ),
+              ),
+              const SizedBox(height: 6),
+              const Text('플레이하면 바로 시작돼요 · 보상 자동 지급', style: TextStyle(fontSize: 12, color: Color(0xB3F6F1E8))),
+            ],
           ),
         ),
-        const SizedBox(height: 10),
-        _sealPrimaryButton('플레이 시작 (20초 루프)', _workTimeLeft > 0 ? null : _startFlameGame),
       ],
     );
   }
