@@ -1936,6 +1936,9 @@ class _GameShellState extends State<GameShell> {
         setState(() => _menuIndex = 2);
       }
       await _finishWorkMiniGame();
+      if (mounted) {
+        setState(() => _menuIndex = 2);
+      }
       if (timedOut && mounted) {
         ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('시간 초과! 아르바이트 탭으로 돌아갑니다.')));
       }
@@ -2142,8 +2145,8 @@ class _GameShellState extends State<GameShell> {
                                 itemCount: total,
                                 gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
                                   crossAxisCount: cols,
-                                  mainAxisSpacing: 8,
-                                  crossAxisSpacing: 8,
+                                  mainAxisSpacing: 14,
+                                  crossAxisSpacing: 14,
                                   childAspectRatio: 1,
                                 ),
                                 itemBuilder: (_, i) {
@@ -2155,7 +2158,7 @@ class _GameShellState extends State<GameShell> {
                                       children: [
                                         Positioned.fill(
                                           child: Container(
-                                            margin: const EdgeInsets.all(3),
+                                            margin: const EdgeInsets.all(5),
                                             decoration: BoxDecoration(
                                               color: const Color(0x22FFFFFF),
                                               borderRadius: BorderRadius.circular(14),
