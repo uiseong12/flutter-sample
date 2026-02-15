@@ -2674,15 +2674,15 @@ class _GameShellState extends State<GameShell> {
             Positioned(
               left: 0,
               right: 0,
-              // 홈 화면에서는 하단 HUD 위로 올려 겹침 방지
-              bottom: _menuIndex == 0 ? (MediaQuery.of(context).padding.bottom + 108) : 0,
+              // 홈 화면에서는 하단 HUD를 완전히 피해서 위에 표시
+              bottom: _menuIndex == 0 ? (MediaQuery.of(context).padding.bottom + 190) : 0,
               child: SafeArea(top: false, bottom: _menuIndex != 0, child: _buildBottomNav()),
             ),
           if (_menuOverlayOpen)
             Positioned(
               right: 12,
-              // 홈에서는 메뉴 오버레이 바로 위로 붙여 표시
-              bottom: _menuIndex == 0 ? (MediaQuery.of(context).padding.bottom + 266) : 158,
+              // 홈에서는 올린 메뉴 오버레이의 상단 근처에 배치
+              bottom: _menuIndex == 0 ? (MediaQuery.of(context).padding.bottom + 322) : 158,
               child: GestureDetector(
                 onTap: () {
                   _playClick();
@@ -2894,13 +2894,14 @@ class _GameShellState extends State<GameShell> {
                         label: Text(_showAffectionOverlay ? '호감도 닫기' : '호감도 열기', style: const TextStyle(color: Color(0xCCF6F1E8))),
                       ),
                       const Spacer(),
-                      IconButton(
-                        onPressed: () {
-                          _playClick();
-                          setState(() => _menuOverlayOpen = !_menuOverlayOpen);
-                        },
-                        icon: Icon(_menuOverlayOpen ? Icons.close : Icons.grid_view_rounded, color: const Color(0xFFF6F1E8)),
-                      ),
+                      if (!_menuOverlayOpen)
+                        IconButton(
+                          onPressed: () {
+                            _playClick();
+                            setState(() => _menuOverlayOpen = true);
+                          },
+                          icon: const Icon(Icons.grid_view_rounded, color: Color(0xFFF6F1E8)),
+                        ),
                     ],
                   ),
                 ],
