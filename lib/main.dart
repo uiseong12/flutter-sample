@@ -169,7 +169,7 @@ class GameShell extends StatefulWidget {
   State<GameShell> createState() => _GameShellState();
 }
 
-class _GameShellState extends State<GameShell> {
+class _GameShellState extends State<GameShell> with TickerProviderStateMixin {
   static const _saveKey = 'vn_save_v7';
   final Random _random = Random();
 
@@ -1747,6 +1747,10 @@ class _GameShellState extends State<GameShell> {
       _startHerbMemoryGame();
       return;
     }
+    if (_selectedWork == WorkMiniGame.smithTiming) {
+      _startSmithRhythmGame();
+      return;
+    }
 
     void safeSet(VoidCallback fn) {
       if (!mounted) return;
@@ -1816,6 +1820,320 @@ class _GameShellState extends State<GameShell> {
         ),
       ),
     );
+  }
+
+  void _startSmithRhythmGame() {
+    const totalSeconds = 40;
+    int remaining = totalSeconds;
+    int score = 0;
+    int combo = 0;
+    int maxCombo = 0;
+    double heat = 0.24;
+    double heatLockSec = 0;
+    int perfectCount = 0;
+    int goodCount = 0;
+    int missCount = 0;
+    String judgeText = 'READY';
+    Color judgeColor = const Color(0xFFD5CDB8);
+    bool finished = false;
+
+    Timer? secTimer;
+    Timer? judgeReset;
+    StateSetter? modalSet;
+
+    final swing = AnimationController(vsync: this, duration: const Duration(milliseconds: 1050));
+    swing.repeat(reverse: true);
+
+    double pointerPos() {
+      final raw = swing.value;
+      return 0.08 + (raw * 0.84);
+    }
+
+    void applyComboSpeed() {
+      final dur = combo >= 15
+          ? const Duration(milliseconds: 740)
+          : combo >= 10
+              ? const Duration(milliseconds: 860)
+              : combo >= 5
+                  ? const Duration(milliseconds: 970)
+                  : const Duration(milliseconds: 1050);
+      if (swing.duration != dur) {
+        final prev = swing.value;
+        swing.duration = dur;
+        swing.forward(from: prev);
+      }
+    }
+
+    Future<void> finishRound() async {
+      if (finished) return;
+      finished = true;
+      secTimer?.cancel();
+      judgeReset?.cancel();
+      if (mounted && Navigator.of(context).canPop()) {
+        Navigator.of(context).pop();
+      }
+
+      _workScore = score;
+      _combo = maxCombo;
+      _workTimeLeft = 0;
+      await _finishWorkMiniGame();
+      if (mounted && _minigameReturnMenuIndex != null) {
+        setState(() => _menuIndex = _minigameReturnMenuIndex!);
+        _minigameReturnMenuIndex = null;
+      }
+    }
+
+    void onTapForge() {
+      if (finished) return;
+      final p = pointerPos();
+      final perfectL = 0.46 - (heat > 0.7 ? 0.01 : 0);
+      final perfectR = 0.54 + (heat > 0.7 ? 0.01 : 0);
+      const goodL = 0.36;
+      const goodR = 0.64;
+
+      int add = 0;
+      if (p >= perfectL && p <= perfectR) {
+        perfectCount += 1;
+        combo += 1;
+        maxCombo = max(maxCombo, combo);
+        final tier = combo >= 15 ? 1.5 : combo >= 10 ? 1.35 : combo >= 5 ? 1.2 : 1.0;
+        add = (100 * tier * (1 + heat * 0.6)).round();
+        heat = min(1, heat + 0.08);
+        judgeText = 'PERFECT!';
+        judgeColor = const Color(0xFFF6D978);
+      } else if (p >= goodL && p <= goodR) {
+        goodCount += 1;
+        combo += 1;
+        maxCombo = max(maxCombo, combo);
+        final tier = combo >= 15 ? 1.4 : combo >= 10 ? 1.25 : combo >= 5 ? 1.12 : 1.0;
+        add = (60 * tier * (1 + heat * 0.4)).round();
+        heat = min(1, heat + 0.04);
+        judgeText = 'GOOD';
+        judgeColor = const Color(0xFF85E0B2);
+      } else {
+        missCount += 1;
+        combo = 0;
+        heat = max(0, heat - 0.16);
+        judgeText = 'MISS';
+        judgeColor = const Color(0xFFFF9AA5);
+      }
+      score += add;
+      applyComboSpeed();
+      modalSet?.call(() {});
+
+      judgeReset?.cancel();
+      judgeReset = Timer(const Duration(milliseconds: 360), () {
+        judgeText = 'TAP!';
+        judgeColor = const Color(0xFFD5CDB8);
+        modalSet?.call(() {});
+      });
+    }
+
+    _playClick();
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (_) => StatefulBuilder(
+        builder: (context, setModal) {
+          modalSet = setModal;
+          secTimer ??= Timer.periodic(const Duration(seconds: 1), (_) {
+            if (finished) return;
+            remaining = max(0, remaining - 1);
+            if (heatLockSec > 0) {
+              heatLockSec = max(0, heatLockSec - 1);
+            } else {
+              heat = max(0, heat - 0.02);
+            }
+            if (remaining <= 0) {
+              finishRound();
+            }
+            modalSet?.call(() {});
+          });
+
+          final stars = perfectCount + goodCount == 0
+              ? 0
+              : ((perfectCount / max(1, perfectCount + goodCount)) >= 0.7 && maxCombo >= 12)
+                  ? 3
+                  : ((perfectCount / max(1, perfectCount + goodCount)) >= 0.5)
+                      ? 2
+                      : 1;
+
+          return Scaffold(
+            backgroundColor: const Color(0xFF0F0D18),
+            body: SafeArea(
+              child: Padding(
+                padding: const EdgeInsets.fromLTRB(14, 10, 14, 12),
+                child: Column(
+                  children: [
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+                      decoration: BoxDecoration(color: const Color(0xFF1F1B2E), borderRadius: BorderRadius.circular(14), border: Border.all(color: const Color(0xFF3D355D))),
+                      child: Row(
+                        children: [
+                          Text('⏱ ${remaining}s', style: const TextStyle(color: Color(0xFFF6F1E8), fontSize: 20, fontWeight: FontWeight.w700)),
+                          const SizedBox(width: 14),
+                          Text('점수 ${score.toString()}', style: const TextStyle(color: Color(0xFFF6F1E8), fontSize: 20, fontWeight: FontWeight.w700)),
+                          const SizedBox(width: 14),
+                          Text('콤보 x$combo', style: const TextStyle(color: Color(0xFFF4C16E), fontSize: 20, fontWeight: FontWeight.w700)),
+                          const Spacer(),
+                          Text('★' * stars + '☆' * (3 - stars), style: const TextStyle(color: Color(0xFFF4C16E), fontSize: 22)),
+                        ],
+                      ),
+                    ),
+                    const SizedBox(height: 14),
+                    Container(
+                      padding: const EdgeInsets.all(12),
+                      decoration: BoxDecoration(color: const Color(0xFF1A1728), borderRadius: BorderRadius.circular(18), border: Border.all(color: const Color(0xFF3A3454))),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          const Text('대장간 리듬', style: TextStyle(color: Color(0xFFF6F1E8), fontSize: 26, fontWeight: FontWeight.w800)),
+                          const SizedBox(height: 4),
+                          const Text('PERFECT를 연속으로 맞추면 열기가 유지되고 보상이 상승합니다', style: TextStyle(color: Color(0xFFD2CCE0), fontSize: 14)),
+                          const SizedBox(height: 14),
+                          AnimatedBuilder(
+                            animation: swing,
+                            builder: (_, __) {
+                              final p = pointerPos();
+                              return Column(
+                                children: [
+                                  Row(
+                                    children: [
+                                      Text(judgeText, style: TextStyle(color: judgeColor, fontSize: 40, fontWeight: FontWeight.w900)),
+                                      const Spacer(),
+                                      SizedBox(
+                                        width: 160,
+                                        child: ClipRRect(
+                                          borderRadius: BorderRadius.circular(999),
+                                          child: LinearProgressIndicator(
+                                            value: heat,
+                                            minHeight: 10,
+                                            backgroundColor: const Color(0xFF2A2640),
+                                            valueColor: const AlwaysStoppedAnimation(Color(0xFFFF9248)),
+                                          ),
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                  const SizedBox(height: 10),
+                                  Container(
+                                    height: 64,
+                                    decoration: BoxDecoration(color: const Color(0xFF141125), borderRadius: BorderRadius.circular(16), border: Border.all(color: const Color(0xFF3A3356))),
+                                    child: Stack(
+                                      children: [
+                                        Align(
+                                          alignment: const Alignment(-0.5, 0),
+                                          child: Container(width: 90, height: 28, decoration: BoxDecoration(color: const Color(0xFF185040), borderRadius: BorderRadius.circular(10))),
+                                        ),
+                                        Align(
+                                          alignment: const Alignment(0, 0),
+                                          child: Container(width: 72, height: 30, decoration: BoxDecoration(color: const Color(0xFFB7A24F), borderRadius: BorderRadius.circular(10))),
+                                        ),
+                                        Align(
+                                          alignment: const Alignment(0.5, 0),
+                                          child: Container(width: 90, height: 28, decoration: BoxDecoration(color: const Color(0xFF185040), borderRadius: BorderRadius.circular(10))),
+                                        ),
+                                        Positioned.fill(
+                                          child: Align(
+                                            alignment: Alignment((p * 2) - 1, -0.95),
+                                            child: Column(
+                                              mainAxisSize: MainAxisSize.min,
+                                              children: const [
+                                                Icon(Icons.circle, size: 12, color: Color(0xFF8A67FF)),
+                                                SizedBox(height: 20),
+                                                SizedBox(height: 28, child: VerticalDivider(thickness: 3, width: 3, color: Color(0xFF8A67FF))),
+                                              ],
+                                            ),
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                ],
+                              );
+                            },
+                          ),
+                        ],
+                      ),
+                    ),
+                    const SizedBox(height: 10),
+                    Row(
+                      children: [
+                        Expanded(
+                          child: OutlinedButton(
+                            onPressed: heatLockSec > 0
+                                ? null
+                                : () {
+                                    heatLockSec = 2;
+                                    modalSet?.call(() {});
+                                  },
+                            child: Text(heatLockSec > 0 ? '열기 유지 사용중' : '열기 유지'),
+                          ),
+                        ),
+                        const SizedBox(width: 8),
+                        Expanded(
+                          child: OutlinedButton(
+                            onPressed: () {
+                              heat = min(1, heat + 0.15);
+                              modalSet?.call(() {});
+                            },
+                            child: const Text('집중'),
+                          ),
+                        ),
+                      ],
+                    ),
+                    const Spacer(),
+                    SizedBox(
+                      width: double.infinity,
+                      height: 92,
+                      child: ElevatedButton(
+                        onPressed: onTapForge,
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: const Color(0xFF8A67FF),
+                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
+                          elevation: 10,
+                        ),
+                        child: const Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Text('두드리기', style: TextStyle(fontSize: 34, fontWeight: FontWeight.w900, color: Color(0xFFF6F1E8))),
+                            Text('TAP', style: TextStyle(fontSize: 22, color: Color(0xFFF6F1E8))),
+                          ],
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 10),
+                    Row(
+                      children: [
+                        Expanded(
+                          child: OutlinedButton.icon(
+                            onPressed: finishRound,
+                            icon: const Icon(Icons.arrow_back),
+                            label: const Text('종료'),
+                          ),
+                        ),
+                        const SizedBox(width: 8),
+                        Expanded(
+                          child: OutlinedButton.icon(
+                            onPressed: () {},
+                            icon: const Icon(Icons.settings),
+                            label: const Text('설정'),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          );
+        },
+      ),
+    ).then((_) {
+      secTimer?.cancel();
+      judgeReset?.cancel();
+      swing.dispose();
+    });
   }
 
   void _startHerbMemoryGame() {
