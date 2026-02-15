@@ -244,6 +244,10 @@ class _GameShellState extends State<GameShell> with TickerProviderStateMixin {
   bool _showRecommendPanel = false;
   int _rareHerbBuffPercent = 0;
   int? _minigameReturnMenuIndex;
+  String _homeAmbientLine = '오늘도 왕관은 무겁지만, 우아하게.';
+  int _homeAmbientTick = 0;
+  Timer? _homeAmbientTimer;
+  int _weeklyWorkPlays = 0;
   final List<String> _logs = [];
   final List<_Sparkle> _sparkles = [];
   final Map<String, int> _lastDelta = {};
@@ -1064,6 +1068,19 @@ class _GameShellState extends State<GameShell> with TickerProviderStateMixin {
       _expressions[c.name] = Expression.neutral;
       _relationshipStates[c.name] = RelationshipState.strange;
     }
+    _homeAmbientTimer = Timer.periodic(const Duration(seconds: 9), (_) {
+      if (!mounted) return;
+      final lines = [
+        '오늘의 선택이 밤의 결말을 바꿀지도 몰라.',
+        '새 의상, 새 표정, 새 루트. 준비됐어?',
+        '데이트 전에 향수를 바꾸는 것도 전략이야.',
+        '노드 하나, 감정 하나. 천천히 쌓아가자.',
+      ];
+      setState(() {
+        _homeAmbientLine = lines[_random.nextInt(lines.length)];
+        _homeAmbientTick += 1;
+      });
+    });
     _bootstrap();
   }
 
@@ -1071,6 +1088,7 @@ class _GameShellState extends State<GameShell> with TickerProviderStateMixin {
   void dispose() {
     _typingTimer?.cancel();
     _workTimer?.cancel();
+    _homeAmbientTimer?.cancel();
     super.dispose();
   }
 
@@ -3031,6 +3049,17 @@ class _GameShellState extends State<GameShell> with TickerProviderStateMixin {
     if (!mounted) return;
     final reward = 30 + (_workScore * 9);
     _gold += reward;
+    _weeklyWorkPlays += 1;
+    if (_weeklyWorkPlays == 5) {
+      _gold += 120;
+      _logs.insert(0, '[주간 보너스] 아르바이트 5회 달성! 보너스 상자 +120G');
+    }
+    if (_weeklyWorkPlays == 10) {
+      _gold += 300;
+      _premiumTokens += 1;
+      _logs.insert(0, '[주간 보너스] 아르바이트 10회 달성! 확정 희귀 보상 +300G + 토큰1');
+      _weeklyWorkPlays = 0;
+    }
     _logs.insert(0, '[미니게임:${_selectedWork.name}] 점수 $_workScore, 콤보 $_combo, 골드 +$reward');
     if (_selectedWork == WorkMiniGame.dateDance || _selectedWork == WorkMiniGame.gardenWalk) {
       final c = _characters[_random.nextInt(_characters.length)];
@@ -3258,21 +3287,35 @@ class _GameShellState extends State<GameShell> with TickerProviderStateMixin {
 
   Future<void> _dateRandom(Character target) async {
     final affection = target.affection;
-    final events = <String>[
+    final outfit = _outfits.firstWhere((e) => e.id == _equippedOutfitId);
+    final outfitBonus = (outfit.charmBonus * 2).clamp(0, 20);
+    final baseRate = (45 + (affection * 0.45) + outfitBonus).clamp(25, 95).round();
+    final success = _random.nextInt(100) < baseRate;
+
+    final successEvents = <String>[
       if (affection < 40) '${target.name}와 서먹한 산책. 대화는 짧았지만 눈빛은 오래 남았다.',
       if (affection >= 40 && affection < 70) '${target.name}와 분수대 벤치에서 깊은 대화를 나눴다.',
       if (affection >= 70) '${target.name}와 달빛 아래 진심을 고백하는 순간이 찾아왔다.',
       '${target.name}와 시장 데이트 중 소소한 선물을 주고받았다.',
       '${target.name}와 마차 여행에서 예상치 못한 사건을 함께 해결했다.',
     ];
+    final failEvents = <String>[
+      '${target.name}와 약속 시간이 어긋나 분위기가 미묘해졌다.',
+      '사소한 오해로 대화가 끊겼다. 다음엔 타이밍을 맞춰야 한다.',
+      '${target.name}가 피곤해 보여 데이트를 짧게 마무리했다.',
+    ];
 
-    final picked = events[_random.nextInt(events.length)];
-    final gain = _scaledGain(6 + _random.nextInt(6));
+    final picked = (success ? successEvents : failEvents)[_random.nextInt(success ? successEvents.length : failEvents.length)];
+    final gain = success ? _scaledGain(6 + _random.nextInt(6)) : _scaledGain(1 + _random.nextInt(2));
     _playReward();
-    await _addAffection(target, gain, '[데이트]');
-    _applyPoliticalDelta({_characterPoliticalStat(target.name): 3, 'publicTrust': 1}, '데이트');
-    _keyFlags['saved_in_ceremony'] = true;
-    _setExpression(target.name, Expression.blush);
+    await _addAffection(target, gain, success ? '[데이트 성공]' : '[데이트 실패]');
+    if (success) {
+      _applyPoliticalDelta({_characterPoliticalStat(target.name): 3, 'publicTrust': 1}, '데이트');
+      _keyFlags['saved_in_ceremony'] = true;
+      _setExpression(target.name, Expression.blush);
+    } else {
+      _setExpression(target.name, Expression.sad);
+    }
     _logs.insert(0, '[상황] $picked');
     _refreshRelationshipStateFor(target, source: '데이트');
     await _save();
@@ -3281,8 +3324,8 @@ class _GameShellState extends State<GameShell> with TickerProviderStateMixin {
     showDialog(
       context: context,
       builder: (_) => AlertDialog(
-        title: Text('${target.name} 데이트 이벤트'),
-        content: Text('$picked\n\n호감도 +$gain'),
+        title: Text('${target.name} 데이트 ${success ? '성공' : '아쉬움'}'),
+        content: Text('$picked\n\n성공률 ${baseRate}% (의상 보너스 +$outfitBonus)\n호감도 +$gain'),
         actions: [TextButton(onPressed: () => Navigator.pop(context), child: const Text('확인'))],
       ),
     );
@@ -3950,6 +3993,13 @@ class _GameShellState extends State<GameShell> with TickerProviderStateMixin {
       }
     }
 
+    final dayPhase = (_storyIndex ~/ 10).clamp(0, 2);
+    final phaseTint = dayPhase == 0
+        ? const Color(0x11000000)
+        : dayPhase == 1
+            ? const Color(0x22FF914D)
+            : const Color(0x334876C5);
+
     return SafeArea(
       child: Stack(
         children: [
@@ -3957,6 +4007,7 @@ class _GameShellState extends State<GameShell> with TickerProviderStateMixin {
             child: Image.asset('assets/generated/bg_castle/001-medieval-fantasy-royal-castle-courtyard-.png', fit: BoxFit.cover),
           ),
           Positioned.fill(child: Container(color: Colors.black.withOpacity(0.18))),
+          Positioned.fill(child: Container(color: phaseTint)),
 
           // compact top HUD
           Positioned(
@@ -3987,7 +4038,39 @@ class _GameShellState extends State<GameShell> with TickerProviderStateMixin {
               children: [
                 Align(
                   alignment: Alignment.center,
-                  child: _fullBodySprite(_playerAvatar, width: 330),
+                  child: GestureDetector(
+                    onTap: () {
+                      _playClick();
+                      setState(() {
+                        _homeAmbientLine = ['좋아, 오늘은 어떤 루트로 갈래?', '새로운 코디가 꽤 마음에 들어.', '조금만 더, 관계를 쌓아보자.'][_random.nextInt(3)];
+                        _homeAmbientTick += 1;
+                      });
+                    },
+                    child: _fullBodySprite(_playerAvatar, width: 330),
+                  ),
+                ),
+                Positioned(
+                  left: 82,
+                  right: 74,
+                  top: 18,
+                  child: AnimatedSwitcher(
+                    duration: const Duration(milliseconds: 260),
+                    child: Container(
+                      key: ValueKey(_homeAmbientTick),
+                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 7),
+                      decoration: BoxDecoration(
+                        color: const Color(0xCC1C152B),
+                        borderRadius: BorderRadius.circular(12),
+                        border: Border.all(color: const Color(0x66FFFFFF)),
+                      ),
+                      child: Text(
+                        _homeAmbientLine,
+                        maxLines: 2,
+                        overflow: TextOverflow.ellipsis,
+                        style: const TextStyle(fontSize: 12, color: Color(0xFFF6F1E8)),
+                      ),
+                    ),
+                  ),
                 ),
                 Positioned(
                   left: 14,
@@ -4676,6 +4759,13 @@ class _GameShellState extends State<GameShell> with TickerProviderStateMixin {
                                   final routeLocked = _isChoiceBlockedByRouteLock(choice);
                                   final kind = i == beat.choices.length - 1 ? ChoiceKind.condition : ChoiceKind.free;
                                   final premiumSample = _premiumSampleForChoice(_storyIndex + 1, choice, choiceIndex: i);
+                                  final hint = choice.label.contains('비밀')
+                                      ? '⚠ 위험 선택'
+                                      : (choice.mainDelta >= 8 || choice.label.contains('보호'))
+                                          ? '💖 호감도 상승 가능'
+                                          : (choice.label.contains('선언') || choice.label.contains('공개'))
+                                              ? '🔥 강한 루트 진입'
+                                              : null;
                                   return Column(
                                     crossAxisAlignment: CrossAxisAlignment.start,
                                     children: [
@@ -4698,6 +4788,11 @@ class _GameShellState extends State<GameShell> with TickerProviderStateMixin {
                                         icon: Icon(kind == ChoiceKind.free ? Icons.radio_button_unchecked : Icons.key, size: 16),
                                         label: Text('[${_choiceKindLabel(kind)}] ${choice.label}'),
                                       ),
+                                      if (hint != null)
+                                        Padding(
+                                          padding: const EdgeInsets.only(top: 4, left: 2),
+                                          child: Text(hint, style: const TextStyle(fontSize: 11, color: Color(0xFFF4C16E))),
+                                        ),
                                       if (premiumSample != null)
                                         Padding(
                                           padding: const EdgeInsets.only(top: 4),
@@ -4946,6 +5041,8 @@ class _GameShellState extends State<GameShell> with TickerProviderStateMixin {
       padding: const EdgeInsets.fromLTRB(16, 12, 16, 16),
       children: [
         const Text('미니게임', style: TextStyle(fontSize: 20, fontWeight: FontWeight.w800)),
+        const SizedBox(height: 4),
+        Text('주간 보너스 진행도: ${_weeklyWorkPlays % 10}/10', style: const TextStyle(fontSize: 12, color: Color(0xCCF6F1E8))),
         const SizedBox(height: 10),
         Row(
           children: [
