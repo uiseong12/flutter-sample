@@ -4590,6 +4590,7 @@ class _GameShellState extends State<GameShell> with TickerProviderStateMixin {
                 final pos = nodePos(n);
                 final done = _storySelections[beat] != null;
                 final selected = beat == _storyIndex;
+                final locked = beat > _storyIndex;
 
                 return Positioned(
                   left: pos.dx,
@@ -4601,6 +4602,14 @@ class _GameShellState extends State<GameShell> with TickerProviderStateMixin {
                         behavior: HitTestBehavior.opaque,
                         onTap: () {
                           _playClick();
+                          if (locked) {
+                            final rem = _storyLockRemaining;
+                            final msg = (rem.inSeconds > 0 && beat == _storyIndex + 1)
+                                ? '다음 노드 잠금: ${_fmtClock(rem)} 남음'
+                                : '아직 잠긴 노드입니다. 이전 노드를 먼저 진행하세요.';
+                            ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(msg)));
+                            return;
+                          }
                           if (beat == _storyIndex) {
                             setState(() {
                               _inStoryScene = true;
@@ -4626,25 +4635,37 @@ class _GameShellState extends State<GameShell> with TickerProviderStateMixin {
                             children: [
                               AnimatedContainer(
                                 duration: const Duration(milliseconds: 180),
-                                width: 32,
-                                height: 32,
+                                width: 34,
+                                height: 34,
                                 alignment: Alignment.center,
                                 decoration: BoxDecoration(
                                   shape: BoxShape.circle,
-                                  color: selected ? const Color(0xFF7E67FF) : (done ? const Color(0xFF8A6B4D) : const Color(0xFF364A66)),
-                                  border: Border.all(color: Colors.white70, width: 2),
-                                  boxShadow: selected ? [const BoxShadow(color: Color(0xCC7E67FF), blurRadius: 10)] : null,
+                                  gradient: LinearGradient(
+                                    begin: Alignment.topLeft,
+                                    end: Alignment.bottomRight,
+                                    colors: locked
+                                        ? const [Color(0xFF33333F), Color(0xFF20202A)]
+                                        : selected
+                                            ? const [Color(0xFF9C84FF), Color(0xFF5C47B6)]
+                                            : (done ? const [Color(0xFFC89D66), Color(0xFF7A5A39)] : const [Color(0xFF5E7599), Color(0xFF364A66)]),
+                                  ),
+                                  border: Border.all(color: locked ? const Color(0x88C9C9C9) : const Color(0xDDF6E9CC), width: 2),
+                                  boxShadow: selected ? [const BoxShadow(color: Color(0xCC7E67FF), blurRadius: 12)] : null,
                                 ),
-                                child: Column(
-                                  mainAxisAlignment: MainAxisAlignment.center,
-                                  children: [
-                                    Image.asset(_nodeTypeIconAsset(beat), width: 10, height: 10),
-                                    Text('${n['id']! + 1}', style: const TextStyle(color: Colors.white, fontSize: 8, fontWeight: FontWeight.bold)),
-                                  ],
-                                ),
+                                child: locked
+                                    ? const Icon(Icons.lock_rounded, size: 14, color: Color(0xFFE7DCC8))
+                                    : Column(
+                                        mainAxisAlignment: MainAxisAlignment.center,
+                                        children: [
+                                          Image.asset(_nodeTypeIconAsset(beat), width: 10, height: 10),
+                                          Text('${n['id']! + 1}', style: const TextStyle(color: Colors.white, fontSize: 8, fontWeight: FontWeight.bold)),
+                                        ],
+                                      ),
                               ),
                               if (selected) Positioned(top: -16, right: -10, child: Image.asset('assets/ui/node_current_flag.png', width: 24)),
-                              if (beat % 5 == 0) const Positioned(bottom: -8, right: -8, child: Icon(Icons.warning_amber_rounded, size: 14, color: Colors.orangeAccent)),
+                              if (beat == _storyIndex + 1 && _storyLockRemaining.inSeconds > 0)
+                                const Positioned(top: -10, left: -8, child: Icon(Icons.timer_outlined, size: 13, color: Color(0xFFE7B96D))),
+                              if (beat % 5 == 0 && !locked) const Positioned(bottom: -8, right: -8, child: Icon(Icons.warning_amber_rounded, size: 14, color: Colors.orangeAccent)),
                             ],
                           ),
                         ),
