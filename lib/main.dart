@@ -4232,6 +4232,23 @@ class _GameShellState extends State<GameShell> with TickerProviderStateMixin {
     );
   }
 
+  ButtonStyle _fantasyButtonStyle({bool filled = true}) {
+    if (filled) {
+      return ElevatedButton.styleFrom(
+        foregroundColor: const Color(0xFFFDF8EE),
+        backgroundColor: const Color(0xFF5A3FA3),
+        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 11),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12), side: const BorderSide(color: Color(0xCCDCBF7B))),
+      );
+    }
+    return OutlinedButton.styleFrom(
+      foregroundColor: const Color(0xFFF6E8CE),
+      side: const BorderSide(color: Color(0xCCA88A52)),
+      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 11),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+    );
+  }
+
   Widget _glassPanel({required Widget child, EdgeInsets padding = const EdgeInsets.all(12)}) {
     return ClipRRect(
       borderRadius: BorderRadius.circular(16),
@@ -4396,49 +4413,63 @@ class _GameShellState extends State<GameShell> with TickerProviderStateMixin {
                           ),
                         ),
                         if (lockRem.inSeconds > 0)
-                          Container(
-                            margin: const EdgeInsets.only(top: 8),
-                            padding: const EdgeInsets.fromLTRB(10, 8, 10, 10),
-                            decoration: BoxDecoration(
-                              color: const Color(0xCC231A2C),
-                              borderRadius: BorderRadius.circular(10),
-                              border: Border.all(color: const Color(0xBBAE8A53)),
+                          TweenAnimationBuilder<double>(
+                            tween: Tween(begin: 0.35, end: 0.85),
+                            duration: const Duration(milliseconds: 1200),
+                            curve: Curves.easeInOut,
+                            builder: (_, glow, child) => Container(
+                              margin: const EdgeInsets.only(top: 8),
+                              decoration: BoxDecoration(
+                                borderRadius: BorderRadius.circular(10),
+                                boxShadow: [BoxShadow(color: const Color(0x88E6BD77).withOpacity(glow), blurRadius: 12, spreadRadius: 1)],
+                              ),
+                              child: child,
                             ),
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text('🔒 다음 노드 개방까지 ${_fmtClock(lockRem)}', style: const TextStyle(color: Color(0xFFF9E7C4), fontWeight: FontWeight.w700)),
-                                const SizedBox(height: 6),
-                                ClipRRect(
-                                  borderRadius: BorderRadius.circular(999),
-                                  child: LinearProgressIndicator(
-                                    value: 1 - (lockRem.inSeconds / (3 * 3600 + 20 * 60)).clamp(0, 1),
-                                    minHeight: 8,
-                                    backgroundColor: const Color(0xFF2A2235),
-                                    valueColor: const AlwaysStoppedAnimation(Color(0xFFE7B96D)),
+                            child: Container(
+                              padding: const EdgeInsets.fromLTRB(10, 8, 10, 10),
+                              decoration: BoxDecoration(
+                                color: const Color(0xCC231A2C),
+                                borderRadius: BorderRadius.circular(10),
+                                border: Border.all(color: const Color(0xBBAE8A53)),
+                              ),
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text('🔒 다음 노드 개방까지 ${_fmtClock(lockRem)}', style: const TextStyle(color: Color(0xFFF9E7C4), fontWeight: FontWeight.w700)),
+                                  const SizedBox(height: 6),
+                                  ClipRRect(
+                                    borderRadius: BorderRadius.circular(999),
+                                    child: LinearProgressIndicator(
+                                      value: 1 - (lockRem.inSeconds / (3 * 3600 + 20 * 60)).clamp(0, 1),
+                                      minHeight: 8,
+                                      backgroundColor: const Color(0xFF2A2235),
+                                      valueColor: const AlwaysStoppedAnimation(Color(0xFFE7B96D)),
+                                    ),
                                   ),
-                                ),
-                                const SizedBox(height: 6),
-                                const Text('광고로 단축하거나, 하트로 즉시 해금할 수 있어요.', style: TextStyle(fontSize: 11, color: Color(0xCCF6F1E8))),
-                                const SizedBox(height: 6),
-                                Row(
-                                  children: [
-                                    Expanded(
-                                      child: OutlinedButton(
-                                        onPressed: _shortenStoryLockByAd,
-                                        child: const Text('광고로 30분 단축'),
+                                  const SizedBox(height: 6),
+                                  const Text('광고로 단축하거나, 하트로 즉시 해금할 수 있어요.', style: TextStyle(fontSize: 11, color: Color(0xCCF6F1E8))),
+                                  const SizedBox(height: 6),
+                                  Row(
+                                    children: [
+                                      Expanded(
+                                        child: OutlinedButton(
+                                          style: _fantasyButtonStyle(filled: false),
+                                          onPressed: _shortenStoryLockByAd,
+                                          child: const Text('광고로 30분 단축'),
+                                        ),
                                       ),
-                                    ),
-                                    const SizedBox(width: 8),
-                                    Expanded(
-                                      child: FilledButton(
-                                        onPressed: _unlockStoryNowByHearts,
-                                        child: const Text('하트 5개 즉시 개방'),
+                                      const SizedBox(width: 8),
+                                      Expanded(
+                                        child: FilledButton(
+                                          style: _fantasyButtonStyle(filled: true),
+                                          onPressed: _unlockStoryNowByHearts,
+                                          child: const Text('하트 5개 즉시 개방'),
+                                        ),
                                       ),
-                                    ),
-                                  ],
-                                ),
-                              ],
+                                    ],
+                                  ),
+                                ],
+                              ),
                             ),
                           ),
                       ],
@@ -4891,7 +4922,13 @@ class _GameShellState extends State<GameShell> with TickerProviderStateMixin {
                                     crossAxisAlignment: CrossAxisAlignment.start,
                                     children: [
                                       ElevatedButton.icon(
-                                        style: ElevatedButton.styleFrom(backgroundColor: kind == ChoiceKind.free ? null : Colors.indigo.withOpacity(0.72)),
+                                        style: kind == ChoiceKind.free
+                                            ? _fantasyButtonStyle(filled: true)
+                                            : ElevatedButton.styleFrom(
+                                                backgroundColor: const Color(0xFF3F3562),
+                                                foregroundColor: const Color(0xFFF6F1E8),
+                                                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12), side: const BorderSide(color: Color(0xAA8F79C9))),
+                                              ),
                                         onPressed: (_endingCharacterName != null || routeLocked)
                                             ? null
                                             : () => _pickStoryChoice(
@@ -4918,7 +4955,7 @@ class _GameShellState extends State<GameShell> with TickerProviderStateMixin {
                                         Padding(
                                           padding: const EdgeInsets.only(top: 4),
                                           child: OutlinedButton.icon(
-                                            style: OutlinedButton.styleFrom(foregroundColor: const Color(0xFFC3B3FF), side: const BorderSide(color: Color(0xFF7E67FF))),
+                                            style: _fantasyButtonStyle(filled: false),
                                             onPressed: (_endingCharacterName != null || routeLocked)
                                                 ? null
                                                 : () => _openAttachedPremiumForChoice(beat, choice, i, premiumSample),
