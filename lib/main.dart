@@ -2708,24 +2708,35 @@ class _GameShellState extends State<GameShell> {
                 ),
               ),
             ),
-          Positioned(
-            right: 12,
-            bottom: 14,
-            child: SafeArea(
-              top: false,
-              child: FloatingActionButton.extended(
-                heroTag: 'menu_fab',
-                onPressed: () {
-                  _playClick();
-                  setState(() => _menuOverlayOpen = !_menuOverlayOpen);
-                },
-                backgroundColor: const Color(0xFF6A4BFF),
-                foregroundColor: const Color(0xFFF6F1E8),
-                icon: const Icon(Icons.menu),
-                label: const Text('메뉴'),
+          if (!_menuOverlayOpen)
+            Positioned(
+              right: 12,
+              bottom: 14,
+              child: SafeArea(
+                top: false,
+                child: Material(
+                  color: Colors.transparent,
+                  child: InkWell(
+                    borderRadius: BorderRadius.circular(28),
+                    onTap: () {
+                      _playClick();
+                      setState(() => _menuOverlayOpen = true);
+                    },
+                    child: Container(
+                      width: 52,
+                      height: 52,
+                      decoration: BoxDecoration(
+                        color: const Color(0xFF6A4BFF),
+                        shape: BoxShape.circle,
+                        border: Border.all(color: const Color(0xFFB79C63), width: 1.2),
+                        boxShadow: const [BoxShadow(color: Color(0x886A4BFF), blurRadius: 8, offset: Offset(0, 2))],
+                      ),
+                      child: const Icon(Icons.grid_view_rounded, color: Color(0xFFF6F1E8), size: 24),
+                    ),
+                  ),
+                ),
               ),
             ),
-          ),
         ],
       ),
     );
