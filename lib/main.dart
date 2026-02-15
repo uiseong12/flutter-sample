@@ -2635,29 +2635,31 @@ class _GameShellState extends State<GameShell> {
     if (!_loaded) return const Scaffold(body: Center(child: CircularProgressIndicator()));
 
     return Scaffold(
-      appBar: AppBar(
-        toolbarHeight: 64,
-        title: SizedBox(
-          height: 56,
-          child: Row(
-            children: [
-              _currencyChip(icon: Icons.monetization_on, value: _gold.toString(), tint: const Color(0xFFE0B44B)),
-              const SizedBox(width: 8),
-              _currencyChip(icon: Icons.auto_awesome, value: _evidenceOwned.length.toString(), tint: const Color(0xFFC7BEDA)),
-              const SizedBox(width: 8),
-              _currencyChip(icon: Icons.circle, value: _premiumTokens.toString(), tint: const Color(0xFF9C6DFF)),
-              const SizedBox(width: 8),
-              const Text('📘1  💗1  🔧1', maxLines: 1, overflow: TextOverflow.ellipsis, style: TextStyle(fontSize: 12, color: Color(0xCCF6F1E8))),
-              const Spacer(),
-              IconButton(
-                style: IconButton.styleFrom(backgroundColor: Colors.black.withOpacity(0.22)),
-                onPressed: () => setState(() => _menuIndex = 7),
-                icon: const Icon(Icons.add, color: Color(0xFFF6F1E8), size: 18),
+      appBar: _menuIndex == 0
+          ? null
+          : AppBar(
+              toolbarHeight: 64,
+              title: SizedBox(
+                height: 56,
+                child: Row(
+                  children: [
+                    _currencyChip(icon: Icons.monetization_on, value: _gold.toString(), tint: const Color(0xFFE0B44B)),
+                    const SizedBox(width: 8),
+                    _currencyChip(icon: Icons.auto_awesome, value: _evidenceOwned.length.toString(), tint: const Color(0xFFC7BEDA)),
+                    const SizedBox(width: 8),
+                    _currencyChip(icon: Icons.circle, value: _premiumTokens.toString(), tint: const Color(0xFF9C6DFF)),
+                    const SizedBox(width: 8),
+                    const Text('📘1  💗1  🔧1', maxLines: 1, overflow: TextOverflow.ellipsis, style: TextStyle(fontSize: 12, color: Color(0xCCF6F1E8))),
+                    const Spacer(),
+                    IconButton(
+                      style: IconButton.styleFrom(backgroundColor: Colors.black.withOpacity(0.22)),
+                      onPressed: () => setState(() => _menuIndex = 7),
+                      icon: const Icon(Icons.add, color: Color(0xFFF6F1E8), size: 18),
+                    ),
+                  ],
+                ),
               ),
-            ],
-          ),
-        ),
-      ),
+            ),
       body: Stack(
         children: [
           AnimatedSwitcher(
