@@ -3979,35 +3979,9 @@ class _GameShellState extends State<GameShell> with TickerProviderStateMixin {
             ),
           ),
 
-          // ecosystem loop visual (메인↔스토리↔데이트↔미니게임 순환)
-          Positioned(
-            left: 10,
-            right: 10,
-            top: 52,
-            child: _glassPanel(
-              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-              child: SingleChildScrollView(
-                scrollDirection: Axis.horizontal,
-                child: Row(
-                  children: [
-                    _loopChip('미니게임', _menuIndex == 3),
-                    const Padding(padding: EdgeInsets.symmetric(horizontal: 6), child: Text('→', style: TextStyle(color: Color(0xB3F6F1E8)))),
-                    _loopChip('재화', false),
-                    const Padding(padding: EdgeInsets.symmetric(horizontal: 6), child: Text('→', style: TextStyle(color: Color(0xB3F6F1E8)))),
-                    _loopChip('스토리', _menuIndex == 1),
-                    const Padding(padding: EdgeInsets.symmetric(horizontal: 6), child: Text('→', style: TextStyle(color: Color(0xB3F6F1E8)))),
-                    _loopChip('데이트', _menuIndex == 2),
-                    const Padding(padding: EdgeInsets.symmetric(horizontal: 6), child: Text('→', style: TextStyle(color: Color(0xB3F6F1E8)))),
-                    _loopChip('코스튬/허브', _menuIndex == 0),
-                  ],
-                ),
-              ),
-            ),
-          ),
-
           // character stage
           Positioned.fill(
-            top: 96,
+            top: 72,
             bottom: 108,
             child: Stack(
               children: [
