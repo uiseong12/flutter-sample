@@ -4072,22 +4072,27 @@ class _BottomNavItemState extends State<_BottomNavItem> {
               Stack(
                 alignment: Alignment.center,
                 children: [
-                  if (widget.selected || _hover)
-                    Container(
-                      width: 34,
-                      height: 34,
-                      decoration: BoxDecoration(
-                        shape: BoxShape.circle,
-                        color: widget.selected ? const Color(0x447E67FF) : const Color(0x335F4A8A),
-                        boxShadow: [
-                          BoxShadow(
-                            color: widget.selected ? const Color(0x887E67FF) : const Color(0x445F4A8A),
-                            blurRadius: widget.selected ? 5 : 3,
-                          ),
-                        ],
-                      ),
+                  Container(
+                    width: 36,
+                    height: 36,
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      color: widget.selected ? const Color(0x557E67FF) : const Color(0x445F4A8A),
+                      boxShadow: [
+                        BoxShadow(
+                          color: widget.selected ? const Color(0xAA7E67FF) : const Color(0x665F4A8A),
+                          blurRadius: widget.selected ? 7 : 4,
+                        ),
+                      ],
                     ),
-                  Image.asset(widget.iconPath, width: 24, height: 24, fit: BoxFit.contain),
+                  ),
+                  Image.asset(
+                    widget.iconPath,
+                    width: 26,
+                    height: 26,
+                    fit: BoxFit.contain,
+                    errorBuilder: (_, __, ___) => const Icon(Icons.apps, size: 22, color: Color(0xFFF6F1E8)),
+                  ),
                 ],
               ),
               const SizedBox(height: 3),
