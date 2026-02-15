@@ -3973,7 +3973,7 @@ class _GameShellState extends State<GameShell> with TickerProviderStateMixin {
               ),
             ),
           ),
-          if (!_menuOverlayOpen) Positioned(left: 0, right: 0, top: 0, child: _topHudOverlay()),
+          Positioned(left: 0, right: 0, top: 0, child: _topHudOverlay()),
           if (_menuOverlayOpen)
             Positioned(
               left: 0,
