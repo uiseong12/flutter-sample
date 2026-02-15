@@ -2757,8 +2757,6 @@ class _GameShellState extends State<GameShell> {
   }
 
   Widget _homePage() {
-    final outfit = _outfits.firstWhere((e) => e.id == _equippedOutfitId);
-
     Widget miniMood(Expression exp, String label) {
       ColorFilter? filter;
       switch (exp) {
@@ -2798,6 +2796,23 @@ class _GameShellState extends State<GameShell> {
           ],
         ),
       );
+    }
+
+    String recommendedWorkName() {
+      switch (_selectedWork) {
+        case WorkMiniGame.herbSort:
+          return '약초 채집';
+        case WorkMiniGame.smithTiming:
+          return '대장간 단조';
+        case WorkMiniGame.haggling:
+          return '시장 흥정';
+        case WorkMiniGame.courierRun:
+          return '전달 임무';
+        case WorkMiniGame.dateDance:
+          return '무도회 보조';
+        case WorkMiniGame.gardenWalk:
+          return '정원 산책';
+      }
     }
 
     return SafeArea(
@@ -2881,7 +2896,7 @@ class _GameShellState extends State<GameShell> {
                               const SizedBox(width: 8),
                               Expanded(
                                 child: Text(
-                                  '장착 ${outfit.name} · 총 매력 $_totalCharm',
+                                  '추천 아르바이트: ${recommendedWorkName()}',
                                   maxLines: 1,
                                   overflow: TextOverflow.ellipsis,
                                   style: const TextStyle(fontSize: 11, color: Color(0x99F6F1E8)),
