@@ -230,6 +230,7 @@ class _GameShellState extends State<GameShell> {
   bool _showAffectionOverlay = false;
   bool _menuOverlayOpen = false;
   bool _showRecommendPanel = false;
+  int _rareHerbBuffPercent = 0;
   final List<String> _logs = [];
   final List<_Sparkle> _sparkles = [];
   final Map<String, int> _lastDelta = {};
@@ -1811,21 +1812,7 @@ class _GameShellState extends State<GameShell> {
   }
 
   void _startHerbMemoryGame() {
-    const rows = 4;
-    const cols = 4;
-    const total = rows * cols;
-
-    List<int> buildFaces() {
-      final pairs = total ~/ 2;
-      final list = <int>[];
-      for (int i = 0; i < pairs; i++) {
-        list..add(i)..add(i);
-      }
-      list.shuffle(_random);
-      return list;
-    }
-
-    final icons = <IconData>[
+    const icons = <IconData>[
       Icons.local_florist,
       Icons.eco,
       Icons.spa,
@@ -1836,25 +1823,77 @@ class _GameShellState extends State<GameShell> {
       Icons.park,
       Icons.wb_sunny,
       Icons.water_drop,
+      Icons.forest,
+      Icons.compost,
     ];
 
-    var faces = buildFaces();
-    final tileState = List<int>.filled(total, 0); // 0 hidden, 1 revealed, 2 matched
-    final popupOpacity = List<double>.filled(total, 0);
+    const roundSizes = <(int, int)>[(3, 4), (4, 4), (5, 4)];
+    const roundTime = <int>[14, 24, 34];
+
+    int round = 0;
+    int rows = roundSizes[0].$1;
+    int cols = roundSizes[0].$2;
+    int total = rows * cols;
+
+    List<int> faces = [];
+    List<int> tileState = []; // 0 hidden, 1 revealed, 2 matched
+    List<int> shakeNonce = [];
+    List<int> sparkNonce = [];
+    List<String> popText = [];
+    List<double> popupOpacity = [];
+
     int? first;
     int? second;
     bool inputLocked = false;
     int score = 0;
     int combo = 0;
-    int remaining = 28;
+    int remaining = roundTime[0];
     bool hintUsed = false;
     bool shuffleUsed = false;
     bool finished = false;
+    int activeRareBuff = _rareHerbBuffPercent;
 
     Timer? roundTimer;
     final popupTimers = <Timer>[];
     bool initialized = false;
     StateSetter? modalSet;
+    late Future<void> Function({required bool cleared}) finishGame;
+
+    void setupRound({bool keepTimer = true}) {
+      rows = roundSizes[round].$1;
+      cols = roundSizes[round].$2;
+      total = rows * cols;
+      final pairs = total ~/ 2;
+      final list = <int>[];
+      for (int i = 0; i < pairs; i++) {
+        list..add(i)..add(i);
+      }
+      list.shuffle(_random);
+      faces = list;
+      tileState = List<int>.filled(total, 0);
+      shakeNonce = List<int>.filled(total, 0);
+      sparkNonce = List<int>.filled(total, 0);
+      popText = List<String>.filled(total, '');
+      popupOpacity = List<double>.filled(total, 0);
+      first = null;
+      second = null;
+      inputLocked = false;
+      hintUsed = false;
+      shuffleUsed = false;
+      remaining = roundTime[round];
+
+      if (keepTimer) {
+        roundTimer?.cancel();
+        roundTimer = Timer.periodic(const Duration(seconds: 1), (_) {
+          if (finished) return;
+          remaining = max(0, remaining - 1);
+          modalSet?.call(() {});
+          if (remaining <= 0) {
+            finishGame(cleared: false);
+          }
+        });
+      }
+    }
 
     void cleanup() {
       roundTimer?.cancel();
@@ -1864,10 +1903,27 @@ class _GameShellState extends State<GameShell> {
       popupTimers.clear();
     }
 
-    Future<void> finishRound() async {
+    void showPopupFor(int idx, String text) {
+      popText[idx] = text;
+      modalSet?.call(() => popupOpacity[idx] = 1);
+      popupTimers.add(Timer(const Duration(milliseconds: 520), () {
+        if (idx < popupOpacity.length) {
+          modalSet?.call(() => popupOpacity[idx] = 0);
+        }
+      }));
+    }
+
+    finishGame = ({required bool cleared}) async {
       if (finished) return;
       finished = true;
       cleanup();
+
+      if (cleared) {
+        final bonus = 12 + (combo ~/ 2);
+        _rareHerbBuffPercent = min(50, _rareHerbBuffPercent + bonus);
+        _logs.insert(0, '[약초 버프] 희귀 약초 발견 확률 +$bonus% (현재 ${_rareHerbBuffPercent}%)');
+      }
+
       if (mounted && Navigator.of(context).canPop()) {
         Navigator.of(context).pop();
       }
@@ -1875,33 +1931,37 @@ class _GameShellState extends State<GameShell> {
       _combo = combo;
       _workTimeLeft = 0;
       await _finishWorkMiniGame();
-    }
-
-    void showPopupFor(int idx) {
-      modalSet?.call(() => popupOpacity[idx] = 1);
-      popupTimers.add(Timer(const Duration(milliseconds: 420), () {
-        modalSet?.call(() => popupOpacity[idx] = 0);
-      }));
-    }
+    };
 
     Future<void> judge() async {
       if (first == null || second == null) return;
       final i1 = first!;
       final i2 = second!;
-      await Future.delayed(const Duration(milliseconds: 520));
+      await Future.delayed(const Duration(milliseconds: 560));
       if (!mounted || finished) return;
 
       if (faces[i1] == faces[i2]) {
         tileState[i1] = 2;
         tileState[i2] = 2;
+        sparkNonce[i1] += 1;
+        sparkNonce[i2] += 1;
+
         combo += 1;
         final reward = (10 * (1 + combo * 0.12)).round();
         score += reward;
-        showPopupFor(i1);
-        showPopupFor(i2);
+        showPopupFor(i1, '+$reward');
+        showPopupFor(i2, '+$reward');
+
+        if (activeRareBuff > 0 && _random.nextInt(100) < activeRareBuff) {
+          score += 8;
+          showPopupFor(i1, '+희귀약초');
+          activeRareBuff = max(0, activeRareBuff - 8);
+        }
       } else {
         tileState[i1] = 0;
         tileState[i2] = 0;
+        shakeNonce[i1] += 1;
+        shakeNonce[i2] += 1;
         combo = 0;
         remaining = max(0, remaining - 1);
       }
@@ -1912,8 +1972,23 @@ class _GameShellState extends State<GameShell> {
       modalSet?.call(() {});
 
       if (tileState.every((e) => e == 2)) {
-        score += remaining * 3;
-        finishRound();
+        score += remaining * (3 + round);
+        if (round < roundSizes.length - 1) {
+          round += 1;
+          setupRound(keepTimer: false);
+          roundTimer?.cancel();
+          roundTimer = Timer.periodic(const Duration(seconds: 1), (_) {
+            if (finished) return;
+            remaining = max(0, remaining - 1);
+            modalSet?.call(() {});
+            if (remaining <= 0) {
+              finishGame(cleared: false);
+            }
+          });
+          modalSet?.call(() {});
+        } else {
+          finishGame(cleared: true);
+        }
       }
     }
 
@@ -1947,9 +2022,9 @@ class _GameShellState extends State<GameShell> {
         tileState[hidden[1]] = 1;
       }
       modalSet?.call(() {});
-      popupTimers.add(Timer(const Duration(milliseconds: 700), () {
+      popupTimers.add(Timer(const Duration(milliseconds: 760), () {
         for (final idx in hidden.take(2)) {
-          if (tileState[idx] == 1) tileState[idx] = 0;
+          if (idx < tileState.length && tileState[idx] == 1) tileState[idx] = 0;
         }
         modalSet?.call(() {});
       }));
@@ -1982,14 +2057,7 @@ class _GameShellState extends State<GameShell> {
           modalSet = setModal;
           if (!initialized) {
             initialized = true;
-            roundTimer = Timer.periodic(const Duration(seconds: 1), (_) {
-              if (finished) return;
-              remaining = max(0, remaining - 1);
-              modalSet?.call(() {});
-              if (remaining <= 0) {
-                finishRound();
-              }
-            });
+            setupRound();
           }
 
           return Scaffold(
@@ -2001,11 +2069,17 @@ class _GameShellState extends State<GameShell> {
                     padding: const EdgeInsets.fromLTRB(12, 10, 12, 8),
                     child: Row(
                       children: [
+                        _currencyChip(icon: Icons.emoji_events, value: 'R${round + 1}/3', tint: const Color(0xFFE0B44B)),
+                        const SizedBox(width: 8),
                         _currencyChip(icon: Icons.timer, value: '$remaining', tint: const Color(0xFFE0B44B)),
                         const SizedBox(width: 8),
                         _currencyChip(icon: Icons.auto_awesome, value: '$score', tint: const Color(0xFFC7BEDA)),
                         const SizedBox(width: 8),
                         _currencyChip(icon: Icons.bolt, value: '콤보 $combo', tint: const Color(0xFF9C6DFF)),
+                        if (activeRareBuff > 0) ...[
+                          const SizedBox(width: 8),
+                          _currencyChip(icon: Icons.local_florist, value: '희귀+$activeRareBuff%', tint: const Color(0xFF7BDE8E)),
+                        ],
                         const Spacer(),
                         IconButton(
                           onPressed: () {
@@ -2023,61 +2097,35 @@ class _GameShellState extends State<GameShell> {
                       child: GridView.builder(
                         physics: const NeverScrollableScrollPhysics(),
                         itemCount: total,
-                        gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                        gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
                           crossAxisCount: cols,
                           mainAxisSpacing: 10,
                           crossAxisSpacing: 10,
                           childAspectRatio: 1,
                         ),
-                        itemBuilder: (_, i) {
-                          final state = tileState[i];
-                          final isOpen = state != 0;
-                          final matched = state == 2;
-                          return GestureDetector(
-                            onTap: () => onTapTile(i),
-                            child: Stack(
-                              alignment: Alignment.center,
-                              children: [
-                                AnimatedContainer(
-                                  duration: const Duration(milliseconds: 220),
-                                  curve: Curves.easeOut,
-                                  decoration: BoxDecoration(
-                                    borderRadius: BorderRadius.circular(14),
-                                    color: isOpen ? const Color(0xFF2E2442) : const Color(0xFF191729),
-                                    border: Border.all(color: matched ? const Color(0xFFB79C63) : Colors.white24, width: matched ? 1.8 : 1),
-                                    boxShadow: [
-                                      if (matched)
-                                        BoxShadow(color: const Color(0x66B79C63), blurRadius: 10, spreadRadius: 1),
-                                    ],
-                                  ),
-                                  child: Center(
-                                    child: AnimatedSwitcher(
-                                      duration: const Duration(milliseconds: 180),
-                                      child: isOpen
-                                          ? Icon(
-                                              icons[faces[i] % icons.length],
-                                              key: ValueKey('front_${faces[i]}'),
-                                              color: matched ? const Color(0xFFFFD98E) : const Color(0xFFF6F1E8),
-                                              size: 30,
-                                            )
-                                          : const Icon(Icons.help_outline, key: ValueKey('back'), color: Color(0x66F6F1E8), size: 24),
-                                    ),
-                                  ),
-                                ),
-                                IgnorePointer(
-                                  child: AnimatedOpacity(
-                                    duration: const Duration(milliseconds: 180),
-                                    opacity: popupOpacity[i],
-                                    child: Transform.translate(
-                                      offset: const Offset(0, -18),
-                                      child: const Text('+보상', style: TextStyle(color: Color(0xFFFFD98E), fontWeight: FontWeight.w700)),
-                                    ),
-                                  ),
-                                ),
-                              ],
+                        itemBuilder: (_, i) => Stack(
+                          alignment: Alignment.center,
+                          children: [
+                            _HerbFlipTile(
+                              key: ValueKey('r${round}_$i'),
+                              state: tileState[i],
+                              faceIcon: icons[faces[i] % icons.length],
+                              shakeNonce: shakeNonce[i],
+                              sparkNonce: sparkNonce[i],
+                              onTap: () => onTapTile(i),
                             ),
-                          );
-                        },
+                            IgnorePointer(
+                              child: AnimatedOpacity(
+                                duration: const Duration(milliseconds: 200),
+                                opacity: popupOpacity[i],
+                                child: Transform.translate(
+                                  offset: const Offset(0, -18),
+                                  child: Text(popText[i], style: const TextStyle(color: Color(0xFFFFD98E), fontWeight: FontWeight.w700)),
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
                       ),
                     ),
                   ),
@@ -4510,6 +4558,137 @@ class _BottomNavItemState extends State<_BottomNavItem> {
             ],
           ),
         ),
+      ),
+    );
+  }
+}
+
+class _HerbFlipTile extends StatefulWidget {
+  const _HerbFlipTile({
+    super.key,
+    required this.state,
+    required this.faceIcon,
+    required this.onTap,
+    required this.shakeNonce,
+    required this.sparkNonce,
+  });
+
+  final int state; // 0 hidden, 1 revealed, 2 matched
+  final IconData faceIcon;
+  final VoidCallback onTap;
+  final int shakeNonce;
+  final int sparkNonce;
+
+  @override
+  State<_HerbFlipTile> createState() => _HerbFlipTileState();
+}
+
+class _HerbFlipTileState extends State<_HerbFlipTile> with TickerProviderStateMixin {
+  late final AnimationController _flipC;
+  late final AnimationController _shakeC;
+  late final AnimationController _sparkC;
+
+  @override
+  void initState() {
+    super.initState();
+    _flipC = AnimationController(vsync: this, duration: const Duration(milliseconds: 220));
+    _shakeC = AnimationController(vsync: this, duration: const Duration(milliseconds: 240));
+    _sparkC = AnimationController(vsync: this, duration: const Duration(milliseconds: 320));
+    _syncFlip(initial: true);
+  }
+
+  @override
+  void didUpdateWidget(covariant _HerbFlipTile oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.state != widget.state) _syncFlip();
+    if (oldWidget.shakeNonce != widget.shakeNonce) {
+      _shakeC
+        ..stop()
+        ..forward(from: 0);
+    }
+    if (oldWidget.sparkNonce != widget.sparkNonce) {
+      _sparkC
+        ..stop()
+        ..forward(from: 0);
+    }
+  }
+
+  void _syncFlip({bool initial = false}) {
+    final open = widget.state != 0;
+    if (initial) {
+      _flipC.value = open ? 1 : 0;
+      return;
+    }
+    open ? _flipC.forward() : _flipC.reverse();
+  }
+
+  @override
+  void dispose() {
+    _flipC.dispose();
+    _shakeC.dispose();
+    _sparkC.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final matched = widget.state == 2;
+    return GestureDetector(
+      onTap: widget.onTap,
+      child: AnimatedBuilder(
+        animation: Listenable.merge([_flipC, _shakeC, _sparkC]),
+        builder: (_, __) {
+          final flip = _flipC.value;
+          final angle = flip * pi;
+          final showFront = flip > 0.5;
+          final shake = sin(_shakeC.value * pi * 8) * (1 - _shakeC.value) * 7;
+          final sparkScale = 1 + (1 - (_sparkC.value - 0.2).abs().clamp(0, 1)) * 0.08;
+
+          final front = Container(
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(14),
+              color: const Color(0xFF2E2442),
+              border: Border.all(color: matched ? const Color(0xFFB79C63) : Colors.white24, width: matched ? 1.8 : 1),
+              boxShadow: [
+                if (matched) BoxShadow(color: const Color(0x77B79C63), blurRadius: 12, spreadRadius: 1),
+              ],
+            ),
+            child: Center(
+              child: Icon(widget.faceIcon, color: matched ? const Color(0xFFFFD98E) : const Color(0xFFF6F1E8), size: 30),
+            ),
+          );
+
+          final back = Container(
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(14),
+              color: const Color(0xFF191729),
+              border: Border.all(color: Colors.white24),
+            ),
+            child: const Center(
+              child: Icon(Icons.help_outline, color: Color(0x66F6F1E8), size: 24),
+            ),
+          );
+
+          return Transform.translate(
+            offset: Offset(shake, 0),
+            child: Transform.scale(
+              scale: sparkScale,
+              child: Transform(
+                alignment: Alignment.center,
+                transform: v64.Matrix4.identity()
+                  ..setEntry(3, 2, 0.001)
+                  ..rotateY(angle),
+                child: showFront
+                    ? Transform(
+                        alignment: Alignment.center,
+                        transform: v64.Matrix4.identity()..rotateY(pi),
+                        child: front,
+                      )
+                    : back,
+              ),
+            ),
+          );
+        },
       ),
     );
   }
