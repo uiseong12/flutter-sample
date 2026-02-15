@@ -3941,6 +3941,7 @@ class _GameShellState extends State<GameShell> with TickerProviderStateMixin {
   @override
   Widget build(BuildContext context) {
     if (!_loaded) return const Scaffold(body: Center(child: CircularProgressIndicator()));
+    final contentTopInset = _menuIndex == 0 ? 0.0 : (_hudTooltipText != null ? 116.0 : 68.0);
 
     return Scaffold(
       body: Stack(
@@ -3950,13 +3951,17 @@ class _GameShellState extends State<GameShell> with TickerProviderStateMixin {
             onPointerDown: (_) {
               if (_hudTooltipText != null) setState(() => _hudTooltipText = null);
             },
-            child: AnimatedSwitcher(
-              duration: const Duration(milliseconds: 260),
-              transitionBuilder: (child, animation) => FadeTransition(
-                opacity: animation,
-                child: ScaleTransition(scale: Tween<double>(begin: 0.985, end: 1).animate(animation), child: child),
+            child: AnimatedPadding(
+              duration: const Duration(milliseconds: 160),
+              padding: EdgeInsets.only(top: contentTopInset),
+              child: AnimatedSwitcher(
+                duration: const Duration(milliseconds: 260),
+                transitionBuilder: (child, animation) => FadeTransition(
+                  opacity: animation,
+                  child: ScaleTransition(scale: Tween<double>(begin: 0.985, end: 1).animate(animation), child: child),
+                ),
+                child: KeyedSubtree(key: ValueKey(_menuIndex), child: _buildMenuPage(_menuIndex)),
               ),
-              child: KeyedSubtree(key: ValueKey(_menuIndex), child: _buildMenuPage(_menuIndex)),
             ),
           ),
           if (!_menuOverlayOpen) Positioned(left: 0, right: 0, top: 0, child: _topHudOverlay()),
