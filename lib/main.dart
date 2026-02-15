@@ -2582,40 +2582,45 @@ class _GameShellState extends State<GameShell> {
 
   Widget _buildBottomNav() {
     final items = [
-      ('assets/ui/nav_home.png', '홈'),
-      ('assets/ui/nav_story.png', '스토리'),
-      ('assets/ui/nav_date.png', '데이트'),
-      ('assets/ui/nav_work.png', '아르바이트'),
-      ('assets/ui/nav_shop.png', '제작/상점'),
-      ('assets/ui/nav_ledger.png', '장부'),
-      ('assets/ui/nav_codex.png', '도감'),
-      ('assets/ui/nav_settings.png', '설정'),
+      ('assets/ui/nav_gen/nav_home_gen.png', '홈'),
+      ('assets/ui/nav_gen/nav_story_gen.png', '스토리'),
+      ('assets/ui/nav_gen/nav_date_gen.png', '데이트'),
+      ('assets/ui/nav_gen/nav_work_gen.png', '아르바이트'),
+      ('assets/ui/nav_gen/nav_shop_gen.png', '제작/상점'),
+      ('assets/ui/nav_gen/nav_ledger_gen.png', '장부'),
+      ('assets/ui/nav_gen/nav_codex_gen.png', '도감'),
+      ('assets/ui/nav_gen/nav_settings_gen.png', '설정'),
     ];
 
     return SizedBox(
-      height: 92,
-      child: Stack(
-        children: [
-          Positioned.fill(child: Image.asset('assets/ui/bottom_nav_frame_v4.png', fit: BoxFit.fill)),
-          Positioned.fill(
-            child: Row(
-              children: List.generate(
-                items.length,
-                (i) => Expanded(
-                  child: _BottomNavItem(
-                    iconPath: items[i].$1,
-                    label: items[i].$2,
-                    selected: i == _menuIndex,
-                    onTap: () {
-                      _playClick();
-                      setState(() => _menuIndex = i);
-                    },
-                  ),
-                ),
-              ),
-            ),
+      height: 150,
+      child: Container(
+        margin: const EdgeInsets.fromLTRB(8, 0, 8, 6),
+        decoration: BoxDecoration(
+          color: const Color(0xCC2A1D44),
+          borderRadius: BorderRadius.circular(14),
+          border: Border.all(color: const Color(0xFFB79C63), width: 1.2),
+        ),
+        child: GridView.builder(
+          physics: const NeverScrollableScrollPhysics(),
+          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
+          itemCount: items.length,
+          gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+            crossAxisCount: 4,
+            childAspectRatio: 1.6,
+            mainAxisSpacing: 4,
+            crossAxisSpacing: 2,
           ),
-        ],
+          itemBuilder: (context, i) => _BottomNavItem(
+            iconPath: items[i].$1,
+            label: items[i].$2,
+            selected: i == _menuIndex,
+            onTap: () {
+              _playClick();
+              setState(() => _menuIndex = i);
+            },
+          ),
+        ),
       ),
     );
   }
@@ -4082,7 +4087,7 @@ class _BottomNavItemState extends State<_BottomNavItem> {
                         ],
                       ),
                     ),
-                  Image.asset(widget.iconPath, width: 20),
+                  Image.asset(widget.iconPath, width: 24, height: 24, fit: BoxFit.contain),
                 ],
               ),
               const SizedBox(height: 3),
@@ -4091,7 +4096,7 @@ class _BottomNavItemState extends State<_BottomNavItem> {
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
                 style: TextStyle(
-                  fontSize: 11,
+                  fontSize: 10,
                   color: widget.selected ? const Color(0xFFF6F1E8) : const Color(0xCCF6F1E8),
                   fontWeight: widget.selected ? FontWeight.w700 : FontWeight.w500,
                   shadows: const [Shadow(color: Color(0x99000000), blurRadius: 4)],
