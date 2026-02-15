@@ -2679,11 +2679,11 @@ class _GameShellState extends State<GameShell> {
             ),
           if (_menuOverlayOpen)
             Positioned(
-              right: 14,
-              top: _menuIndex == 0 ? 14 : null,
+              right: 12,
+              top: _menuIndex == 0 ? 74 : null,
               bottom: _menuIndex == 0 ? null : 158,
               child: SafeArea(
-                top: _menuIndex == 0,
+                top: _menuIndex != 0,
                 bottom: _menuIndex != 0,
                 child: GestureDetector(
                   onTap: () {
@@ -2691,14 +2691,15 @@ class _GameShellState extends State<GameShell> {
                     setState(() => _menuOverlayOpen = false);
                   },
                   child: Container(
-                    width: 26,
-                    height: 26,
+                    width: 32,
+                    height: 32,
                     decoration: BoxDecoration(
-                      color: const Color(0xCC1D132E),
+                      color: const Color(0xEE1D132E),
                       shape: BoxShape.circle,
-                      border: Border.all(color: const Color(0xFFB79C63)),
+                      border: Border.all(color: const Color(0xFFB79C63), width: 1.2),
+                      boxShadow: const [BoxShadow(color: Color(0x66000000), blurRadius: 6)],
                     ),
-                    child: const Icon(Icons.close, size: 15, color: Color(0xFFF6F1E8)),
+                    child: const Icon(Icons.close, size: 18, color: Color(0xFFF6F1E8)),
                   ),
                 ),
               ),
