@@ -2674,8 +2674,9 @@ class _GameShellState extends State<GameShell> {
             Positioned(
               left: 0,
               right: 0,
-              bottom: 0,
-              child: SafeArea(top: false, child: _buildBottomNav()),
+              // 홈 화면에서는 하단 HUD 위로 올려 겹침 방지
+              bottom: _menuIndex == 0 ? (MediaQuery.of(context).padding.bottom + 108) : 0,
+              child: SafeArea(top: false, bottom: _menuIndex != 0, child: _buildBottomNav()),
             ),
           if (_menuOverlayOpen)
             Positioned(
