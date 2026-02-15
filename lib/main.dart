@@ -227,6 +227,7 @@ class _GameShellState extends State<GameShell> {
   String? _endingRuleId;
   String? _endingRuleType;
   bool _showAffectionOverlay = false;
+  bool _menuOverlayOpen = false;
   final List<String> _logs = [];
   final List<_Sparkle> _sparkles = [];
   final Map<String, int> _lastDelta = {};
@@ -2617,7 +2618,10 @@ class _GameShellState extends State<GameShell> {
             selected: i == _menuIndex,
             onTap: () {
               _playClick();
-              setState(() => _menuIndex = i);
+              setState(() {
+                _menuIndex = i;
+                _menuOverlayOpen = false;
+              });
             },
           ),
         ),
@@ -2663,15 +2667,43 @@ class _GameShellState extends State<GameShell> {
           ),
         ),
       ),
-      body: AnimatedSwitcher(
-        duration: const Duration(milliseconds: 260),
-        transitionBuilder: (child, animation) => FadeTransition(
-          opacity: animation,
-          child: ScaleTransition(scale: Tween<double>(begin: 0.985, end: 1).animate(animation), child: child),
-        ),
-        child: KeyedSubtree(key: ValueKey(_menuIndex), child: _buildMenuPage(_menuIndex)),
+      body: Stack(
+        children: [
+          AnimatedSwitcher(
+            duration: const Duration(milliseconds: 260),
+            transitionBuilder: (child, animation) => FadeTransition(
+              opacity: animation,
+              child: ScaleTransition(scale: Tween<double>(begin: 0.985, end: 1).animate(animation), child: child),
+            ),
+            child: KeyedSubtree(key: ValueKey(_menuIndex), child: _buildMenuPage(_menuIndex)),
+          ),
+          if (_menuOverlayOpen)
+            Positioned(
+              left: 0,
+              right: 0,
+              bottom: 0,
+              child: SafeArea(top: false, child: _buildBottomNav()),
+            ),
+          Positioned(
+            right: 12,
+            bottom: 14,
+            child: SafeArea(
+              top: false,
+              child: FloatingActionButton.extended(
+                heroTag: 'menu_fab',
+                onPressed: () {
+                  _playClick();
+                  setState(() => _menuOverlayOpen = !_menuOverlayOpen);
+                },
+                backgroundColor: const Color(0xFF6A4BFF),
+                foregroundColor: const Color(0xFFF6F1E8),
+                icon: Icon(_menuOverlayOpen ? Icons.close : Icons.menu),
+                label: Text(_menuOverlayOpen ? '닫기' : '메뉴'),
+              ),
+            ),
+          ),
+        ],
       ),
-      bottomNavigationBar: _buildBottomNav(),
     );
   }
 
