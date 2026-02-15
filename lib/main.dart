@@ -188,6 +188,8 @@ class _GameShellState extends State<GameShell> with TickerProviderStateMixin {
   int _menuIndex = 0;
   int _gold = 120;
   int _premiumTokens = 0;
+  int _storyOpenCurrency = 5;
+  DateTime? _storyOpenRechargeAt;
   int _storyIndex = 0;
   int _baseCharm = 12;
   bool _loaded = false;
@@ -1084,12 +1086,19 @@ class _GameShellState extends State<GameShell> with TickerProviderStateMixin {
       });
     });
     _storyLockTicker = Timer.periodic(const Duration(seconds: 1), (_) {
-      if (!mounted || _storyLockUntil == null) return;
-      if (_storyLockRemaining.inSeconds <= 0) {
-        setState(() {
-          _storyLockUntil = null;
-        });
-      } else {
+      if (!mounted) return;
+      var dirty = false;
+      if (_storyLockUntil != null && _storyLockRemaining.inSeconds <= 0) {
+        _storyLockUntil = null;
+        dirty = true;
+      }
+      final before = _storyOpenCurrency;
+      _applyStoryOpenRecharge();
+      if (_storyOpenCurrency != before) {
+        dirty = true;
+        _save();
+      }
+      if (dirty || _storyLockUntil != null) {
         setState(() {});
       }
     });
@@ -1206,6 +1215,9 @@ class _GameShellState extends State<GameShell> with TickerProviderStateMixin {
       final m = jsonDecode(raw) as Map<String, dynamic>;
       _gold = m['gold'] ?? _gold;
       _premiumTokens = m['premiumTokens'] ?? _premiumTokens;
+      _storyOpenCurrency = (m['storyOpenCurrency'] ?? _storyOpenCurrency) as int;
+      final rechargeRaw = m['storyOpenRechargeAt']?.toString();
+      _storyOpenRechargeAt = rechargeRaw == null ? null : DateTime.tryParse(rechargeRaw);
       _storyIndex = (m['storyIndex'] ?? _storyIndex) as int;
       if (_storyIndex < 0) _storyIndex = 0;
       if (_storyIndex >= _story.length) _storyIndex = _story.length - 1;
@@ -1272,6 +1284,8 @@ class _GameShellState extends State<GameShell> with TickerProviderStateMixin {
 
     _lockRouteAtNode15IfNeeded();
     _nodeDialogueIndex = 0;
+    _applyStoryOpenRecharge();
+    _storyOpenRechargeAt ??= DateTime.now().add(const Duration(hours: 6));
     _beginBeatLine();
 
     if (mounted) {
@@ -1289,6 +1303,8 @@ class _GameShellState extends State<GameShell> with TickerProviderStateMixin {
       jsonEncode({
         'gold': _gold,
         'premiumTokens': _premiumTokens,
+        'storyOpenCurrency': _storyOpenCurrency,
+        'storyOpenRechargeAt': _storyOpenRechargeAt?.toIso8601String(),
         'storyIndex': _storyIndex,
         'baseCharm': _baseCharm,
         'equippedOutfitId': _equippedOutfitId,
@@ -1363,16 +1379,26 @@ class _GameShellState extends State<GameShell> with TickerProviderStateMixin {
     await _save();
   }
 
-  Future<void> _unlockStoryNowByHearts() async {
-    const cost = 5;
-    if (_premiumTokens < cost) {
+  void _applyStoryOpenRecharge() {
+    final now = DateTime.now();
+    _storyOpenRechargeAt ??= now.add(const Duration(hours: 6));
+    while (_storyOpenRechargeAt != null && !now.isBefore(_storyOpenRechargeAt!)) {
+      _storyOpenCurrency += 1;
+      _storyOpenRechargeAt = _storyOpenRechargeAt!.add(const Duration(hours: 6));
+    }
+  }
+
+  Future<void> _unlockStoryNowByCurrency() async {
+    _applyStoryOpenRecharge();
+    if (_storyOpenCurrency <= 0) {
       if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('하트(토큰) 부족: 필요 $cost')));
+      final rem = _storyOpenRechargeAt?.difference(DateTime.now()) ?? const Duration(hours: 6);
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('노드 오픈 재화 부족 · 다음 충전 ${_fmtClock(rem.isNegative ? Duration.zero : rem)}')));
       return;
     }
     _playReward();
     setState(() {
-      _premiumTokens -= cost;
+      _storyOpenCurrency -= 1;
       _storyLockUntil = null;
     });
     await _save();
@@ -4080,6 +4106,8 @@ class _GameShellState extends State<GameShell> with TickerProviderStateMixin {
                   _currencyChip(icon: Icons.auto_awesome, value: _evidenceOwned.length.toString(), tint: const Color(0xFFC7BEDA)),
                   const SizedBox(width: 8),
                   _currencyChip(icon: Icons.circle, value: _premiumTokens.toString(), tint: const Color(0xFF9C6DFF)),
+                  const SizedBox(width: 8),
+                  _currencyChip(icon: Icons.vpn_key_rounded, value: _storyOpenCurrency.toString(), tint: const Color(0xFFE7B96D)),
                   const Spacer(),
                   const Text('📘1  💗1  🔧1', maxLines: 1, overflow: TextOverflow.ellipsis, style: TextStyle(fontSize: 12, color: Color(0xCCF6F1E8))),
                 ],
@@ -4316,6 +4344,7 @@ class _GameShellState extends State<GameShell> with TickerProviderStateMixin {
     final cleared = _storySelections.where((e) => e != null).length;
     final preview = _story[_storyIndex];
     final lockRem = _storyLockRemaining;
+    final rechargeRem = (_storyOpenRechargeAt ?? DateTime.now().add(const Duration(hours: 6))).difference(DateTime.now());
     final mq = MediaQuery.of(context);
     final usableH = mq.size.height - mq.padding.top - mq.padding.bottom;
     final panelH = (usableH * 0.72).clamp(520.0, 760.0);
@@ -4447,7 +4476,7 @@ class _GameShellState extends State<GameShell> with TickerProviderStateMixin {
                                     ),
                                   ),
                                   const SizedBox(height: 6),
-                                  const Text('광고로 단축하거나, 하트로 즉시 해금할 수 있어요.', style: TextStyle(fontSize: 11, color: Color(0xCCF6F1E8))),
+                                  Text('보유 노드 재화: $_storyOpenCurrency · 다음 충전 ${_fmtClock(rechargeRem.isNegative ? Duration.zero : rechargeRem)}', style: const TextStyle(fontSize: 11, color: Color(0xCCF6F1E8))),
                                   const SizedBox(height: 6),
                                   Row(
                                     children: [
@@ -4462,8 +4491,8 @@ class _GameShellState extends State<GameShell> with TickerProviderStateMixin {
                                       Expanded(
                                         child: FilledButton(
                                           style: _fantasyButtonStyle(filled: true),
-                                          onPressed: _unlockStoryNowByHearts,
-                                          child: const Text('하트 5개 즉시 개방'),
+                                          onPressed: _unlockStoryNowByCurrency,
+                                          child: const Text('노드 재화 1개 즉시 개방'),
                                         ),
                                       ),
                                     ],
