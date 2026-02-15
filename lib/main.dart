@@ -2914,6 +2914,13 @@ class _GameShellState extends State<GameShell> {
   Widget _storyProgressPage() {
     final cleared = _storySelections.where((e) => e != null).length;
     final preview = _story[_storyIndex];
+    final mq = MediaQuery.of(context);
+    final usableH = mq.size.height - mq.padding.top - mq.padding.bottom;
+    final panelH = (usableH * 0.72).clamp(520.0, 760.0);
+    final headerTop = panelH * 0.02;
+    final startTop = panelH * 0.15;
+    final mapTop = panelH * 0.28;
+    final mapBottom = panelH * 0.08;
 
     return ListView(
       padding: const EdgeInsets.all(14),
@@ -2921,7 +2928,7 @@ class _GameShellState extends State<GameShell> {
         ClipRRect(
           borderRadius: BorderRadius.circular(14),
           child: SizedBox(
-            height: 640,
+            height: panelH,
             child: Stack(
               children: [
                 Positioned.fill(
@@ -2938,7 +2945,7 @@ class _GameShellState extends State<GameShell> {
                 Positioned(
                   left: 12,
                   right: 12,
-                  top: 12,
+                  top: headerTop,
                   child: Container(
                     padding: const EdgeInsets.all(10),
                     decoration: BoxDecoration(
@@ -2966,14 +2973,14 @@ class _GameShellState extends State<GameShell> {
                 Positioned(
                   left: 0,
                   right: 0,
-                  top: 148,
-                  bottom: 128,
-                  child: _branchRouteMap(),
+                  top: mapTop,
+                  bottom: mapBottom,
+                  child: _branchRouteMap(height: panelH - mapTop - mapBottom),
                 ),
                 Positioned(
                   left: 12,
                   right: 12,
-                  top: 96,
+                  top: startTop,
                   child: SafeArea(
                     bottom: false,
                     child: Container(
@@ -3066,9 +3073,9 @@ class _GameShellState extends State<GameShell> {
     );
   }
 
-  Widget _branchRouteMap() {
+  Widget _branchRouteMap({required double height}) {
     // 30-stage vertical route with in-between branch-like lane changes
-    const viewH = 520.0;
+    final viewH = height.clamp(280.0, 620.0).toDouble();
     const stepGap = 126.0;
     const laneX = [34.0, 174.0, 314.0];
 
