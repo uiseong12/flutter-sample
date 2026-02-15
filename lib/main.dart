@@ -2677,12 +2677,14 @@ class _GameShellState extends State<GameShell> {
               bottom: 0,
               child: SafeArea(top: false, child: _buildBottomNav()),
             ),
-          if (_menuOverlayOpen && _menuIndex != 0)
+          if (_menuOverlayOpen)
             Positioned(
               right: 14,
-              bottom: 158,
+              top: _menuIndex == 0 ? 14 : null,
+              bottom: _menuIndex == 0 ? null : 158,
               child: SafeArea(
-                top: false,
+                top: _menuIndex == 0,
+                bottom: _menuIndex != 0,
                 child: GestureDetector(
                   onTap: () {
                     _playClick();
