@@ -2758,130 +2758,146 @@ class _GameShellState extends State<GameShell> {
   Widget _homePage() {
     final outfit = _outfits.firstWhere((e) => e.id == _equippedOutfitId);
 
+    Widget miniMood(Expression exp, String label) {
+      ColorFilter? filter;
+      switch (exp) {
+        case Expression.smile:
+          filter = const ColorFilter.mode(Color(0x14FFD54F), BlendMode.overlay);
+          break;
+        case Expression.angry:
+          filter = const ColorFilter.mode(Color(0x26FF5252), BlendMode.overlay);
+          break;
+        case Expression.blush:
+          filter = const ColorFilter.mode(Color(0x22F06292), BlendMode.overlay);
+          break;
+        case Expression.sad:
+          filter = const ColorFilter.mode(Color(0x2A90CAF9), BlendMode.overlay);
+          break;
+        case Expression.neutral:
+          filter = null;
+          break;
+      }
+      final sprite = _fullBodySprite(_playerAvatar, width: 52);
+      return Container(
+        width: 58,
+        height: 58,
+        decoration: BoxDecoration(
+          color: Colors.black.withOpacity(0.45),
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(color: Colors.white24),
+        ),
+        child: Stack(
+          children: [
+            Center(child: filter == null ? sprite : ColorFiltered(colorFilter: filter, child: sprite)),
+            Positioned(
+              right: 4,
+              bottom: 2,
+              child: Text(label, style: const TextStyle(fontSize: 11)),
+            ),
+          ],
+        ),
+      );
+    }
+
     return SafeArea(
-      child: Column(
+      child: Stack(
         children: [
-          const SizedBox.shrink(),
-          Expanded(
+          Positioned.fill(
+            child: Image.asset('assets/generated/bg_castle/001-medieval-fantasy-royal-castle-courtyard-.png', fit: BoxFit.cover),
+          ),
+          Positioned.fill(child: Container(color: Colors.black.withOpacity(0.18))),
+
+          // compact top HUD
+          Positioned(
+            left: 10,
+            right: 10,
+            top: 6,
+            child: _glassPanel(
+              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+              child: Row(
+                children: [
+                  _currencyChip(icon: Icons.monetization_on, value: _gold.toString(), tint: const Color(0xFFE0B44B)),
+                  const SizedBox(width: 8),
+                  _currencyChip(icon: Icons.auto_awesome, value: _evidenceOwned.length.toString(), tint: const Color(0xFFC7BEDA)),
+                  const SizedBox(width: 8),
+                  _currencyChip(icon: Icons.circle, value: _premiumTokens.toString(), tint: const Color(0xFF9C6DFF)),
+                  const Spacer(),
+                  const Text('📘1  💗1  🔧1', maxLines: 1, overflow: TextOverflow.ellipsis, style: TextStyle(fontSize: 12, color: Color(0xCCF6F1E8))),
+                ],
+              ),
+            ),
+          ),
+
+          // character stage
+          Positioned.fill(
+            top: 72,
+            bottom: 150,
             child: Stack(
               children: [
-                Positioned.fill(
-                  child: Image.asset('assets/generated/bg_castle/001-medieval-fantasy-royal-castle-courtyard-.png', fit: BoxFit.cover),
-                ),
-                Positioned.fill(child: Container(color: Colors.black.withOpacity(0.2))),
                 Align(
                   alignment: Alignment.center,
-                  child: Stack(
-                    alignment: Alignment.center,
+                  child: _fullBodySprite(_playerAvatar, width: 330),
+                ),
+                Positioned(
+                  left: 14,
+                  top: 42,
+                  child: Column(
                     children: [
-                      Positioned(bottom: 20, child: Image.asset('assets/ui/ground_shadow.png', width: 320)),
-                      AnimatedSwitcher(
-                        duration: const Duration(milliseconds: 260),
-                        child: SizedBox(
-                          key: ValueKey(_playerAvatar),
-                          child: _fullBodySprite(_playerAvatar, width: 250),
-                        ),
-                      ),
-                      Positioned(left: 18, top: 120, child: GestureDetector(onTap: _showQuickInventory, child: Image.asset('assets/ui/equip_slot_ring.png', width: 48))),
-                      Positioned(right: 18, top: 120, child: GestureDetector(onTap: _showQuickInventory, child: Image.asset('assets/ui/equip_slot_brooch.png', width: 48))),
-                      Positioned(left: 24, bottom: 120, child: GestureDetector(onTap: _showQuickInventory, child: Image.asset('assets/ui/equip_slot_cloak.png', width: 48))),
-                      Positioned(right: 24, bottom: 120, child: GestureDetector(onTap: _showQuickInventory, child: Image.asset('assets/ui/equip_slot_dress.png', width: 48))),
+                      miniMood(Expression.neutral, '🙂'),
+                      const SizedBox(height: 8),
+                      miniMood(Expression.smile, '😊'),
+                      const SizedBox(height: 8),
+                      miniMood(Expression.blush, '😳'),
                     ],
-                  ),
-                ),
-                Positioned(
-                  left: 12,
-                  bottom: 10,
-                  child: FilledButton.icon(
-                    onPressed: () {
-                      _playClick();
-                      setState(() => _showAffectionOverlay = !_showAffectionOverlay);
-                    },
-                    icon: Icon(_showAffectionOverlay ? Icons.expand_more : Icons.expand_less),
-                    label: Text(_showAffectionOverlay ? '호감도 닫기' : '호감도 열기'),
-                  ),
-                ),
-                Positioned(
-                  left: 12,
-                  right: 12,
-                  top: 12,
-                  child: AnimatedOpacity(
-                    duration: const Duration(milliseconds: 180),
-                    opacity: _showAffectionOverlay ? 1 : 0,
-                    child: IgnorePointer(
-                      ignoring: !_showAffectionOverlay,
-                      child: Container(
-                        padding: const EdgeInsets.all(12),
-                        decoration: BoxDecoration(color: Colors.black.withOpacity(0.72), borderRadius: BorderRadius.circular(12), border: Border.all(color: Colors.white24)),
-                        child: Column(
-                          mainAxisSize: MainAxisSize.min,
-                          children: _characters.map((c) => Padding(
-                            padding: const EdgeInsets.only(bottom: 8),
-                            child: Row(
-                              children: [
-                                SizedBox(width: 36, child: Text(c.name, style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold))),
-                                const SizedBox(width: 8),
-                                SizedBox(width: 66, child: Text(_relationshipLabel(_relationshipStates[c.name] ?? RelationshipState.strange), style: const TextStyle(color: Colors.amberAccent, fontSize: 11))),
-                                const SizedBox(width: 8),
-                                Expanded(child: LinearProgressIndicator(value: c.affection / 100, minHeight: 8)),
-                                const SizedBox(width: 8),
-                                SizedBox(width: 30, child: Text('${c.affection}', style: const TextStyle(color: Colors.white))),
-                                SizedBox(width: 32, child: _deltaBadge(c.name)),
-                              ],
-                            ),
-                          )).toList(),
-                        ),
-                      ),
-                    ),
                   ),
                 ),
               ],
             ),
           ),
-          Padding(
-            padding: EdgeInsets.fromLTRB(12, 8, 12, MediaQuery.of(context).padding.bottom + 12),
+
+          // bottom integrated HUD
+          Positioned(
+            left: 12,
+            right: 12,
+            bottom: MediaQuery.of(context).padding.bottom + 8,
             child: _glassPanel(
               child: Column(
-                mainAxisSize: MainAxisSize.min,
                 crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisSize: MainAxisSize.min,
                 children: [
-                  Text('오늘의 추천', style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: Color(0xE6F6F1E8))),
-                  const SizedBox(height: 4),
-                  const Text('추천 데이트: 신뢰 + 관계 상승', maxLines: 2, overflow: TextOverflow.ellipsis, style: TextStyle(fontSize: 13, color: Color(0xBFF6F1E8))),
-                  const SizedBox(height: 2),
-                  const Text('추천 알바: 골드/재료', maxLines: 1, overflow: TextOverflow.ellipsis, style: TextStyle(fontSize: 13, color: Color(0x99F6F1E8))),
-                  const SizedBox(height: 6),
-                  Text('장착: ${outfit.name} · 총 매력 $_totalCharm', maxLines: 1, overflow: TextOverflow.ellipsis, style: const TextStyle(fontSize: 12, color: Color(0x99F6F1E8))),
+                  Text('오늘의 추천 · 장착 ${outfit.name} · 총 매력 $_totalCharm', maxLines: 1, overflow: TextOverflow.ellipsis, style: const TextStyle(fontSize: 12, color: Color(0xBFF6F1E8))),
                   const SizedBox(height: 10),
+                  SizedBox(
+                    width: double.infinity,
+                    height: 56,
+                    child: ElevatedButton(
+                      onPressed: () => setState(() => _menuIndex = 1),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: const Color(0xFF8A67FF),
+                        foregroundColor: const Color(0xFFF6F1E8),
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                      ),
+                      child: const Text('다음 노드 진입', style: TextStyle(fontSize: 17, fontWeight: FontWeight.w700)),
+                    ),
+                  ),
+                  const SizedBox(height: 8),
                   Row(
                     children: [
-                      Expanded(
-                        child: SizedBox(
-                          height: 56,
-                          child: ElevatedButton(
-                            onPressed: () => setState(() => _menuIndex = 1),
-                            style: ElevatedButton.styleFrom(shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16))),
-                            child: const Text('다음 노드', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600)),
-                          ),
-                        ),
+                      TextButton.icon(
+                        onPressed: () {
+                          _playClick();
+                          setState(() => _showAffectionOverlay = !_showAffectionOverlay);
+                        },
+                        icon: Icon(_showAffectionOverlay ? Icons.expand_less : Icons.expand_more, color: const Color(0xCCF6F1E8)),
+                        label: Text(_showAffectionOverlay ? '호감도 닫기' : '호감도 열기', style: const TextStyle(color: Color(0xCCF6F1E8))),
                       ),
-                      const SizedBox(width: 8),
-                      SizedBox(
-                        width: 56,
-                        height: 56,
-                        child: ElevatedButton(
-                          onPressed: () {
-                            _playClick();
-                            setState(() => _menuOverlayOpen = !_menuOverlayOpen);
-                          },
-                          style: ElevatedButton.styleFrom(
-                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-                            backgroundColor: const Color(0xFF6A4BFF),
-                            foregroundColor: const Color(0xFFF6F1E8),
-                            padding: EdgeInsets.zero,
-                          ),
-                          child: Icon(_menuOverlayOpen ? Icons.close : Icons.grid_view_rounded, size: 22),
-                        ),
+                      const Spacer(),
+                      IconButton(
+                        onPressed: () {
+                          _playClick();
+                          setState(() => _menuOverlayOpen = !_menuOverlayOpen);
+                        },
+                        icon: Icon(_menuOverlayOpen ? Icons.close : Icons.grid_view_rounded, color: const Color(0xFFF6F1E8)),
                       ),
                     ],
                   ),
