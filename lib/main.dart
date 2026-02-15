@@ -2905,25 +2905,15 @@ class _GameShellState extends State<GameShell> {
               bottom: MediaQuery.of(context).padding.bottom + 8,
               child: _glassPanel(
                 padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
-                child: Row(
-                  children: [
-                    TextButton.icon(
-                      onPressed: () {
-                        _playClick();
-                        setState(() => _showAffectionOverlay = !_showAffectionOverlay);
-                      },
-                      icon: Icon(_showAffectionOverlay ? Icons.expand_less : Icons.expand_more, color: const Color(0xCCF6F1E8)),
-                      label: Text(_showAffectionOverlay ? '호감도 닫기' : '호감도 열기', style: const TextStyle(color: Color(0xCCF6F1E8))),
-                    ),
-                    const Spacer(),
-                    IconButton(
-                      onPressed: () {
-                        _playClick();
-                        setState(() => _menuOverlayOpen = true);
-                      },
-                      icon: const Icon(Icons.grid_view_rounded, color: Color(0xFFF6F1E8)),
-                    ),
-                  ],
+                child: Align(
+                  alignment: Alignment.centerRight,
+                  child: IconButton(
+                    onPressed: () {
+                      _playClick();
+                      setState(() => _menuOverlayOpen = true);
+                    },
+                    icon: const Icon(Icons.grid_view_rounded, color: Color(0xFFF6F1E8)),
+                  ),
                 ),
               ),
             ),
