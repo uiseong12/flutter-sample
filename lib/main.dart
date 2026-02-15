@@ -1839,13 +1839,14 @@ class _GameShellState extends State<GameShell> with TickerProviderStateMixin {
     bool overdrive = false;
     bool finished = false;
 
-    String judgeText = 'READY';
+    String judgeText = 'TAP!';
     Color judgeColor = const Color(0xFFD5CDB8);
     String fxText = '✦';
     Color fxColor = const Color(0x66FFD76A);
     double fxOpacity = 0;
     double judgeScale = 1;
     double panelShakeX = 0;
+    bool hammerPressed = false;
 
     Timer? zoneCycleTimer;
     Timer? zoneWarnTimer;
@@ -2126,9 +2127,49 @@ class _GameShellState extends State<GameShell> with TickerProviderStateMixin {
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Text('오늘의 주문: $craftedItem', style: const TextStyle(color: Color(0xFFF6F1E8), fontSize: 20, fontWeight: FontWeight.w800)),
-                          const SizedBox(height: 4),
-                          Text('패턴: ${craftedItem == '단검' ? '고속 템포 · 넓은 PERFECT' : craftedItem == '도끼' ? '균형 템포 · 표준 PERFECT' : '중장 템포 · 좁은 PERFECT'}', style: const TextStyle(color: Color(0xFFD2CCE0), fontSize: 13)),
+                          Container(
+                            padding: const EdgeInsets.all(10),
+                            decoration: BoxDecoration(
+                              color: const Color(0xFF231F35),
+                              borderRadius: BorderRadius.circular(14),
+                              border: Border.all(color: const Color(0x665D517C)),
+                            ),
+                            child: Row(
+                              children: [
+                                Container(
+                                  width: 64,
+                                  height: 64,
+                                  decoration: BoxDecoration(
+                                    color: const Color(0xFF2B2540),
+                                    borderRadius: BorderRadius.circular(12),
+                                    border: Border.all(color: const Color(0x88C9A96A)),
+                                  ),
+                                  child: Center(
+                                    child: Text(
+                                      craftedItem == '단검' ? '🗡️' : (craftedItem == '도끼' ? '🪓' : '🛡️'),
+                                      style: const TextStyle(fontSize: 30),
+                                    ),
+                                  ),
+                                ),
+                                const SizedBox(width: 10),
+                                Expanded(
+                                  child: Column(
+                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    children: [
+                                      Text('오늘의 주문: $craftedItem', style: const TextStyle(color: Color(0xFFF6F1E8), fontSize: 18, fontWeight: FontWeight.w800)),
+                                      const SizedBox(height: 4),
+                                      Text(
+                                        craftedItem == '단검' ? '속도 빠름 · PERFECT 넓음' : (craftedItem == '도끼' ? '균형형 · 표준 판정' : '속도 느림 · PERFECT 작음'),
+                                        style: const TextStyle(color: Color(0xFFD2CCE0), fontSize: 12),
+                                      ),
+                                      const SizedBox(height: 4),
+                                      Text('난이도 ${craftedItem == '단검' ? '★★☆' : (craftedItem == '도끼' ? '★★★' : '★★★★')}', style: const TextStyle(color: Color(0xFFF4C16E), fontSize: 12)),
+                                    ],
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
                           const SizedBox(height: 10),
                           Center(
                             child: Stack(
@@ -2246,24 +2287,77 @@ class _GameShellState extends State<GameShell> with TickerProviderStateMixin {
                       ),
                     ),
                     const Spacer(),
-                    SizedBox(
-                      width: double.infinity,
-                      height: 92,
-                      child: ElevatedButton(
-                        onPressed: onTapForge,
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: const Color(0xFF8A67FF),
-                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
-                          elevation: 10,
-                        ),
-                        child: const Column(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            Text('두드리기', style: TextStyle(fontSize: 34, fontWeight: FontWeight.w900, color: Color(0xFFF6F1E8))),
-                            Text('TAP', style: TextStyle(fontSize: 22, color: Color(0xFFF6F1E8))),
-                          ],
-                        ),
-                      ),
+                    AnimatedBuilder(
+                      animation: swing,
+                      builder: (_, __) {
+                        final pulse = 0.98 + (sin(swing.value * pi * 2) * 0.02);
+                        return Center(
+                          child: Transform.scale(
+                            scale: hammerPressed ? 0.94 : pulse,
+                            child: GestureDetector(
+                              onTapDown: (_) => modalSet?.call(() => hammerPressed = true),
+                              onTapCancel: () => modalSet?.call(() => hammerPressed = false),
+                              onTapUp: (_) => modalSet?.call(() => hammerPressed = false),
+                              onTap: onTapForge,
+                              child: SizedBox(
+                                width: MediaQuery.of(context).size.width * 0.38,
+                                height: MediaQuery.of(context).size.width * 0.38,
+                                child: Stack(
+                                  alignment: Alignment.center,
+                                  children: [
+                                    Positioned(
+                                      bottom: 10,
+                                      child: Container(
+                                        width: MediaQuery.of(context).size.width * 0.28,
+                                        height: 20,
+                                        decoration: BoxDecoration(
+                                          color: const Color(0x66000000),
+                                          borderRadius: BorderRadius.circular(999),
+                                        ),
+                                      ),
+                                    ),
+                                    Container(
+                                      decoration: BoxDecoration(
+                                        shape: BoxShape.circle,
+                                        gradient: const LinearGradient(
+                                          begin: Alignment.topLeft,
+                                          end: Alignment.bottomRight,
+                                          colors: [Color(0xFF9C78FF), Color(0xFF6F49D9)],
+                                        ),
+                                        border: Border.all(color: const Color(0xFFD8BD7A), width: 2),
+                                        boxShadow: [
+                                          BoxShadow(
+                                            color: hammerPressed ? const Color(0x44381A8A) : const Color(0x774A2AA3),
+                                            blurRadius: hammerPressed ? 6 : 14,
+                                            offset: Offset(0, hammerPressed ? 2 : 6),
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                    Container(
+                                      width: MediaQuery.of(context).size.width * 0.26,
+                                      height: MediaQuery.of(context).size.width * 0.18,
+                                      decoration: const BoxDecoration(
+                                        shape: BoxShape.circle,
+                                        gradient: RadialGradient(colors: [Color(0x55FFFFFF), Color(0x00FFFFFF)], radius: 0.9),
+                                      ),
+                                    ),
+                                    const Column(
+                                      mainAxisAlignment: MainAxisAlignment.center,
+                                      children: [
+                                        Text('🔨', style: TextStyle(fontSize: 34)),
+                                        SizedBox(height: 2),
+                                        Text('두드리기', style: TextStyle(fontSize: 20, fontWeight: FontWeight.w900, color: Color(0xFFF6F1E8))),
+                                        Text('✦', style: TextStyle(color: Color(0xFFF4C16E))),
+                                      ],
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ),
+                          ),
+                        );
+                      },
                     ),
                     const SizedBox(height: 10),
                     SizedBox(
