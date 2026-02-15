@@ -4050,6 +4050,12 @@ class _GameShellState extends State<GameShell> with TickerProviderStateMixin {
         : dayPhase == 1
             ? const Color(0x22FF914D)
             : const Color(0x334876C5);
+    final equippedOutfit = _outfits.firstWhere((o) => o.id == _equippedOutfitId, orElse: () => _outfits.first);
+    final auraColor = equippedOutfit.charmBonus >= 8
+        ? const Color(0x66FFD78E)
+        : equippedOutfit.charmBonus >= 5
+            ? const Color(0x5586B6FF)
+            : const Color(0x44CDA8FF);
 
     return SafeArea(
       child: Stack(
@@ -4089,15 +4095,28 @@ class _GameShellState extends State<GameShell> with TickerProviderStateMixin {
               children: [
                 Align(
                   alignment: Alignment.center,
-                  child: GestureDetector(
-                    onTap: () {
-                      _playClick();
-                      setState(() {
-                        _homeAmbientLine = ['좋아, 오늘은 어떤 루트로 갈래?', '새로운 코디가 꽤 마음에 들어.', '조금만 더, 관계를 쌓아보자.'][_random.nextInt(3)];
-                        _homeAmbientTick += 1;
-                      });
-                    },
-                    child: _fullBodySprite(_playerAvatar, width: 330),
+                  child: Stack(
+                    alignment: Alignment.center,
+                    children: [
+                      AnimatedContainer(
+                        duration: const Duration(milliseconds: 700),
+                        width: 286,
+                        height: 420,
+                        decoration: BoxDecoration(
+                          gradient: RadialGradient(colors: [auraColor, const Color(0x00000000)], radius: 0.78),
+                        ),
+                      ),
+                      GestureDetector(
+                        onTap: () {
+                          _playClick();
+                          setState(() {
+                            _homeAmbientLine = ['좋아, 오늘은 어떤 루트로 갈래?', '새로운 코디가 꽤 마음에 들어.', '조금만 더, 관계를 쌓아보자.'][_random.nextInt(3)];
+                            _homeAmbientTick += 1;
+                          });
+                        },
+                        child: _fullBodySprite(_playerAvatar, width: 330),
+                      ),
+                    ],
                   ),
                 ),
                 Positioned(
@@ -4389,6 +4408,18 @@ class _GameShellState extends State<GameShell> with TickerProviderStateMixin {
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
                                 Text('🔒 다음 노드 개방까지 ${_fmtClock(lockRem)}', style: const TextStyle(color: Color(0xFFF9E7C4), fontWeight: FontWeight.w700)),
+                                const SizedBox(height: 6),
+                                ClipRRect(
+                                  borderRadius: BorderRadius.circular(999),
+                                  child: LinearProgressIndicator(
+                                    value: 1 - (lockRem.inSeconds / (3 * 3600 + 20 * 60)).clamp(0, 1),
+                                    minHeight: 8,
+                                    backgroundColor: const Color(0xFF2A2235),
+                                    valueColor: const AlwaysStoppedAnimation(Color(0xFFE7B96D)),
+                                  ),
+                                ),
+                                const SizedBox(height: 6),
+                                const Text('광고로 단축하거나, 하트로 즉시 해금할 수 있어요.', style: TextStyle(fontSize: 11, color: Color(0xCCF6F1E8))),
                                 const SizedBox(height: 6),
                                 Row(
                                   children: [
@@ -5422,53 +5453,63 @@ class _GameShellState extends State<GameShell> with TickerProviderStateMixin {
           final nextNeed = toNext(c);
           return Card(
             color: const Color(0xFFF4EEE2),
-            child: Padding(
-              padding: const EdgeInsets.all(10),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Row(
-                    children: [
-                      Container(
-                        width: 56,
-                        height: 72,
-                        decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(8)),
-                        child: _characterImageWithExpression(c, width: 52),
-                      ),
-                      const SizedBox(width: 10),
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(c.name, style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 16)),
-                            Text(_relationshipLabel(_relationshipStates[c.name] ?? RelationshipState.strange)),
-                            const SizedBox(height: 4),
-                            LinearProgressIndicator(value: c.affection / 100, minHeight: 8),
-                            const SizedBox(height: 3),
-                            Text('다음 해금 +$nextNeed (보이스 1 + 스토리 1)', style: const TextStyle(fontSize: 12, color: Color(0xFF5B4A7B))),
-                          ],
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(14),
+              side: const BorderSide(color: Color(0xCCB99762)),
+            ),
+            child: Container(
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(14),
+                gradient: const LinearGradient(begin: Alignment.topLeft, end: Alignment.bottomRight, colors: [Color(0xFFF9F1E1), Color(0xFFECDDCA)]),
+              ),
+              child: Padding(
+                padding: const EdgeInsets.all(10),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      children: [
+                        Container(
+                          width: 56,
+                          height: 72,
+                          decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(8)),
+                          child: _characterImageWithExpression(c, width: 52),
                         ),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 8),
-                  Row(
-                    children: [
-                      Expanded(
-                        child: SegmentedButton<String>(
-                          segments: const [
-                            ButtonSegment(value: 'short', label: Text('짧음')),
-                            ButtonSegment(value: 'event', label: Text('사건')),
-                          ],
-                          selected: {mode},
-                          onSelectionChanged: (s) => setState(() => _dateModeByCharacter[c.name] = s.first),
+                        const SizedBox(width: 10),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(c.name, style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 16)),
+                              Text(_relationshipLabel(_relationshipStates[c.name] ?? RelationshipState.strange)),
+                              const SizedBox(height: 4),
+                              LinearProgressIndicator(value: c.affection / 100, minHeight: 8),
+                              const SizedBox(height: 3),
+                              Text('다음 해금 +$nextNeed (보이스 1 + 스토리 1)', style: const TextStyle(fontSize: 12, color: Color(0xFF5B4A7B))),
+                            ],
+                          ),
                         ),
-                      ),
-                      const SizedBox(width: 8),
-                      _sealPrimaryButton('시작', () => startDate(c)),
-                    ],
-                  ),
-                ],
+                      ],
+                    ),
+                    const SizedBox(height: 8),
+                    Row(
+                      children: [
+                        Expanded(
+                          child: SegmentedButton<String>(
+                            segments: const [
+                              ButtonSegment(value: 'short', label: Text('짧음')),
+                              ButtonSegment(value: 'event', label: Text('사건')),
+                            ],
+                            selected: {mode},
+                            onSelectionChanged: (s) => setState(() => _dateModeByCharacter[c.name] = s.first),
+                          ),
+                        ),
+                        const SizedBox(width: 8),
+                        _sealPrimaryButton('시작', () => startDate(c)),
+                      ],
+                    ),
+                  ],
+                ),
               ),
             ),
           );
