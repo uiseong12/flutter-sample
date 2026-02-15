@@ -3071,11 +3071,9 @@ class _GameShellState extends State<GameShell> {
                     ),
                   ),
                 ),
-              ],
-            ),
-          ],
-        ),
-      );
+        ],
+      ),
+    );
   }
 
   String _nodeTypeIconAsset(int beat) {
