@@ -229,6 +229,7 @@ class _GameShellState extends State<GameShell> {
   String? _endingRuleType;
   bool _showAffectionOverlay = false;
   bool _menuOverlayOpen = false;
+  bool _showRecommendPanel = false;
   final List<String> _logs = [];
   final List<_Sparkle> _sparkles = [];
   final Map<String, int> _lastDelta = {};
@@ -2831,7 +2832,7 @@ class _GameShellState extends State<GameShell> {
           // character stage
           Positioned.fill(
             top: 72,
-            bottom: 150,
+            bottom: 108,
             child: Stack(
               children: [
                 Align(
@@ -2851,56 +2852,76 @@ class _GameShellState extends State<GameShell> {
                     ],
                   ),
                 ),
+                if (!_menuOverlayOpen)
+                  Positioned(
+                    right: 12,
+                    top: 10,
+                    child: GestureDetector(
+                      onTap: () {
+                        _playClick();
+                        setState(() => _showRecommendPanel = !_showRecommendPanel);
+                      },
+                      child: AnimatedContainer(
+                        duration: const Duration(milliseconds: 260),
+                        curve: Curves.easeOutCubic,
+                        width: _showRecommendPanel ? 255 : 92,
+                        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+                        decoration: BoxDecoration(
+                          color: Colors.black.withOpacity(0.58),
+                          borderRadius: BorderRadius.circular(16),
+                          border: Border.all(color: Colors.white24),
+                        ),
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            const Icon(Icons.keyboard_double_arrow_left, size: 16, color: Color(0xCCF6F1E8)),
+                            const SizedBox(width: 6),
+                            const Text('오늘의 추천', style: TextStyle(fontSize: 12, color: Color(0xE6F6F1E8))),
+                            if (_showRecommendPanel) ...[
+                              const SizedBox(width: 8),
+                              Expanded(
+                                child: Text(
+                                  '장착 ${outfit.name} · 총 매력 $_totalCharm',
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
+                                  style: const TextStyle(fontSize: 11, color: Color(0x99F6F1E8)),
+                                ),
+                              ),
+                            ],
+                          ],
+                        ),
+                      ),
+                    ),
+                  ),
               ],
             ),
           ),
 
-          // bottom integrated HUD
+          // compact bottom HUD (without next-node CTA)
           if (!_menuOverlayOpen)
             Positioned(
               left: 12,
               right: 12,
               bottom: MediaQuery.of(context).padding.bottom + 8,
               child: _glassPanel(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  mainAxisSize: MainAxisSize.min,
+                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
+                child: Row(
                   children: [
-                    Text('오늘의 추천 · 장착 ${outfit.name} · 총 매력 $_totalCharm', maxLines: 1, overflow: TextOverflow.ellipsis, style: const TextStyle(fontSize: 12, color: Color(0xBFF6F1E8))),
-                    const SizedBox(height: 10),
-                    SizedBox(
-                      width: double.infinity,
-                      height: 56,
-                      child: ElevatedButton(
-                        onPressed: () => setState(() => _menuIndex = 1),
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: const Color(0xFF8A67FF),
-                          foregroundColor: const Color(0xFFF6F1E8),
-                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-                        ),
-                        child: const Text('다음 노드 진입', style: TextStyle(fontSize: 17, fontWeight: FontWeight.w700)),
-                      ),
+                    TextButton.icon(
+                      onPressed: () {
+                        _playClick();
+                        setState(() => _showAffectionOverlay = !_showAffectionOverlay);
+                      },
+                      icon: Icon(_showAffectionOverlay ? Icons.expand_less : Icons.expand_more, color: const Color(0xCCF6F1E8)),
+                      label: Text(_showAffectionOverlay ? '호감도 닫기' : '호감도 열기', style: const TextStyle(color: Color(0xCCF6F1E8))),
                     ),
-                    const SizedBox(height: 8),
-                    Row(
-                      children: [
-                        TextButton.icon(
-                          onPressed: () {
-                            _playClick();
-                            setState(() => _showAffectionOverlay = !_showAffectionOverlay);
-                          },
-                          icon: Icon(_showAffectionOverlay ? Icons.expand_less : Icons.expand_more, color: const Color(0xCCF6F1E8)),
-                          label: Text(_showAffectionOverlay ? '호감도 닫기' : '호감도 열기', style: const TextStyle(color: Color(0xCCF6F1E8))),
-                        ),
-                        const Spacer(),
-                        IconButton(
-                          onPressed: () {
-                            _playClick();
-                            setState(() => _menuOverlayOpen = true);
-                          },
-                          icon: const Icon(Icons.grid_view_rounded, color: Color(0xFFF6F1E8)),
-                        ),
-                      ],
+                    const Spacer(),
+                    IconButton(
+                      onPressed: () {
+                        _playClick();
+                        setState(() => _menuOverlayOpen = true);
+                      },
+                      icon: const Icon(Icons.grid_view_rounded, color: Color(0xFFF6F1E8)),
                     ),
                   ],
                 ),
