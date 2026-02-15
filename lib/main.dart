@@ -231,6 +231,7 @@ class _GameShellState extends State<GameShell> {
   bool _menuOverlayOpen = false;
   bool _showRecommendPanel = false;
   int _rareHerbBuffPercent = 0;
+  int? _minigameReturnMenuIndex;
   final List<String> _logs = [];
   final List<_Sparkle> _sparkles = [];
   final Map<String, int> _lastDelta = {};
@@ -1741,6 +1742,7 @@ class _GameShellState extends State<GameShell> {
   }
 
   void _startFlameGame() {
+    _minigameReturnMenuIndex = _menuIndex;
     if (_selectedWork == WorkMiniGame.herbSort) {
       _startHerbMemoryGame();
       return;
@@ -1828,7 +1830,7 @@ class _GameShellState extends State<GameShell> {
     ];
 
     const roundSizes = <(int, int)>[(3, 4), (4, 4), (5, 4)];
-    const roundTime = <int>[14, 24, 34];
+    const roundTime = <int>[28, 48, 68];
 
     int round = 0;
     int rows = roundSizes[0].$1;
@@ -1932,12 +1934,13 @@ class _GameShellState extends State<GameShell> {
       _workScore = score;
       _combo = combo;
       _workTimeLeft = 0;
+      final returnIndex = _minigameReturnMenuIndex ?? 3;
       if (mounted) {
-        setState(() => _menuIndex = 3);
+        setState(() => _menuIndex = returnIndex);
       }
       await _finishWorkMiniGame();
       if (mounted) {
-        setState(() => _menuIndex = 3);
+        setState(() => _menuIndex = returnIndex);
       }
     };
 
@@ -2377,6 +2380,11 @@ class _GameShellState extends State<GameShell> {
         ),
       );
       setState(() {});
+    }
+
+    if (mounted && _minigameReturnMenuIndex != null) {
+      setState(() => _menuIndex = _minigameReturnMenuIndex!);
+      _minigameReturnMenuIndex = null;
     }
   }
 
