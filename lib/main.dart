@@ -1906,8 +1906,10 @@ class _GameShellState extends State<GameShell> with TickerProviderStateMixin {
                   : Duration(milliseconds: baseMs);
       if (swing.duration != dur) {
         final t = swing.value;
+        swing.stop();
         swing.duration = dur;
-        swing.forward(from: t);
+        swing.repeat(reverse: true);
+        swing.value = t;
       }
     }
 
