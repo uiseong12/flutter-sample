@@ -1740,6 +1740,11 @@ class _GameShellState extends State<GameShell> {
   }
 
   void _startFlameGame() {
+    if (_selectedWork == WorkMiniGame.herbSort) {
+      _startHerbMemoryGame();
+      return;
+    }
+
     void safeSet(VoidCallback fn) {
       if (!mounted) return;
       WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -1803,6 +1808,306 @@ class _GameShellState extends State<GameShell> {
         ),
       ),
     );
+  }
+
+  void _startHerbMemoryGame() {
+    const rows = 4;
+    const cols = 4;
+    const total = rows * cols;
+
+    List<int> buildFaces() {
+      final pairs = total ~/ 2;
+      final list = <int>[];
+      for (int i = 0; i < pairs; i++) {
+        list..add(i)..add(i);
+      }
+      list.shuffle(_random);
+      return list;
+    }
+
+    final icons = <IconData>[
+      Icons.local_florist,
+      Icons.eco,
+      Icons.spa,
+      Icons.grass,
+      Icons.filter_vintage,
+      Icons.energy_savings_leaf,
+      Icons.yard,
+      Icons.park,
+      Icons.wb_sunny,
+      Icons.water_drop,
+    ];
+
+    var faces = buildFaces();
+    final tileState = List<int>.filled(total, 0); // 0 hidden, 1 revealed, 2 matched
+    final popupOpacity = List<double>.filled(total, 0);
+    int? first;
+    int? second;
+    bool inputLocked = false;
+    int score = 0;
+    int combo = 0;
+    int remaining = 28;
+    bool hintUsed = false;
+    bool shuffleUsed = false;
+    bool finished = false;
+
+    Timer? roundTimer;
+    final popupTimers = <Timer>[];
+    bool initialized = false;
+    StateSetter? modalSet;
+
+    void cleanup() {
+      roundTimer?.cancel();
+      for (final t in popupTimers) {
+        t.cancel();
+      }
+      popupTimers.clear();
+    }
+
+    Future<void> finishRound() async {
+      if (finished) return;
+      finished = true;
+      cleanup();
+      if (mounted && Navigator.of(context).canPop()) {
+        Navigator.of(context).pop();
+      }
+      _workScore = score;
+      _combo = combo;
+      _workTimeLeft = 0;
+      await _finishWorkMiniGame();
+    }
+
+    void showPopupFor(int idx) {
+      modalSet?.call(() => popupOpacity[idx] = 1);
+      popupTimers.add(Timer(const Duration(milliseconds: 420), () {
+        modalSet?.call(() => popupOpacity[idx] = 0);
+      }));
+    }
+
+    Future<void> judge() async {
+      if (first == null || second == null) return;
+      final i1 = first!;
+      final i2 = second!;
+      await Future.delayed(const Duration(milliseconds: 520));
+      if (!mounted || finished) return;
+
+      if (faces[i1] == faces[i2]) {
+        tileState[i1] = 2;
+        tileState[i2] = 2;
+        combo += 1;
+        final reward = (10 * (1 + combo * 0.12)).round();
+        score += reward;
+        showPopupFor(i1);
+        showPopupFor(i2);
+      } else {
+        tileState[i1] = 0;
+        tileState[i2] = 0;
+        combo = 0;
+        remaining = max(0, remaining - 1);
+      }
+
+      first = null;
+      second = null;
+      inputLocked = false;
+      modalSet?.call(() {});
+
+      if (tileState.every((e) => e == 2)) {
+        score += remaining * 3;
+        finishRound();
+      }
+    }
+
+    void onTapTile(int index) {
+      if (finished || inputLocked) return;
+      if (tileState[index] != 0) return;
+
+      tileState[index] = 1;
+      if (first == null) {
+        first = index;
+        modalSet?.call(() {});
+        return;
+      }
+
+      second = index;
+      inputLocked = true;
+      modalSet?.call(() {});
+      judge();
+    }
+
+    void useHint() {
+      if (finished || hintUsed || inputLocked) return;
+      hintUsed = true;
+      final hidden = <int>[];
+      for (int i = 0; i < total; i++) {
+        if (tileState[i] == 0) hidden.add(i);
+      }
+      hidden.shuffle(_random);
+      if (hidden.length >= 2) {
+        tileState[hidden[0]] = 1;
+        tileState[hidden[1]] = 1;
+      }
+      modalSet?.call(() {});
+      popupTimers.add(Timer(const Duration(milliseconds: 700), () {
+        for (final idx in hidden.take(2)) {
+          if (tileState[idx] == 1) tileState[idx] = 0;
+        }
+        modalSet?.call(() {});
+      }));
+    }
+
+    void useShuffle() {
+      if (finished || shuffleUsed || inputLocked) return;
+      shuffleUsed = true;
+      final hiddenFaces = <int>[];
+      for (int i = 0; i < total; i++) {
+        if (tileState[i] == 0) hiddenFaces.add(faces[i]);
+      }
+      hiddenFaces.shuffle(_random);
+      int k = 0;
+      for (int i = 0; i < total; i++) {
+        if (tileState[i] == 0) {
+          faces[i] = hiddenFaces[k];
+          k += 1;
+        }
+      }
+      modalSet?.call(() {});
+    }
+
+    _playClick();
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (_) => StatefulBuilder(
+        builder: (context, setModal) {
+          modalSet = setModal;
+          if (!initialized) {
+            initialized = true;
+            roundTimer = Timer.periodic(const Duration(seconds: 1), (_) {
+              if (finished) return;
+              remaining = max(0, remaining - 1);
+              modalSet?.call(() {});
+              if (remaining <= 0) {
+                finishRound();
+              }
+            });
+          }
+
+          return Scaffold(
+            backgroundColor: const Color(0xFF121018),
+            body: SafeArea(
+              child: Column(
+                children: [
+                  Padding(
+                    padding: const EdgeInsets.fromLTRB(12, 10, 12, 8),
+                    child: Row(
+                      children: [
+                        _currencyChip(icon: Icons.timer, value: '$remaining', tint: const Color(0xFFE0B44B)),
+                        const SizedBox(width: 8),
+                        _currencyChip(icon: Icons.auto_awesome, value: '$score', tint: const Color(0xFFC7BEDA)),
+                        const SizedBox(width: 8),
+                        _currencyChip(icon: Icons.bolt, value: '콤보 $combo', tint: const Color(0xFF9C6DFF)),
+                        const Spacer(),
+                        IconButton(
+                          onPressed: () {
+                            cleanup();
+                            Navigator.pop(context);
+                          },
+                          icon: const Icon(Icons.close, color: Color(0xFFF6F1E8)),
+                        ),
+                      ],
+                    ),
+                  ),
+                  Expanded(
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 12),
+                      child: GridView.builder(
+                        physics: const NeverScrollableScrollPhysics(),
+                        itemCount: total,
+                        gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                          crossAxisCount: cols,
+                          mainAxisSpacing: 10,
+                          crossAxisSpacing: 10,
+                          childAspectRatio: 1,
+                        ),
+                        itemBuilder: (_, i) {
+                          final state = tileState[i];
+                          final isOpen = state != 0;
+                          final matched = state == 2;
+                          return GestureDetector(
+                            onTap: () => onTapTile(i),
+                            child: Stack(
+                              alignment: Alignment.center,
+                              children: [
+                                AnimatedContainer(
+                                  duration: const Duration(milliseconds: 220),
+                                  curve: Curves.easeOut,
+                                  decoration: BoxDecoration(
+                                    borderRadius: BorderRadius.circular(14),
+                                    color: isOpen ? const Color(0xFF2E2442) : const Color(0xFF191729),
+                                    border: Border.all(color: matched ? const Color(0xFFB79C63) : Colors.white24, width: matched ? 1.8 : 1),
+                                    boxShadow: [
+                                      if (matched)
+                                        BoxShadow(color: const Color(0x66B79C63), blurRadius: 10, spreadRadius: 1),
+                                    ],
+                                  ),
+                                  child: Center(
+                                    child: AnimatedSwitcher(
+                                      duration: const Duration(milliseconds: 180),
+                                      child: isOpen
+                                          ? Icon(
+                                              icons[faces[i] % icons.length],
+                                              key: ValueKey('front_${faces[i]}'),
+                                              color: matched ? const Color(0xFFFFD98E) : const Color(0xFFF6F1E8),
+                                              size: 30,
+                                            )
+                                          : const Icon(Icons.help_outline, key: ValueKey('back'), color: Color(0x66F6F1E8), size: 24),
+                                    ),
+                                  ),
+                                ),
+                                IgnorePointer(
+                                  child: AnimatedOpacity(
+                                    duration: const Duration(milliseconds: 180),
+                                    opacity: popupOpacity[i],
+                                    child: Transform.translate(
+                                      offset: const Offset(0, -18),
+                                      child: const Text('+보상', style: TextStyle(color: Color(0xFFFFD98E), fontWeight: FontWeight.w700)),
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          );
+                        },
+                      ),
+                    ),
+                  ),
+                  Padding(
+                    padding: const EdgeInsets.fromLTRB(12, 4, 12, 12),
+                    child: Row(
+                      children: [
+                        Expanded(
+                          child: OutlinedButton(
+                            onPressed: hintUsed ? null : useHint,
+                            child: Text(hintUsed ? '힌트 사용완료' : '힌트 1회'),
+                          ),
+                        ),
+                        const SizedBox(width: 8),
+                        Expanded(
+                          child: OutlinedButton(
+                            onPressed: shuffleUsed ? null : useShuffle,
+                            child: Text(shuffleUsed ? '셔플 사용완료' : '셔플 1회'),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          );
+        },
+      ),
+    ).then((_) => cleanup());
   }
 
   void _prepareWorkRound() {
