@@ -1823,54 +1823,114 @@ class _GameShellState extends State<GameShell> with TickerProviderStateMixin {
   }
 
   void _startSmithRhythmGame() {
-    const totalSeconds = 40;
-    int remaining = totalSeconds;
     int score = 0;
     int combo = 0;
     int maxCombo = 0;
-    double heat = 0.24;
-    double heatLockSec = 0;
+    int lives = 5;
     int perfectCount = 0;
     int goodCount = 0;
     int missCount = 0;
-    String judgeText = 'READY';
-    Color judgeColor = const Color(0xFFD5CDB8);
+    int guaranteedGood = 0;
+    int overdriveShield = 0;
+
+    double heat = 24; // 0..100
+    double zoneCenter = 0.5;
+    bool zoneWarning = false;
+    bool overdrive = false;
     bool finished = false;
 
-    Timer? secTimer;
-    Timer? judgeReset;
+    String judgeText = 'READY';
+    Color judgeColor = const Color(0xFFD5CDB8);
+
+    Timer? zoneCycleTimer;
+    Timer? zoneWarnTimer;
+    Timer? judgeResetTimer;
+    Timer? overdriveTimer;
     StateSetter? modalSet;
 
-    final swing = AnimationController(vsync: this, duration: const Duration(milliseconds: 1050));
+    final swing = AnimationController(vsync: this, duration: const Duration(milliseconds: 1180));
     swing.repeat(reverse: true);
 
-    double pointerPos() {
-      final raw = swing.value;
-      return 0.08 + (raw * 0.84);
+    double pointerPos() => 0.08 + (swing.value * 0.84);
+
+    double perfectWidth() {
+      if (combo >= 15) return 0.07;
+      if (combo >= 10) return 0.10;
+      if (combo >= 5) return 0.14;
+      return 0.18;
     }
 
-    void applyComboSpeed() {
+    double goodWidth() {
+      if (combo >= 15) return 0.22;
+      if (combo >= 10) return 0.26;
+      return 0.34;
+    }
+
+    void applyDifficultyByCombo() {
       final dur = combo >= 15
-          ? const Duration(milliseconds: 740)
+          ? const Duration(milliseconds: 680)
           : combo >= 10
-              ? const Duration(milliseconds: 860)
+              ? const Duration(milliseconds: 800)
               : combo >= 5
-                  ? const Duration(milliseconds: 970)
-                  : const Duration(milliseconds: 1050);
+                  ? const Duration(milliseconds: 960)
+                  : const Duration(milliseconds: 1180);
       if (swing.duration != dur) {
-        final prev = swing.value;
+        final t = swing.value;
         swing.duration = dur;
-        swing.forward(from: prev);
+        swing.forward(from: t);
       }
     }
+
+    int perfectBase() {
+      if (combo >= 15) return 200;
+      if (combo >= 10) return 150;
+      if (combo >= 5) return 120;
+      return 100;
+    }
+
+    int goodBase() {
+      if (combo >= 15) return 30;
+      if (combo >= 10) return 40;
+      if (combo >= 5) return 50;
+      return 60;
+    }
+
+    String itemName() {
+      final r = _random.nextInt(3);
+      return r == 0 ? '단검' : (r == 1 ? '도끼' : '갑옷');
+    }
+
+    final craftedItem = itemName();
 
     Future<void> finishRound() async {
       if (finished) return;
       finished = true;
-      secTimer?.cancel();
-      judgeReset?.cancel();
+      zoneCycleTimer?.cancel();
+      zoneWarnTimer?.cancel();
+      judgeResetTimer?.cancel();
+      overdriveTimer?.cancel();
+
+      final hitTotal = perfectCount + goodCount + missCount;
+      final perfectRatio = hitTotal == 0 ? 0.0 : perfectCount / hitTotal;
+      final grade = (perfectRatio >= 0.7 && maxCombo >= 12)
+          ? 'S'
+          : (perfectRatio >= 0.5)
+              ? 'A'
+              : 'B';
+
       if (mounted && Navigator.of(context).canPop()) {
         Navigator.of(context).pop();
+      }
+
+      if (mounted) {
+        await showDialog(
+          context: context,
+          builder: (_) => AlertDialog(
+            title: const Text('제작 결과'),
+            content: Text('제작품: $craftedItem\n등급: $grade\n최대 콤보: $maxCombo\nPERFECT 비율: ${(perfectRatio * 100).toStringAsFixed(0)}%'),
+            actions: [TextButton(onPressed: () => Navigator.pop(context), child: const Text('확인'))],
+          ),
+        );
       }
 
       _workScore = score;
@@ -1883,50 +1943,103 @@ class _GameShellState extends State<GameShell> with TickerProviderStateMixin {
       }
     }
 
-    void onTapForge() {
-      if (finished) return;
-      final p = pointerPos();
-      final perfectL = 0.46 - (heat > 0.7 ? 0.01 : 0);
-      final perfectR = 0.54 + (heat > 0.7 ? 0.01 : 0);
-      const goodL = 0.36;
-      const goodR = 0.64;
+    void scheduleZoneMove() {
+      zoneCycleTimer?.cancel();
+      zoneCycleTimer = Timer.periodic(const Duration(seconds: 6), (_) {
+        if (finished) return;
+        zoneWarning = true;
+        modalSet?.call(() {});
+        zoneWarnTimer?.cancel();
+        zoneWarnTimer = Timer(const Duration(seconds: 1), () {
+          if (finished) return;
+          final zones = [0.22, 0.5, 0.78]..removeWhere((z) => (z - zoneCenter).abs() < 0.01);
+          zoneCenter = zones[_random.nextInt(zones.length)];
+          zoneWarning = false;
+          modalSet?.call(() {});
+        });
+      });
+    }
 
-      int add = 0;
-      if (p >= perfectL && p <= perfectR) {
-        perfectCount += 1;
-        combo += 1;
-        maxCombo = max(maxCombo, combo);
-        final tier = combo >= 15 ? 1.5 : combo >= 10 ? 1.35 : combo >= 5 ? 1.2 : 1.0;
-        add = (100 * tier * (1 + heat * 0.6)).round();
-        heat = min(1, heat + 0.08);
-        judgeText = 'PERFECT!';
-        judgeColor = const Color(0xFFF6D978);
-      } else if (p >= goodL && p <= goodR) {
-        goodCount += 1;
-        combo += 1;
-        maxCombo = max(maxCombo, combo);
-        final tier = combo >= 15 ? 1.4 : combo >= 10 ? 1.25 : combo >= 5 ? 1.12 : 1.0;
-        add = (60 * tier * (1 + heat * 0.4)).round();
-        heat = min(1, heat + 0.04);
-        judgeText = 'GOOD';
-        judgeColor = const Color(0xFF85E0B2);
-      } else {
-        missCount += 1;
-        combo = 0;
-        heat = max(0, heat - 0.16);
-        judgeText = 'MISS';
-        judgeColor = const Color(0xFFFF9AA5);
-      }
-      score += add;
-      applyComboSpeed();
-      modalSet?.call(() {});
-
-      judgeReset?.cancel();
-      judgeReset = Timer(const Duration(milliseconds: 360), () {
+    void setJudge(String text, Color color) {
+      judgeText = text;
+      judgeColor = color;
+      judgeResetTimer?.cancel();
+      judgeResetTimer = Timer(const Duration(milliseconds: 320), () {
         judgeText = 'TAP!';
         judgeColor = const Color(0xFFD5CDB8);
         modalSet?.call(() {});
       });
+    }
+
+    void triggerOverdrive() {
+      overdrive = true;
+      overdriveShield = 1;
+      overdriveTimer?.cancel();
+      overdriveTimer = Timer(const Duration(seconds: 5), () {
+        overdrive = false;
+        modalSet?.call(() {});
+      });
+    }
+
+    void onTapForge() {
+      if (finished) return;
+      final p = pointerPos();
+      final dist = (p - zoneCenter).abs();
+      final pW = perfectWidth() / 2;
+      final gW = goodWidth() / 2;
+
+      bool perfect = dist <= pW;
+      bool good = !perfect && dist <= gW;
+
+      if (!perfect && !good && guaranteedGood > 0) {
+        guaranteedGood -= 1;
+        good = true;
+      }
+
+      int add = 0;
+      if (perfect) {
+        perfectCount += 1;
+        combo += 1;
+        maxCombo = max(maxCombo, combo);
+        heat = min(100, heat + 10);
+        final base = overdrive ? 300 : perfectBase();
+        add = (base * (1 + (heat / 220))).round();
+        setJudge('PERFECT', const Color(0xFFF6D978));
+      } else if (good) {
+        goodCount += 1;
+        combo += 1;
+        maxCombo = max(maxCombo, combo);
+        heat = min(100, heat + 4);
+        add = (goodBase() * (1 + (heat / 300))).round();
+        setJudge('GOOD', const Color(0xFF8BE2B7));
+      } else {
+        missCount += 1;
+        combo = 0;
+        heat = max(0, heat - 20);
+        if (overdrive && overdriveShield > 0) {
+          overdriveShield -= 1;
+          setJudge('MISS GUARD', const Color(0xFFB7A7FF));
+        } else {
+          lives = max(0, lives - 1);
+          setJudge('MISS', const Color(0xFFFF9AA5));
+        }
+      }
+
+      if (combo > 0 && combo % 3 == 0) {
+        guaranteedGood = min(1, guaranteedGood + 1);
+      }
+
+      if (heat >= 100 && !overdrive) {
+        triggerOverdrive();
+      }
+
+      score += add;
+      applyDifficultyByCombo();
+      modalSet?.call(() {});
+
+      if (lives <= 0) {
+        finishRound();
+      }
     }
 
     _playClick();
@@ -1936,27 +2049,12 @@ class _GameShellState extends State<GameShell> with TickerProviderStateMixin {
       builder: (_) => StatefulBuilder(
         builder: (context, setModal) {
           modalSet = setModal;
-          secTimer ??= Timer.periodic(const Duration(seconds: 1), (_) {
-            if (finished) return;
-            remaining = max(0, remaining - 1);
-            if (heatLockSec > 0) {
-              heatLockSec = max(0, heatLockSec - 1);
-            } else {
-              heat = max(0, heat - 0.02);
-            }
-            if (remaining <= 0) {
-              finishRound();
-            }
-            modalSet?.call(() {});
-          });
+          if (zoneCycleTimer == null) {
+            scheduleZoneMove();
+          }
 
-          final stars = perfectCount + goodCount == 0
-              ? 0
-              : ((perfectCount / max(1, perfectCount + goodCount)) >= 0.7 && maxCombo >= 12)
-                  ? 3
-                  : ((perfectCount / max(1, perfectCount + goodCount)) >= 0.5)
-                      ? 2
-                      : 1;
+          final pW = perfectWidth();
+          final goodW = goodWidth();
 
           return Scaffold(
             backgroundColor: const Color(0xFF0F0D18),
@@ -1970,78 +2068,98 @@ class _GameShellState extends State<GameShell> with TickerProviderStateMixin {
                       decoration: BoxDecoration(color: const Color(0xFF1F1B2E), borderRadius: BorderRadius.circular(14), border: Border.all(color: const Color(0xFF3D355D))),
                       child: Row(
                         children: [
-                          Text('⏱ ${remaining}s', style: const TextStyle(color: Color(0xFFF6F1E8), fontSize: 20, fontWeight: FontWeight.w700)),
-                          const SizedBox(width: 14),
-                          Text('점수 ${score.toString()}', style: const TextStyle(color: Color(0xFFF6F1E8), fontSize: 20, fontWeight: FontWeight.w700)),
+                          Text('점수 $score', style: const TextStyle(color: Color(0xFFF6F1E8), fontSize: 20, fontWeight: FontWeight.w700)),
                           const SizedBox(width: 14),
                           Text('콤보 x$combo', style: const TextStyle(color: Color(0xFFF4C16E), fontSize: 20, fontWeight: FontWeight.w700)),
                           const Spacer(),
-                          Text('★' * stars + '☆' * (3 - stars), style: const TextStyle(color: Color(0xFFF4C16E), fontSize: 22)),
+                          Text(List.generate(5, (i) => i < lives ? '🔨' : '💥').join(' '), style: const TextStyle(fontSize: 17)),
                         ],
                       ),
                     ),
-                    const SizedBox(height: 14),
+                    const SizedBox(height: 12),
                     Container(
                       padding: const EdgeInsets.all(12),
                       decoration: BoxDecoration(color: const Color(0xFF1A1728), borderRadius: BorderRadius.circular(18), border: Border.all(color: const Color(0xFF3A3454))),
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          const Text('대장간 리듬', style: TextStyle(color: Color(0xFFF6F1E8), fontSize: 26, fontWeight: FontWeight.w800)),
+                          Text('오늘의 주문: $craftedItem', style: const TextStyle(color: Color(0xFFF6F1E8), fontSize: 20, fontWeight: FontWeight.w800)),
                           const SizedBox(height: 4),
-                          const Text('PERFECT를 연속으로 맞추면 열기가 유지되고 보상이 상승합니다', style: TextStyle(color: Color(0xFFD2CCE0), fontSize: 14)),
-                          const SizedBox(height: 14),
+                          const Text('PERFECT 존이 좌/중/우로 이동합니다. 예고를 보고 두드리세요!', style: TextStyle(color: Color(0xFFD2CCE0), fontSize: 13)),
+                          const SizedBox(height: 10),
+                          Center(
+                            child: AnimatedDefaultTextStyle(
+                              duration: const Duration(milliseconds: 140),
+                              style: TextStyle(color: judgeColor, fontSize: 42, fontWeight: FontWeight.w900),
+                              child: Text(judgeText),
+                            ),
+                          ),
+                          const SizedBox(height: 8),
                           AnimatedBuilder(
                             animation: swing,
                             builder: (_, __) {
                               final p = pointerPos();
                               return Column(
                                 children: [
-                                  Row(
-                                    children: [
-                                      Text(judgeText, style: TextStyle(color: judgeColor, fontSize: 40, fontWeight: FontWeight.w900)),
-                                      const Spacer(),
-                                      SizedBox(
-                                        width: 160,
-                                        child: ClipRRect(
-                                          borderRadius: BorderRadius.circular(999),
-                                          child: LinearProgressIndicator(
-                                            value: heat,
-                                            minHeight: 10,
-                                            backgroundColor: const Color(0xFF2A2640),
-                                            valueColor: const AlwaysStoppedAnimation(Color(0xFFFF9248)),
-                                          ),
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                  const SizedBox(height: 10),
+                                  // single forge rail
                                   Container(
-                                    height: 64,
-                                    decoration: BoxDecoration(color: const Color(0xFF141125), borderRadius: BorderRadius.circular(16), border: Border.all(color: const Color(0xFF3A3356))),
+                                    height: 74,
+                                    decoration: BoxDecoration(
+                                      borderRadius: BorderRadius.circular(18),
+                                      gradient: const LinearGradient(colors: [Color(0xFF141125), Color(0xFF1B1630)]),
+                                      border: Border.all(color: const Color(0xFF3A3356)),
+                                    ),
                                     child: Stack(
                                       children: [
-                                        Align(
-                                          alignment: const Alignment(-0.5, 0),
-                                          child: Container(width: 90, height: 28, decoration: BoxDecoration(color: const Color(0xFF185040), borderRadius: BorderRadius.circular(10))),
+                                        Positioned.fill(
+                                          child: Align(
+                                            alignment: Alignment((zoneCenter * 2) - 1, 0),
+                                            child: AnimatedContainer(
+                                              duration: const Duration(milliseconds: 220),
+                                              width: zoneWarning ? 120 : (pW * 420),
+                                              height: zoneWarning ? 44 : 36,
+                                              decoration: BoxDecoration(
+                                                borderRadius: BorderRadius.circular(12),
+                                                gradient: LinearGradient(
+                                                  colors: zoneWarning
+                                                      ? [const Color(0x66FFB25A), const Color(0x22FFB25A)]
+                                                      : [const Color(0x88FFD76A), const Color(0x44FFD76A)],
+                                                ),
+                                                boxShadow: const [BoxShadow(color: Color(0x55FFD76A), blurRadius: 14)],
+                                              ),
+                                            ),
+                                          ),
                                         ),
-                                        Align(
-                                          alignment: const Alignment(0, 0),
-                                          child: Container(width: 72, height: 30, decoration: BoxDecoration(color: const Color(0xFFB7A24F), borderRadius: BorderRadius.circular(10))),
-                                        ),
-                                        Align(
-                                          alignment: const Alignment(0.5, 0),
-                                          child: Container(width: 90, height: 28, decoration: BoxDecoration(color: const Color(0xFF185040), borderRadius: BorderRadius.circular(10))),
+                                        Positioned.fill(
+                                          child: Align(
+                                            alignment: Alignment((zoneCenter * 2) - 1, 0),
+                                            child: Container(
+                                              width: goodW * 420,
+                                              height: 28,
+                                              decoration: BoxDecoration(
+                                                borderRadius: BorderRadius.circular(10),
+                                                color: const Color(0x3329A36E),
+                                              ),
+                                            ),
+                                          ),
                                         ),
                                         Positioned.fill(
                                           child: Align(
                                             alignment: Alignment((p * 2) - 1, -0.95),
                                             child: Column(
                                               mainAxisSize: MainAxisSize.min,
-                                              children: const [
-                                                Icon(Icons.circle, size: 12, color: Color(0xFF8A67FF)),
-                                                SizedBox(height: 20),
-                                                SizedBox(height: 28, child: VerticalDivider(thickness: 3, width: 3, color: Color(0xFF8A67FF))),
+                                              children: [
+                                                Container(
+                                                  width: 14,
+                                                  height: 14,
+                                                  decoration: BoxDecoration(
+                                                    shape: BoxShape.circle,
+                                                    color: (p > zoneCenter - pW / 2 && p < zoneCenter + pW / 2) ? const Color(0xFFFFD76A) : const Color(0xFF8A67FF),
+                                                    boxShadow: const [BoxShadow(color: Color(0x778A67FF), blurRadius: 12)],
+                                                  ),
+                                                ),
+                                                const SizedBox(height: 18),
+                                                Container(width: 4, height: 28, color: const Color(0xFF8A67FF)),
                                               ],
                                             ),
                                           ),
@@ -2049,38 +2167,24 @@ class _GameShellState extends State<GameShell> with TickerProviderStateMixin {
                                       ],
                                     ),
                                   ),
+                                  const SizedBox(height: 10),
+                                  ClipRRect(
+                                    borderRadius: BorderRadius.circular(999),
+                                    child: LinearProgressIndicator(
+                                      value: heat / 100,
+                                      minHeight: 11,
+                                      backgroundColor: const Color(0xFF2A2640),
+                                      valueColor: AlwaysStoppedAnimation(overdrive ? const Color(0xFFFF5B4A) : const Color(0xFFFF9248)),
+                                    ),
+                                  ),
+                                  const SizedBox(height: 4),
+                                  Text(overdrive ? '🔥 가열 폭발 모드 (MISS 1회 무효)' : 'HEAT ${(heat).toStringAsFixed(0)}', style: const TextStyle(color: Color(0xFFD8D2E7))),
                                 ],
                               );
                             },
                           ),
                         ],
                       ),
-                    ),
-                    const SizedBox(height: 10),
-                    Row(
-                      children: [
-                        Expanded(
-                          child: OutlinedButton(
-                            onPressed: heatLockSec > 0
-                                ? null
-                                : () {
-                                    heatLockSec = 2;
-                                    modalSet?.call(() {});
-                                  },
-                            child: Text(heatLockSec > 0 ? '열기 유지 사용중' : '열기 유지'),
-                          ),
-                        ),
-                        const SizedBox(width: 8),
-                        Expanded(
-                          child: OutlinedButton(
-                            onPressed: () {
-                              heat = min(1, heat + 0.15);
-                              modalSet?.call(() {});
-                            },
-                            child: const Text('집중'),
-                          ),
-                        ),
-                      ],
                     ),
                     const Spacer(),
                     SizedBox(
@@ -2103,24 +2207,13 @@ class _GameShellState extends State<GameShell> with TickerProviderStateMixin {
                       ),
                     ),
                     const SizedBox(height: 10),
-                    Row(
-                      children: [
-                        Expanded(
-                          child: OutlinedButton.icon(
-                            onPressed: finishRound,
-                            icon: const Icon(Icons.arrow_back),
-                            label: const Text('종료'),
-                          ),
-                        ),
-                        const SizedBox(width: 8),
-                        Expanded(
-                          child: OutlinedButton.icon(
-                            onPressed: () {},
-                            icon: const Icon(Icons.settings),
-                            label: const Text('설정'),
-                          ),
-                        ),
-                      ],
+                    SizedBox(
+                      width: double.infinity,
+                      child: OutlinedButton.icon(
+                        onPressed: finishRound,
+                        icon: const Icon(Icons.arrow_back),
+                        label: const Text('종료'),
+                      ),
                     ),
                   ],
                 ),
@@ -2130,8 +2223,10 @@ class _GameShellState extends State<GameShell> with TickerProviderStateMixin {
         },
       ),
     ).then((_) {
-      secTimer?.cancel();
-      judgeReset?.cancel();
+      zoneCycleTimer?.cancel();
+      zoneWarnTimer?.cancel();
+      judgeResetTimer?.cancel();
+      overdriveTimer?.cancel();
       swing.dispose();
     });
   }
