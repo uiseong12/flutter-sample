@@ -2061,7 +2061,7 @@ class _GameShellState extends State<GameShell> {
           }
 
           return Scaffold(
-            backgroundColor: const Color(0xFF121018),
+            backgroundColor: const Color(0xFFF6E0A7),
             body: SafeArea(
               child: Column(
                 children: [
@@ -2094,37 +2094,60 @@ class _GameShellState extends State<GameShell> {
                   Expanded(
                     child: Padding(
                       padding: const EdgeInsets.symmetric(horizontal: 12),
-                      child: GridView.builder(
-                        physics: const NeverScrollableScrollPhysics(),
-                        itemCount: total,
-                        gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                          crossAxisCount: cols,
-                          mainAxisSpacing: 10,
-                          crossAxisSpacing: 10,
-                          childAspectRatio: 1,
+                      child: Container(
+                        padding: const EdgeInsets.all(10),
+                        decoration: BoxDecoration(
+                          color: const Color(0x44FFFFFF),
+                          borderRadius: BorderRadius.circular(20),
+                          border: Border.all(color: const Color(0x66FFFFFF)),
                         ),
-                        itemBuilder: (_, i) => Stack(
-                          alignment: Alignment.center,
-                          children: [
-                            _HerbFlipTile(
-                              key: ValueKey('r${round}_$i'),
-                              state: tileState[i],
-                              faceIcon: icons[faces[i] % icons.length],
-                              shakeNonce: shakeNonce[i],
-                              sparkNonce: sparkNonce[i],
-                              onTap: () => onTapTile(i),
-                            ),
-                            IgnorePointer(
-                              child: AnimatedOpacity(
-                                duration: const Duration(milliseconds: 200),
-                                opacity: popupOpacity[i],
-                                child: Transform.translate(
-                                  offset: const Offset(0, -18),
-                                  child: Text(popText[i], style: const TextStyle(color: Color(0xFFFFD98E), fontWeight: FontWeight.w700)),
-                                ),
+                        child: GridView.builder(
+                          physics: const NeverScrollableScrollPhysics(),
+                          itemCount: total,
+                          gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                            crossAxisCount: cols,
+                            mainAxisSpacing: 8,
+                            crossAxisSpacing: 8,
+                            childAspectRatio: 1,
+                          ),
+                          itemBuilder: (_, i) {
+                            final angle = ((((i * 37) + (round * 11)) % 7) - 3) * 0.012;
+                            return Transform.rotate(
+                              angle: angle,
+                              child: Stack(
+                                alignment: Alignment.center,
+                                children: [
+                                  Positioned.fill(
+                                    child: Container(
+                                      decoration: BoxDecoration(
+                                        color: const Color(0x22FFFFFF),
+                                        borderRadius: BorderRadius.circular(14),
+                                        border: Border.all(color: const Color(0x33B58C46)),
+                                      ),
+                                    ),
+                                  ),
+                                  _HerbFlipTile(
+                                    key: ValueKey('r${round}_$i'),
+                                    state: tileState[i],
+                                    faceIcon: icons[faces[i] % icons.length],
+                                    shakeNonce: shakeNonce[i],
+                                    sparkNonce: sparkNonce[i],
+                                    onTap: () => onTapTile(i),
+                                  ),
+                                  IgnorePointer(
+                                    child: AnimatedOpacity(
+                                      duration: const Duration(milliseconds: 200),
+                                      opacity: popupOpacity[i],
+                                      child: Transform.translate(
+                                        offset: const Offset(0, -18),
+                                        child: Text(popText[i], style: const TextStyle(color: Color(0xFFFFD98E), fontWeight: FontWeight.w700)),
+                                      ),
+                                    ),
+                                  ),
+                                ],
                               ),
-                            ),
-                          ],
+                            );
+                          },
                         ),
                       ),
                     ),
