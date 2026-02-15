@@ -2635,33 +2635,21 @@ class _GameShellState extends State<GameShell> {
 
     return Scaffold(
       appBar: AppBar(
-        toolbarHeight: 84,
+        toolbarHeight: 64,
         title: SizedBox(
-          height: 70,
-          child: Stack(
+          height: 56,
+          child: Row(
             children: [
-              Positioned.fill(child: Image.asset('assets/ui/top_hud_frame_v4.png', fit: BoxFit.fill)),
-              Positioned(
-                left: 58,
-                top: 23,
-                child: Row(
-                  children: [
-                    _hudCurrency('assets/ui/icon_gold.png', _gold.toString(), shortLabel: 'G'),
-                    const SizedBox(width: 8),
-                    _hudCurrency('assets/ui/icon_silk.png', _evidenceOwned.length.toString(), shortLabel: 'S'),
-                    const SizedBox(width: 8),
-                    _hudCurrency('assets/ui/icon_token.png', _premiumTokens.toString(), shortLabel: 'T'),
-                  ],
-                ),
-              ),
-              Positioned(
-                right: 14,
-                top: 18,
-                child: IconButton(
-                  style: IconButton.styleFrom(backgroundColor: Colors.black.withOpacity(0.22)),
-                  onPressed: () => setState(() => _menuIndex = 7),
-                  icon: const Icon(Icons.add, color: Color(0xFFF6F1E8), size: 18),
-                ),
+              _currencyChip(icon: Icons.monetization_on, value: _gold.toString(), tint: const Color(0xFFE0B44B)),
+              const SizedBox(width: 8),
+              _currencyChip(icon: Icons.auto_awesome, value: _evidenceOwned.length.toString(), tint: const Color(0xFFC7BEDA)),
+              const SizedBox(width: 8),
+              _currencyChip(icon: Icons.circle, value: _premiumTokens.toString(), tint: const Color(0xFF9C6DFF)),
+              const Spacer(),
+              IconButton(
+                style: IconButton.styleFrom(backgroundColor: Colors.black.withOpacity(0.22)),
+                onPressed: () => setState(() => _menuIndex = 7),
+                icon: const Icon(Icons.add, color: Color(0xFFF6F1E8), size: 18),
               ),
             ],
           ),
@@ -2883,7 +2871,7 @@ class _GameShellState extends State<GameShell> {
           ),
           Container(
             width: double.infinity,
-            padding: const EdgeInsets.fromLTRB(12, 8, 12, 12),
+            padding: EdgeInsets.fromLTRB(12, 8, 12, MediaQuery.of(context).padding.bottom + 12),
             decoration: BoxDecoration(color: Colors.black.withOpacity(0.6)),
             child: Column(
               mainAxisSize: MainAxisSize.min,
@@ -2921,15 +2909,16 @@ class _GameShellState extends State<GameShell> {
     );
   }
 
-  Widget _hudCurrency(String icon, String value, {String shortLabel = ''}) {
+  Widget _currencyChip({required IconData icon, required String value, required Color tint}) {
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 3),
-      decoration: BoxDecoration(color: Colors.black.withOpacity(0.2), borderRadius: BorderRadius.circular(8)),
+      height: 32,
+      padding: const EdgeInsets.symmetric(horizontal: 10),
+      decoration: BoxDecoration(color: Colors.black.withOpacity(0.28), borderRadius: BorderRadius.circular(16), border: Border.all(color: Colors.white24)),
       child: Row(
         children: [
-          Image.asset(icon, width: 24, height: 24),
+          Icon(icon, size: 16, color: tint),
           const SizedBox(width: 6),
-          Text(shortLabel.isEmpty ? value : '$shortLabel $value', style: const TextStyle(fontSize: 15, color: Color(0xFFF6F1E8), fontWeight: FontWeight.w600)),
+          Text(value, style: const TextStyle(fontSize: 14, color: Color(0xFFF6F1E8), fontWeight: FontWeight.w600)),
         ],
       ),
     );
@@ -3186,6 +3175,7 @@ class _GameShellState extends State<GameShell> {
                     clipBehavior: Clip.none,
                     children: [
                       GestureDetector(
+                        behavior: HitTestBehavior.opaque,
                         onTap: () {
                           _playClick();
                           if (beat == _storyIndex) {
@@ -3204,34 +3194,38 @@ class _GameShellState extends State<GameShell> {
                           });
                         },
                         onLongPress: () => _showNodePreview(beat),
-                        child: Stack(
-                          clipBehavior: Clip.none,
-                          children: [
-                            AnimatedContainer(
-                          duration: const Duration(milliseconds: 180),
-                          width: 38,
-                          height: 38,
-                          alignment: Alignment.center,
-                          decoration: BoxDecoration(
-                            shape: BoxShape.circle,
-                            color: selected ? const Color(0xFF7E67FF) : (done ? const Color(0xFF8A6B4D) : const Color(0xFF364A66)),
-                            border: Border.all(color: Colors.white70),
-                            boxShadow: selected ? [const BoxShadow(color: Color(0xCC7E67FF), blurRadius: 10)] : null,
-                          ),
-                          child: Column(
-                            mainAxisAlignment: MainAxisAlignment.center,
+                        child: SizedBox(
+                          width: 48,
+                          height: 48,
+                          child: Stack(
+                            clipBehavior: Clip.none,
+                            alignment: Alignment.center,
                             children: [
-                              Image.asset(_nodeTypeIconAsset(beat), width: 12, height: 12),
-                              Text('${n['id']! + 1}', style: const TextStyle(color: Colors.white, fontSize: 9, fontWeight: FontWeight.bold)),
+                              AnimatedContainer(
+                                duration: const Duration(milliseconds: 180),
+                                width: 32,
+                                height: 32,
+                                alignment: Alignment.center,
+                                decoration: BoxDecoration(
+                                  shape: BoxShape.circle,
+                                  color: selected ? const Color(0xFF7E67FF) : (done ? const Color(0xFF8A6B4D) : const Color(0xFF364A66)),
+                                  border: Border.all(color: Colors.white70, width: 2),
+                                  boxShadow: selected ? [const BoxShadow(color: Color(0xCC7E67FF), blurRadius: 10)] : null,
+                                ),
+                                child: Column(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  children: [
+                                    Image.asset(_nodeTypeIconAsset(beat), width: 10, height: 10),
+                                    Text('${n['id']! + 1}', style: const TextStyle(color: Colors.white, fontSize: 8, fontWeight: FontWeight.bold)),
+                                  ],
+                                ),
+                              ),
+                              if (selected) Positioned(top: -16, right: -10, child: Image.asset('assets/ui/node_current_flag.png', width: 24)),
+                              if (beat % 5 == 0) const Positioned(bottom: -8, right: -8, child: Icon(Icons.warning_amber_rounded, size: 14, color: Colors.orangeAccent)),
                             ],
                           ),
                         ),
-                        if (selected) Positioned(top: -16, right: -10, child: Image.asset('assets/ui/node_current_flag.png', width: 24)),
-                        if (beat % 5 == 0) const Positioned(bottom: -8, right: -8, child: Icon(Icons.warning_amber_rounded, size: 14, color: Colors.orangeAccent)),
-                      ],
-                    ),
                       ),
-                      const SizedBox.shrink(),
                     ],
                   ),
                 );
@@ -4194,9 +4188,9 @@ class _SealButtonState extends State<_SealButton> {
         duration: const Duration(milliseconds: 90),
         transform: v64.Matrix4.translationValues(0, _pressed ? 2 : 0, 0),
         decoration: BoxDecoration(
-          boxShadow: enabled
+          boxShadow: (enabled && _pressed)
               ? [
-                  BoxShadow(color: const Color(0x887E67FF), blurRadius: _pressed ? 4 : 10, offset: Offset(0, _pressed ? 1 : 3)),
+                  const BoxShadow(color: Color(0x887E67FF), blurRadius: 4, offset: Offset(0, 1)),
                 ]
               : null,
         ),
