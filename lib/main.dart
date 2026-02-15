@@ -2879,32 +2879,43 @@ class _GameShellState extends State<GameShell> {
                       child: AnimatedContainer(
                         duration: const Duration(milliseconds: 260),
                         curve: Curves.easeOutCubic,
-                        width: _showRecommendPanel ? 255 : 92,
-                        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+                        width: _showRecommendPanel ? 296 : 108,
+                        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
                         decoration: BoxDecoration(
                           color: Colors.black.withOpacity(0.58),
                           borderRadius: BorderRadius.circular(16),
                           border: Border.all(color: Colors.white24),
                         ),
-                        child: Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            const Icon(Icons.keyboard_double_arrow_left, size: 16, color: Color(0xCCF6F1E8)),
-                            const SizedBox(width: 6),
-                            const Text('오늘의 추천', style: TextStyle(fontSize: 12, color: Color(0xE6F6F1E8))),
-                            if (_showRecommendPanel) ...[
-                              const SizedBox(width: 8),
-                              Expanded(
-                                child: Text(
-                                  '추천 아르바이트: ${recommendedWorkName()}',
-                                  maxLines: 1,
-                                  overflow: TextOverflow.ellipsis,
-                                  style: const TextStyle(fontSize: 11, color: Color(0x99F6F1E8)),
-                                ),
+                        child: _showRecommendPanel
+                            ? Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  const Row(
+                                    mainAxisSize: MainAxisSize.min,
+                                    children: [
+                                      Icon(Icons.keyboard_double_arrow_left, size: 16, color: Color(0xCCF6F1E8)),
+                                      SizedBox(width: 6),
+                                      Text('오늘의 추천', style: TextStyle(fontSize: 12, color: Color(0xE6F6F1E8))),
+                                    ],
+                                  ),
+                                  const SizedBox(height: 6),
+                                  Text(
+                                    '추천 아르바이트: ${recommendedWorkName()}',
+                                    maxLines: 2,
+                                    overflow: TextOverflow.ellipsis,
+                                    style: const TextStyle(fontSize: 12, height: 1.25, color: Color(0xCCF6F1E8)),
+                                  ),
+                                ],
+                              )
+                            : const Row(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  Icon(Icons.keyboard_double_arrow_left, size: 16, color: Color(0xCCF6F1E8)),
+                                  SizedBox(width: 6),
+                                  Text('오늘의 추천', style: TextStyle(fontSize: 12, color: Color(0xE6F6F1E8))),
+                                ],
                               ),
-                            ],
-                          ],
-                        ),
                       ),
                     ),
                   ),
@@ -2912,23 +2923,19 @@ class _GameShellState extends State<GameShell> {
             ),
           ),
 
-          // compact bottom HUD (without next-node CTA)
+          // compact menu button only
           if (!_menuOverlayOpen)
             Positioned(
-              left: 12,
               right: 12,
               bottom: MediaQuery.of(context).padding.bottom + 8,
               child: _glassPanel(
-                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
-                child: Align(
-                  alignment: Alignment.centerRight,
-                  child: IconButton(
-                    onPressed: () {
-                      _playClick();
-                      setState(() => _menuOverlayOpen = true);
-                    },
-                    icon: const Icon(Icons.grid_view_rounded, color: Color(0xFFF6F1E8)),
-                  ),
+                padding: const EdgeInsets.all(2),
+                child: IconButton(
+                  onPressed: () {
+                    _playClick();
+                    setState(() => _menuOverlayOpen = true);
+                  },
+                  icon: const Icon(Icons.grid_view_rounded, color: Color(0xFFF6F1E8)),
                 ),
               ),
             ),
