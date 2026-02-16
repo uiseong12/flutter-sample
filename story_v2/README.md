@@ -61,3 +61,5 @@
 - `routes/ROUTE_BE_08.md`
 - `routes/ROUTE_BE_09.md`
 - `routes/ROUTE_BE_10.md`
+
+- `routes/ROUTE_BE_FULL_CHAINS.md`
