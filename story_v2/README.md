@@ -38,3 +38,8 @@
 ## 에필로그 씬
 - `epilogues/*.md`
 - 해피엔딩 5개 + 주요 배드엔딩(09/10) 후일담 씬 포함
+
+
+## 게임 시스템 재설계
+- `system/GAME_SYSTEM_V2.md`
+- `system/game_system_v2.json`

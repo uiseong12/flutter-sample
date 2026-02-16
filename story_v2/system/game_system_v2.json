@@ -1,0 +1,84 @@
+{
+  "version": 1,
+  "title": "story_v2_game_system",
+  "stats": {
+    "truth": {"min": 0, "max": 100, "start": 35},
+    "order": {"min": 0, "max": 100, "start": 35},
+    "stability": {"min": 0, "max": 100, "start": 35},
+    "will": {"min": 0, "max": 100, "start": 40}
+  },
+  "affection": {
+    "nayeon": {"min": 0, "max": 100, "start": 20},
+    "siyu": {"min": 0, "max": 100, "start": 20},
+    "harin": {"min": 0, "max": 100, "start": 20},
+    "iden": {"min": 0, "max": 100, "start": 20},
+    "yura": {"min": 0, "max": 100, "start": 20}
+  },
+  "choiceDeltaGuide": {
+    "strong": [8, 12],
+    "medium": [4, 7],
+    "light": [1, 3]
+  },
+  "interactionRules": [
+    {"id": "truth_surge_penalty", "when": "chapterDelta.truth >= 10", "apply": {"stability": -2}},
+    {"id": "order_surge_penalty", "when": "chapterDelta.order >= 10", "apply": {"truth": -1}},
+    {"id": "low_will_scale", "when": "stats.will < 25", "apply": {"choiceEffectScale": 0.8}}
+  ],
+  "gates": {
+    "C12": {
+      "warnings": [
+        "affection(route) < 35",
+        "stats.will < 30"
+      ]
+    },
+    "C26": {
+      "common": "stats.will >= 35",
+      "routes": {
+        "NAYEON": "affection.nayeon >= 55 && stats.truth >= 55",
+        "SIYU": "affection.siyu >= 55 && stats.stability >= 50",
+        "HARIN": "affection.harin >= 55 && stats.will >= 50",
+        "IDEN": "affection.iden >= 55 && stats.truth >= 60",
+        "YURA": "affection.yura >= 55 && stats.order >= 55"
+      }
+    }
+  },
+  "badEndings": {
+    "BE_01": "chapter==6 && path=='infiltration_fail' && stats.will < 35",
+    "BE_02": "flags.tamperSuspectCount >= 2 && stats.truth < 40",
+    "BE_03": "chapter==17 && choice=='force_both' && stats.will < 45",
+    "BE_04": "chapter==22 && choice=='delay' && stats.stability < 40",
+    "BE_05": "chapter==14 && choice=='real_name_open' && stats.stability < 35",
+    "BE_06": "chapter==19 && choice=='incomplete_accept' && stats.truth < 55",
+    "BE_07": "chapter==24 && choice=='private_switch' && stats.truth < 45",
+    "BE_08": "chapter==27 && choice=='full_origin_open' && stats.stability < 45",
+    "BE_09": "chapter==30 && stats.order >= 75 && stats.truth <= 45",
+    "BE_10": "chapter==30 && stats.truth >= 80 && stats.stability <= 35"
+  },
+  "happyEndings": {
+    "common": [
+      "stats.will >= 45",
+      "affection(route) >= 70",
+      "noBadEndingTriggered == true"
+    ],
+    "HE_NAYEON": "stats.truth >= 70 && stats.order >= 45",
+    "HE_SIYU": "stats.stability >= 70 && stats.will >= 55",
+    "HE_HARIN": "stats.will >= 65 && stats.truth >= 55 && stats.stability >= 55",
+    "HE_IDEN": "stats.truth >= 78 && stats.order >= 40",
+    "HE_YURA": "stats.order >= 72 && stats.stability >= 55"
+  },
+  "currencies": {
+    "credits": {
+      "type": "soft",
+      "chapterRewardRange": [80, 140],
+      "uses": ["costume", "fx_skin", "convenience"]
+    },
+    "evidenceToken": {
+      "type": "hard",
+      "uses": [
+        {"id": "retry_choice", "cost": 2},
+        {"id": "restore_checkpoint", "cost": 3},
+        {"id": "hidden_log", "cost": 1}
+      ]
+    }
+  }
+}
