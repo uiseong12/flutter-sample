@@ -201,6 +201,7 @@ class _GameShellState extends State<GameShell> with TickerProviderStateMixin {
   bool _skipTyping = false;
   bool _lineCompleted = true;
   String _visibleLine = '';
+  String? _storyResultReturnHint;
   Timer? _typingTimer;
 
   WorkMiniGame _selectedWork = WorkMiniGame.herbSort;
@@ -1394,14 +1395,28 @@ class _GameShellState extends State<GameShell> with TickerProviderStateMixin {
     if (_storyOpenCurrency <= 0) {
       if (!mounted) return;
       final rem = _storyOpenRechargeAt?.difference(DateTime.now()) ?? const Duration(hours: 6);
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('노드 오픈 재화 부족 · 다음 충전 ${_fmtClock(rem.isNegative ? Duration.zero : rem)}')));
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('열쇠가 부족합니다 · 다음 충전 ${_fmtClock(rem.isNegative ? Duration.zero : rem)}')));
       return;
     }
+
+    final canOpenNextByKey = _storySelections[_storyIndex] != null && _storyIndex < _story.length - 1;
+
     _playReward();
     setState(() {
       _storyOpenCurrency -= 1;
+      if (canOpenNextByKey) {
+        _storyIndex += 1;
+        _nodeDialogueIndex = 0;
+        _sceneKey += 1;
+        _cameraSeed = '${_random.nextDouble()}';
+        _transitionPreset = TransitionPreset.fade;
+      }
       _storyLockUntil = null;
     });
+
+    if (canOpenNextByKey && mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('열쇠로 다음 노드를 개방했습니다.')));
+    }
     await _save();
   }
 
@@ -1731,15 +1746,8 @@ class _GameShellState extends State<GameShell> with TickerProviderStateMixin {
 
     _logs.insert(0, '[대사] ${choice.result}');
 
-    if (_storyIndex < _story.length - 1) {
-      _storyIndex += 1;
-      _nodeDialogueIndex = 0;
-      _sceneKey += 1;
-      _cameraSeed = '${_random.nextDouble()}';
-      _transitionPreset = choice.sideDelta < 0 ? TransitionPreset.flash : TransitionPreset.slide;
-      if (_storyIndex > 0 && _storyIndex % 3 == 0) {
-        _storyLockUntil = DateTime.now().add(const Duration(hours: 3, minutes: 20));
-      }
+    if (_storyIndex > 0 && _storyIndex % 3 == 0) {
+      _storyLockUntil = DateTime.now().add(const Duration(hours: 3, minutes: 20));
     }
 
     _lockRouteAtNode15IfNeeded();
@@ -1748,41 +1756,10 @@ class _GameShellState extends State<GameShell> with TickerProviderStateMixin {
     _refreshAllRelationshipStates(source: '메이저 선택');
 
     _beginBeatLine();
+    _storyResultReturnHint = '${choice.result}\n\n< 돌아가기... >';
     await _save();
-
     if (!mounted) return;
-    await showDialog(
-      context: context,
-      builder: (_) => AlertDialog(
-        title: const Text('결과'),
-        content: Text('${choice.result}\n\n획득: 금화 +${10 + (_totalCharm ~/ 2)} / 민심 +1'),
-        actions: [
-          TextButton(onPressed: () => Navigator.pop(context), child: const Text('노드맵으로 돌아가기')),
-          TextButton(
-            onPressed: () async {
-              Navigator.pop(context);
-              final ok = await _consumeAdView('after_node_clear_bonus', 10);
-              if (!ok || !mounted) return;
-              _gold += 80;
-              _logs.insert(0, '[광고 보상] 노드 클리어 추가 보상 수령');
-              ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('30초 시청 보상: 금화+80 / 실크+1')));
-              setState(() {});
-            },
-            child: const Text('보상 추가 받기(광고)'),
-          ),
-          TextButton(
-            onPressed: () async {
-              Navigator.pop(context);
-              await _watchRewardAdSkeleton(placement: 'premium_token_daily');
-            },
-            child: const Text('프리미엄 토큰 받기(광고)'),
-          ),
-        ],
-      ),
-    );
-    setState(() {
-      _inStoryScene = false;
-    });
+    setState(() {});
   }
 
   Future<void> _buyGift(ShopItem item, Character target) async {
@@ -4457,9 +4434,10 @@ class _GameShellState extends State<GameShell> with TickerProviderStateMixin {
                           child: Row(
                             children: [
                               Expanded(
-                                child: _sealPrimaryButton('선택 노드 시작', lockRem.inSeconds > 0 ? null : () {
+                                child: _sealPrimaryButton('선택 노드 시작', (_storySelections[_storyIndex] != null || lockRem.inSeconds > 0) ? null : () {
                                   setState(() {
                                     _inStoryScene = true;
+                                    _storyResultReturnHint = null;
                                     _sceneKey += 1;
                                     _transitionPreset = TransitionPreset.fade;
                                   });
@@ -4469,7 +4447,7 @@ class _GameShellState extends State<GameShell> with TickerProviderStateMixin {
                               const SizedBox(width: 8),
                               const Expanded(
                                 child: Text(
-                                  '현재 노드 재탭으로 즉시 시작',
+                                  '클리어 후엔 열쇠로 다음 노드 개방',
                                   style: TextStyle(color: Color(0xFFF6F1E8), fontSize: 11, shadows: [Shadow(color: Color(0x99000000), blurRadius: 6)]),
                                   textAlign: TextAlign.center,
                                 ),
@@ -4528,7 +4506,7 @@ class _GameShellState extends State<GameShell> with TickerProviderStateMixin {
                                         child: FilledButton(
                                           style: _fantasyButtonStyle(filled: true),
                                           onPressed: _unlockStoryNowByCurrency,
-                                          child: const Text('노드 재화 1개 즉시 개방'),
+                                          child: const Text('열쇠 1개로 다음 노드 개방'),
                                         ),
                                       ),
                                     ],
@@ -4671,13 +4649,14 @@ class _GameShellState extends State<GameShell> with TickerProviderStateMixin {
                             final rem = _storyLockRemaining;
                             final msg = (rem.inSeconds > 0 && beat == _storyIndex + 1)
                                 ? '다음 노드 잠금: ${_fmtClock(rem)} 남음'
-                                : '아직 잠긴 노드입니다. 이전 노드를 먼저 진행하세요.';
+                                : '아직 잠긴 노드입니다. 현재 노드 클리어 후 열쇠로 개방하세요.';
                             ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(msg)));
                             return;
                           }
                           if (beat == _storyIndex) {
                             setState(() {
                               _inStoryScene = true;
+                              _storyResultReturnHint = null;
                               _sceneKey += 1;
                               _transitionPreset = TransitionPreset.fade;
                             });
@@ -4824,7 +4803,10 @@ class _GameShellState extends State<GameShell> with TickerProviderStateMixin {
                 Positioned.fill(child: Container(color: _moodOverlay())),
                 Positioned(top: 10, left: 10, child: OutlinedButton.icon(
                   style: OutlinedButton.styleFrom(backgroundColor: Colors.black.withOpacity(0.4), foregroundColor: Colors.white),
-                  onPressed: () => setState(() => _inStoryScene = false),
+                  onPressed: () => setState(() {
+                    _inStoryScene = false;
+                    _storyResultReturnHint = null;
+                  }),
                   icon: const Icon(Icons.arrow_back),
                   label: const Text('스토리 맵'),
                 )),
@@ -4922,6 +4904,9 @@ class _GameShellState extends State<GameShell> with TickerProviderStateMixin {
   Widget _dialogWindow(StoryBeat beat) {
     return GestureDetector(
       onTap: () {
+        if (_storyResultReturnHint != null) {
+          return;
+        }
         if (!_lineCompleted) {
           _typingTimer?.cancel();
           setState(() {
@@ -4970,14 +4955,32 @@ class _GameShellState extends State<GameShell> with TickerProviderStateMixin {
                 ],
               ),
               const SizedBox(height: 6),
-              SizedBox(height: 72, child: Text(_visibleLine, style: const TextStyle(color: Colors.white, fontSize: 15))),
+              SizedBox(
+                height: 72,
+                child: Text(_storyResultReturnHint ?? _visibleLine, style: const TextStyle(color: Colors.white, fontSize: 15)),
+              ),
               const SizedBox(height: 10),
               Expanded(
-                child: _lineCompleted
-                    ? SingleChildScrollView(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
+                child: _storyResultReturnHint != null
+                    ? Align(
+                        alignment: Alignment.bottomRight,
+                        child: TextButton(
+                          onPressed: () {
+                            setState(() {
+                              _storyResultReturnHint = null;
+                              _inStoryScene = false;
+                              _nodeDialogueIndex = 0;
+                            });
+                            _beginBeatLine();
+                          },
+                          child: const Text('< 돌아가기... >', style: TextStyle(color: Color(0xFFFFD67A), fontWeight: FontWeight.w700)),
+                        ),
+                      )
+                    : _lineCompleted
+                        ? SingleChildScrollView(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
                             if (_hasNextDialogueLine() && !_isCheckpointPending())
                               const Padding(
                                 padding: EdgeInsets.only(bottom: 10),
