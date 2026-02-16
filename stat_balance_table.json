@@ -1,24 +1,97 @@
 {
-  "ranges": {
-    "legitimacy": [0, 100],
-    "economy": [0, 100],
-    "publicTrust": [0, 100],
-    "military": [0, 100],
-    "surveillance": [0, 100]
+  "version": 2,
+  "stats": {
+    "truth": {
+      "min": 0,
+      "max": 100,
+      "start": 35
+    },
+    "order": {
+      "min": 0,
+      "max": 100,
+      "start": 35
+    },
+    "stability": {
+      "min": 0,
+      "max": 100,
+      "start": 35
+    },
+    "will": {
+      "min": 0,
+      "max": 100,
+      "start": 40
+    }
   },
-  "perNode": {
-    "normalChoice": [-5, 5],
-    "majorChoice": [-15, 15],
-    "miniGame": [3, 8]
+  "affection": {
+    "nayeon": {
+      "start": 20
+    },
+    "siyu": {
+      "start": 20
+    },
+    "harin": {
+      "start": 20
+    },
+    "iden": {
+      "start": 20
+    },
+    "yura": {
+      "start": 20
+    }
   },
-  "equipmentEffectsExamples": [
-    {"item": "왕실색 실 자수", "effects": {"legitimacy": 3, "publicTrust": -2}},
-    {"item": "은등회 직물", "effects": {"publicTrust": 4}},
-    {"item": "길드 직조 실크", "effects": {"economy": 3}},
-    {"item": "규율 위반 장식", "effects": {"surveillance": 12}}
+  "choiceDeltaRange": {
+    "light": [
+      1,
+      3
+    ],
+    "medium": [
+      4,
+      7
+    ],
+    "strong": [
+      8,
+      12
+    ]
+  },
+  "interactionRules": [
+    {
+      "id": "truth_surge_penalty",
+      "when": "chapterDelta.truth>=10",
+      "apply": {
+        "stability": -2
+      }
+    },
+    {
+      "id": "order_surge_penalty",
+      "when": "chapterDelta.order>=10",
+      "apply": {
+        "truth": -1
+      }
+    },
+    {
+      "id": "low_will_scale",
+      "when": "will<25",
+      "apply": {
+        "choiceEffectScale": 0.8
+      }
+    }
   ],
-  "failStates": [
-    {"name": "공개 망신 추방", "condition": "surveillance >= 100"},
-    {"name": "첫 공판 붕괴", "condition": "node10 gate total < 80"}
-  ]
+  "chapterGates": {
+    "C12": {
+      "warnings": [
+        "routeAffection<35",
+        "will<30"
+      ]
+    },
+    "C26": {
+      "common": "will>=35",
+      "routes": {
+        "NAYEON": "aff.nayeon>=55 && truth>=55",
+        "SIYU": "aff.siyu>=55 && stability>=50",
+        "HARIN": "aff.harin>=55 && will>=50",
+        "IDEN": "aff.iden>=55 && truth>=60",
+        "YURA": "aff.yura>=55 && order>=55"
+      }
+    }
+  }
 }

@@ -1,17 +1,106 @@
 {
-  "endings": [
-    {"id": "co_rule_1", "type": "공동통치", "requires": {"legitimacy": 60, "military": 60}},
-    {"id": "co_rule_2", "type": "공동통치", "requires": {"legitimacy": 55, "military": 65}},
-    {"id": "co_rule_3", "type": "공동통치", "requires": {"legitimacy": 65, "military": 55}},
-    {"id": "revolution_1", "type": "혁명", "requires": {"publicTrust": 75, "legitimacy": 40}},
-    {"id": "revolution_2", "type": "혁명", "requires": {"publicTrust": 80, "economy": 45}},
-    {"id": "compromise_1", "type": "타협", "requires": {"legitimacy": 50, "economy": 50, "military": 50}},
-    {"id": "compromise_2", "type": "타협", "requires": {"economy": 65, "publicTrust": 55}},
-    {"id": "compromise_3", "type": "타협", "requires": {"legitimacy": 55, "publicTrust": 55}},
-    {"id": "bad_exile", "type": "배드", "trigger": "node10_total_below_80"},
-    {"id": "bad_execution", "type": "배드", "trigger": "surveillance_100"},
-    {"id": "bad_puppet", "type": "배드", "trigger": "guild_hostile_and_military_low"},
-    {"id": "true_silver_queen", "type": "진엔딩", "requires": {"legitimacy": 70, "economy": 70, "publicTrust": 70, "military": 70, "surveillanceMax": 80, "recipeUnlocked": true}}
+  "version": 2,
+  "theme": "first_love_forgery_royal_secret",
+  "badPriority": [
+    "BE_01",
+    "BE_02",
+    "BE_03",
+    "BE_04",
+    "BE_05",
+    "BE_06",
+    "BE_07",
+    "BE_08",
+    "BE_09",
+    "BE_10"
   ],
-  "priority": ["bad_execution", "bad_exile", "true_silver_queen", "co_rule_1", "co_rule_2", "co_rule_3", "revolution_1", "revolution_2", "compromise_1", "compromise_2", "compromise_3", "bad_puppet"]
+  "badEndings": [
+    {
+      "id": "BE_01",
+      "when": "chapter==6 && path=='infiltration_fail' && will<35"
+    },
+    {
+      "id": "BE_02",
+      "when": "tamperSuspectCount>=2 && truth<40"
+    },
+    {
+      "id": "BE_03",
+      "when": "chapter==17 && choice=='force_both' && will<45"
+    },
+    {
+      "id": "BE_04",
+      "when": "chapter==22 && choice=='delay' && stability<40"
+    },
+    {
+      "id": "BE_05",
+      "when": "chapter==14 && choice=='real_name_open' && stability<35"
+    },
+    {
+      "id": "BE_06",
+      "when": "chapter==19 && choice=='incomplete_accept' && truth<55"
+    },
+    {
+      "id": "BE_07",
+      "when": "chapter==24 && choice=='private_switch' && truth<45"
+    },
+    {
+      "id": "BE_08",
+      "when": "chapter==27 && choice=='full_origin_open' && stability<45"
+    },
+    {
+      "id": "BE_09",
+      "when": "chapter==30 && order>=75 && truth<=45"
+    },
+    {
+      "id": "BE_10",
+      "when": "chapter==30 && truth>=80 && stability<=35"
+    }
+  ],
+  "happyCommon": [
+    "will>=45",
+    "routeAffection>=70",
+    "noBadEnding"
+  ],
+  "happyEndings": [
+    {
+      "id": "HE_NAYEON",
+      "route": "NAYEON",
+      "requires": {
+        "truth": 70,
+        "order": 45
+      }
+    },
+    {
+      "id": "HE_SIYU",
+      "route": "SIYU",
+      "requires": {
+        "stability": 70,
+        "will": 55
+      }
+    },
+    {
+      "id": "HE_HARIN",
+      "route": "HARIN",
+      "requires": {
+        "will": 65,
+        "truth": 55,
+        "stability": 55
+      }
+    },
+    {
+      "id": "HE_IDEN",
+      "route": "IDEN",
+      "requires": {
+        "truth": 78,
+        "order": 40
+      }
+    },
+    {
+      "id": "HE_YURA",
+      "route": "YURA",
+      "requires": {
+        "order": 72,
+        "stability": 55
+      }
+    }
+  ]
 }

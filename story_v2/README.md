@@ -43,3 +43,6 @@
 ## 게임 시스템 재설계
 - `system/GAME_SYSTEM_V2.md`
 - `system/game_system_v2.json`
+
+- `system/chapter_choice_delta_v1.csv`
+- `system/LIVE_OPS_RULES_V2.md`
