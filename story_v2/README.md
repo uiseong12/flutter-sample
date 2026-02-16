@@ -49,3 +49,4 @@
 - `system/chapter_choice_delta_v2.csv`
 - `system/BALANCE_PATCH_V2.md`
 - `system/monetization_v2.json`
+- `routes/ROUTE_BE_01_10_DETAILED.md`
