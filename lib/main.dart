@@ -22,7 +22,7 @@ class StoryApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: '로열 하트 크로니클',
+      title: '첫사랑 위조 x 왕실 대역',
       debugShowCheckedModeBanner: false,
       theme: ThemeData(
         colorScheme: ColorScheme.fromSeed(seedColor: const Color(0xFF6D2A45)),
@@ -182,7 +182,7 @@ class GameShell extends StatefulWidget {
 }
 
 class _GameShellState extends State<GameShell> with TickerProviderStateMixin {
-  static const _saveKey = 'vn_save_v7';
+  static const _saveKey = 'vn_save_v8_storyv2';
   final Random _random = Random();
 
   int _menuIndex = 0;
