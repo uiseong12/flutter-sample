@@ -4762,6 +4762,17 @@ class _GameShellState extends State<GameShell> with TickerProviderStateMixin {
       }
     }
 
+    // 지나온 챕터의 미선택 분기는 ??로 잔상 유지
+    for (var ch = 1; ch < frontier; ch++) {
+      final picked = _storySelections[ch - 1];
+      if (picked == null) continue;
+      final cCount = _story[ch - 1].choices.length;
+      final bCount = cCount < 2 ? 2 : (cCount > 4 ? 4 : cCount);
+      if (bCount <= 1) continue;
+      nodes.add({'id': 'HIST_UNKNOWN_$ch', 'chapter': ch + 1, 'lane': -2, 'kind': 'unknown'});
+      edges.add({'from': 'PATH_C${ch.toString().padLeft(2, '0')}', 'to': 'HIST_UNKNOWN_$ch'});
+    }
+
     // 다음 챕터 노출 규칙
     if (frontier < maxChapter) {
       final nextCh = frontier + 1;
@@ -4778,7 +4789,7 @@ class _GameShellState extends State<GameShell> with TickerProviderStateMixin {
           // 아직 현재 챕터 미클리어: 전부 잠금
           kind = 'locked';
         } else {
-          // 현재 챕터 클리어 이후: 열린 후보 1개 + 나머지 ???
+          // 현재 챕터 클리어 이후: 해금 가능 후보 1개 + 나머지 ???
           final openIdx = selectedAtFrontier % branchCount;
           kind = (i == openIdx) ? 'locked' : 'unknown';
         }
@@ -4828,7 +4839,8 @@ class _GameShellState extends State<GameShell> with TickerProviderStateMixin {
                     final isPath = kind == 'path';
                     final isUnknown = kind == 'unknown';
                     final isLocked = kind == 'locked';
-                    final canTap = (isPath && ch <= frontier) || (isLocked && ch == frontier + 1 && _storySelections[frontier - 1] != null);
+                    final canTapPath = isPath && ch <= frontier;
+                    final canUnlockNextByKey = isLocked && ch == frontier + 1 && _storySelections[frontier - 1] != null;
 
                     final nodeTitle = _treeNodeNames['C${ch.toString().padLeft(2, '0')}_N1'] ?? '챕터 ${ch.toString().padLeft(2, '0')}';
 
@@ -4836,16 +4848,34 @@ class _GameShellState extends State<GameShell> with TickerProviderStateMixin {
                       left: p.dx - 58,
                       top: p.dy - 20,
                       child: GestureDetector(
-                        onTap: canTap
-                            ? () {
+                        onTap: (canTapPath || canUnlockNextByKey)
+                            ? () async {
                                 _playClick();
+                                if (canTapPath) {
+                                  setState(() {
+                                    _storyIndex = ch - 1;
+                                    _nodeDialogueIndex = 0;
+                                    _inStoryScene = true;
+                                    _storyResultReturnHint = null;
+                                    _beginBeatLine();
+                                  });
+                                  return;
+                                }
+
+                                // 다음 노드는 반드시 열쇠 소비로 해금
                                 setState(() {
-                                  _storyIndex = ch - 1;
-                                  _nodeDialogueIndex = 0;
-                                  _inStoryScene = true;
-                                  _storyResultReturnHint = null;
-                                  _beginBeatLine();
+                                  _storyIndex = frontier - 1;
                                 });
+                                await _unlockStoryNowByCurrency();
+                                if (!mounted) return;
+                                if (_storyIndex == ch - 1) {
+                                  setState(() {
+                                    _nodeDialogueIndex = 0;
+                                    _inStoryScene = true;
+                                    _storyResultReturnHint = null;
+                                    _beginBeatLine();
+                                  });
+                                }
                               }
                             : null,
                         onLongPress: () async {
