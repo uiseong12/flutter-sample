@@ -49,17 +49,10 @@
 - `system/chapter_choice_delta_v2.csv`
 - `system/BALANCE_PATCH_V2.md`
 - `system/monetization_v2.json`
-- `routes/ROUTE_BE_01_10_DETAILED.md`
 
-- `routes/ROUTE_BE_01.md`
-- `routes/ROUTE_BE_02.md`
-- `routes/ROUTE_BE_03.md`
-- `routes/ROUTE_BE_04.md`
-- `routes/ROUTE_BE_05.md`
-- `routes/ROUTE_BE_06.md`
-- `routes/ROUTE_BE_07.md`
-- `routes/ROUTE_BE_08.md`
-- `routes/ROUTE_BE_09.md`
-- `routes/ROUTE_BE_10.md`
-
+- `routes/ROUTE_HE_NAYEON.md`
+- `routes/ROUTE_HE_SIYU.md`
+- `routes/ROUTE_HE_HARIN.md`
+- `routes/ROUTE_HE_IDEN.md`
+- `routes/ROUTE_HE_YURA.md`
 - `routes/ROUTE_BE_FULL_CHAINS.md`
