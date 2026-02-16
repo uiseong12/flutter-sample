@@ -21,6 +21,6 @@
 - `route`, `priority`
 
 
-## 추가: 풀 원고(초반 10챕터)
-- `full_scripts/C01.md` ~ `full_scripts/C10.md`
+## 추가: 풀 원고(1~20챕터)
+- `full_scripts/C01.md` ~ `full_scripts/C20.md`
 - 읽기 가이드: `READ_START_HERE.md`
