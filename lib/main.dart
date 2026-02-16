@@ -258,6 +258,9 @@ class _GameShellState extends State<GameShell> with TickerProviderStateMixin {
   final List<_Sparkle> _sparkles = [];
   final Map<String, int> _lastDelta = {};
   final Map<String, String> _dateModeByCharacter = {};
+  final List<Map<String, dynamic>> _treeNodes = [];
+  final List<Map<String, dynamic>> _treeEdges = [];
+  final Map<String, String> _treeNodeNames = {};
   final Map<int, List<Map<String, dynamic>>> _nodeDialogues = {};
   final Map<int, List<Map<String, dynamic>>> _nodeCheckpoints = {};
   final Map<String, Map<int, List<Map<String, dynamic>>>> _routeNodeDialogues = {'elian': {}, 'lucian': {}, 'serena': {}};
@@ -1119,6 +1122,7 @@ class _GameShellState extends State<GameShell> with TickerProviderStateMixin {
   Future<void> _bootstrap() async {
     await _loadRuleFiles();
     await _applyStoryV2RuntimeBridge();
+    await _loadStoryTreeMap();
     if (_story.isNotEmpty && _story.first.title.contains('계약약혼')) {
       _story = _buildStoryV2StubBeats();
     }
@@ -1303,6 +1307,30 @@ class _GameShellState extends State<GameShell> with TickerProviderStateMixin {
     } catch (_) {
       _story = _buildStoryV2StubBeats();
     }
+  }
+
+  Future<void> _loadStoryTreeMap() async {
+    try {
+      final raw = await rootBundle.loadString('assets/story_v2/story_map_layout.json');
+      final m = jsonDecode(raw) as Map<String, dynamic>;
+      _treeNodes
+        ..clear()
+        ..addAll(((m['nodes'] as List<dynamic>? ?? const [])
+            .cast<Map<String, dynamic>>()));
+      _treeEdges
+        ..clear()
+        ..addAll(((m['edges'] as List<dynamic>? ?? const [])
+            .cast<Map<String, dynamic>>()));
+    } catch (_) {}
+
+    try {
+      final raw = await rootBundle.loadString('story_v2/chapter_node_names.json');
+      final m = jsonDecode(raw) as Map<String, dynamic>;
+      final nodes = (m['nodes'] as Map<String, dynamic>? ?? {});
+      _treeNodeNames
+        ..clear()
+        ..addAll(nodes.map((k, v) => MapEntry(k, v.toString())));
+    } catch (_) {}
   }
 
   Future<void> _load() async {
@@ -4670,150 +4698,132 @@ class _GameShellState extends State<GameShell> with TickerProviderStateMixin {
   }
 
   Widget _branchRouteMap({required double height}) {
-    // 30-stage vertical route with in-between branch-like lane changes
-    final viewH = height.clamp(280.0, 620.0).toDouble();
-    const stepGap = 126.0;
-    const laneX = [34.0, 174.0, 314.0];
+    final viewH = height.clamp(300.0, 680.0).toDouble();
+    final tree = _treeNodes
+        .where((e) => (e['chapter'] as int? ?? 0) >= 1 && (e['chapter'] as int? ?? 0) <= 30)
+        .toList()
+      ..sort((a, b) {
+        final ca = (a['chapter'] as int? ?? 0);
+        final cb = (b['chapter'] as int? ?? 0);
+        if (ca != cb) return ca.compareTo(cb);
+        return (a['id'] as String).compareTo(b['id'] as String);
+      });
 
-    final lanePattern = [1, 0, 2, 1, 2, 0, 1, 2, 1, 0, 2, 1, 0, 1, 2, 1, 2, 0, 1, 0, 2, 1, 2, 1, 0, 1, 2, 0, 1, 2];
-    final totalSteps = _story.length; // 30
-    final mapH = 170 + (totalSteps - 1) * stepGap;
-
-    final nodes = <Map<String, int>>[];
-    for (int i = 0; i < totalSteps; i++) {
-      nodes.add({'id': i, 'beat': i, 'lane': lanePattern[i % lanePattern.length], 'step': i});
+    if (tree.isEmpty) {
+      return const Center(child: Text('스토리 트리맵 로딩 중...', style: TextStyle(color: Colors.white70)));
     }
 
-    Offset nodePos(Map<String, int> n) {
-      final x = laneX[n['lane']!];
-      // 하단 메뉴/브라우저 바에 첫 노드가 가리지 않도록 시작점을 위로 올림
-      final y = mapH - 126 - (n['step']! * stepGap);
-      return Offset(x, y);
+    final xs = tree.map((e) => (e['x'] as num).toDouble()).toList();
+    final ys = tree.map((e) => (e['y'] as num).toDouble()).toList();
+    final minX = xs.reduce((a, b) => a < b ? a : b);
+    final maxX = xs.reduce((a, b) => a > b ? a : b);
+    final minY = ys.reduce((a, b) => a < b ? a : b);
+    final maxY = ys.reduce((a, b) => a > b ? a : b);
+
+    final mapW = 360.0;
+    final mapH = ((maxY - minY) * 0.22) + 220;
+
+    Offset posOf(Map<String, dynamic> n) {
+      final x = (n['x'] as num).toDouble();
+      final y = (n['y'] as num).toDouble();
+      final nx = (maxX - minX).abs() < 1 ? 0.5 : (x - minX) / (maxX - minX);
+      final ny = (maxY - minY).abs() < 1 ? 0.0 : (y - minY) / (maxY - minY);
+      final px = 26 + nx * (mapW - 52);
+      final py = 26 + ny * (mapH - 52);
+      return Offset(px, py);
     }
 
-    final links = <List<int>>[];
-    for (int i = 0; i < totalSteps - 1; i++) {
-      links.add([i, i + 1]);
-      // 보조 분기선은 겹침이 적은 구간에만 제한적으로 추가
-      if (i % 6 == 2 && i + 2 < totalSteps) {
-        final laneA = nodes[i]['lane']!;
-        final laneB = nodes[i + 2]['lane']!;
-        if ((laneA - laneB).abs() <= 1) {
-          links.add([i, i + 2]);
-        }
-      }
-    }
+    final byId = {for (final n in tree) n['id'].toString(): n};
+    final edges = _treeEdges.where((e) => byId.containsKey(e['from']) && byId.containsKey(e['to'])).toList();
+    final posMap = {for (final n in tree) n['id'].toString(): posOf(n)};
 
     return Container(
       height: viewH,
       decoration: BoxDecoration(borderRadius: BorderRadius.circular(14)),
       child: SingleChildScrollView(
         reverse: true,
-        child: SizedBox(
-          height: mapH,
-          child: Stack(
-            children: [
-              Positioned.fill(
-                child: CustomPaint(
-                  painter: _RouteLinkPainter(
-                    nodes: nodes,
-                    links: links,
-                    nodePos: nodePos,
-                    selectedBeat: _storyIndex,
+        child: Center(
+          child: SizedBox(
+            width: mapW,
+            height: mapH,
+            child: Stack(
+              children: [
+                Positioned.fill(
+                  child: CustomPaint(
+                    painter: _StoryTreeLinkPainter(
+                      posMap: posMap,
+                      edges: edges,
+                      currentChapter: _storyIndex + 1,
+                    ),
                   ),
                 ),
-              ),
-              ...nodes.map((n) {
-                final beat = n['beat']!;
-                final pos = nodePos(n);
-                final done = _storySelections[beat] != null;
-                final selected = beat == _storyIndex;
-                final locked = beat > _storyIndex;
-
-                return Positioned(
-                  left: pos.dx,
-                  top: pos.dy,
-                  child: Stack(
-                    clipBehavior: Clip.none,
-                    children: [
-                      GestureDetector(
-                        behavior: HitTestBehavior.opaque,
-                        onTap: () {
-                          _playClick();
-                          if (locked) {
-                            final rem = _storyLockRemaining;
-                            final msg = (rem.inSeconds > 0 && beat == _storyIndex + 1)
-                                ? '다음 노드 잠금: ${_fmtClock(rem)} 남음'
-                                : '아직 잠긴 노드입니다. 현재 노드 클리어 후 열쇠로 개방하세요.';
-                            ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(msg)));
-                            return;
-                          }
-                          if (beat == _storyIndex) {
-                            setState(() {
-                              _inStoryScene = true;
-                              _storyResultReturnHint = null;
-                              _sceneKey += 1;
-                              _transitionPreset = TransitionPreset.fade;
-                            });
-                            _beginBeatLine();
-                            return;
-                          }
-                          setState(() {
-                            _storyIndex = beat;
-                            _nodeDialogueIndex = 0;
-                            _lockRouteAtNode15IfNeeded();
-                          });
-                        },
-                        onLongPress: () => _showNodePreview(beat),
-                        child: SizedBox(
-                          width: 48,
-                          height: 48,
-                          child: Stack(
-                            clipBehavior: Clip.none,
-                            alignment: Alignment.center,
-                            children: [
-                              AnimatedContainer(
-                                duration: const Duration(milliseconds: 180),
-                                width: 34,
-                                height: 34,
-                                alignment: Alignment.center,
-                                decoration: BoxDecoration(
-                                  shape: BoxShape.circle,
-                                  gradient: LinearGradient(
-                                    begin: Alignment.topLeft,
-                                    end: Alignment.bottomRight,
-                                    colors: locked
-                                        ? const [Color(0xFF33333F), Color(0xFF20202A)]
-                                        : selected
-                                            ? const [Color(0xFF9C84FF), Color(0xFF5C47B6)]
-                                            : (done ? const [Color(0xFFC89D66), Color(0xFF7A5A39)] : const [Color(0xFF5E7599), Color(0xFF364A66)]),
-                                  ),
-                                  border: Border.all(color: locked ? const Color(0x88C9C9C9) : const Color(0xDDF6E9CC), width: 2),
-                                  boxShadow: selected ? [const BoxShadow(color: Color(0xCC7E67FF), blurRadius: 12)] : null,
-                                ),
-                                child: locked
-                                    ? const Icon(Icons.lock_rounded, size: 14, color: Color(0xFFE7DCC8))
-                                    : Column(
-                                        mainAxisAlignment: MainAxisAlignment.center,
-                                        children: [
-                                          Image.asset(_nodeTypeIconAsset(beat), width: 10, height: 10),
-                                          Text('C${(beat + 1).toString().padLeft(2, '0')}', style: const TextStyle(color: Colors.white, fontSize: 7, fontWeight: FontWeight.bold)),
-                                        ],
-                                      ),
-                              ),
-                              if (selected) Positioned(top: -16, right: -10, child: Image.asset('assets/ui/node_current_flag.png', width: 24)),
-                              if (beat == _storyIndex + 1 && _storyLockRemaining.inSeconds > 0)
-                                const Positioned(top: -10, left: -8, child: Icon(Icons.timer_outlined, size: 13, color: Color(0xFFE7B96D))),
-                              if (beat % 5 == 0 && !locked) const Positioned(bottom: -8, right: -8, child: Icon(Icons.warning_amber_rounded, size: 14, color: Colors.orangeAccent)),
-                            ],
+                ...tree.map((n) {
+                  final id = n['id'].toString();
+                  final ch = (n['chapter'] as int? ?? 1);
+                  final p = posMap[id]!;
+                  final done = _storySelections[ch - 1] != null;
+                  final selected = ch == _storyIndex + 1;
+                  final locked = ch > _storyIndex + 1;
+                  final title = _treeNodeNames[id] ?? id;
+                  return Positioned(
+                    left: p.dx - 18,
+                    top: p.dy - 18,
+                    child: GestureDetector(
+                      onTap: () {
+                        _playClick();
+                        if (locked) {
+                          ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('잠긴 챕터입니다. 이전 챕터를 먼저 진행해 주세요.')));
+                          return;
+                        }
+                        setState(() {
+                          _storyIndex = ch - 1;
+                          _nodeDialogueIndex = 0;
+                        });
+                      },
+                      onLongPress: () async {
+                        await showModalBottomSheet(
+                          context: context,
+                          showDragHandle: true,
+                          builder: (_) => Padding(
+                            padding: const EdgeInsets.all(14),
+                            child: Column(
+                              mainAxisSize: MainAxisSize.min,
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(title, style: const TextStyle(fontWeight: FontWeight.bold)),
+                                const SizedBox(height: 6),
+                                Text('노드: $id'),
+                                Text('챕터: CH ${ch.toString().padLeft(2, '0')}'),
+                              ],
+                            ),
                           ),
+                        );
+                      },
+                      child: Container(
+                        width: 36,
+                        height: 36,
+                        alignment: Alignment.center,
+                        decoration: BoxDecoration(
+                          shape: BoxShape.circle,
+                          gradient: LinearGradient(
+                            colors: locked
+                                ? const [Color(0xFF33333F), Color(0xFF20202A)]
+                                : selected
+                                    ? const [Color(0xFF9C84FF), Color(0xFF5C47B6)]
+                                    : (done ? const [Color(0xFFC89D66), Color(0xFF7A5A39)] : const [Color(0xFF5E7599), Color(0xFF364A66)]),
+                          ),
+                          border: Border.all(color: locked ? const Color(0x88C9C9C9) : const Color(0xDDF6E9CC), width: 2),
+                          boxShadow: selected ? [const BoxShadow(color: Color(0xCC7E67FF), blurRadius: 10)] : null,
                         ),
+                        child: locked
+                            ? const Icon(Icons.lock_rounded, size: 14, color: Color(0xFFE7DCC8))
+                            : Text('C${ch.toString().padLeft(2, '0')}', style: const TextStyle(color: Colors.white, fontSize: 7, fontWeight: FontWeight.bold)),
                       ),
-                    ],
-                  ),
-                );
-              }),
-            ],
+                    ),
+                  );
+                }),
+              ],
+            ),
           ),
         ),
       ),
@@ -6291,6 +6301,46 @@ class _MiniGamePainter extends CustomPainter {
 
   @override
   bool shouldRepaint(covariant _MiniGamePainter oldDelegate) => true;
+}
+
+class _StoryTreeLinkPainter extends CustomPainter {
+  _StoryTreeLinkPainter({required this.posMap, required this.edges, required this.currentChapter});
+
+  final Map<String, Offset> posMap;
+  final List<Map<String, dynamic>> edges;
+  final int currentChapter;
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final base = Paint()
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 1.4
+      ..color = const Color(0x66D7C3A0);
+    final glow = Paint()
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 2.6
+      ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 3)
+      ..color = const Color(0x55BFA67A);
+
+    for (final e in edges) {
+      final from = e['from']?.toString() ?? '';
+      final to = e['to']?.toString() ?? '';
+      final a = posMap[from];
+      final b = posMap[to];
+      if (a == null || b == null) continue;
+      final cp = Offset((a.dx + b.dx) / 2, (a.dy + b.dy) / 2 + 8);
+      final path = Path()
+        ..moveTo(a.dx, a.dy)
+        ..quadraticBezierTo(cp.dx, cp.dy, b.dx, b.dy);
+      canvas.drawPath(path, glow);
+      canvas.drawPath(path, base);
+    }
+  }
+
+  @override
+  bool shouldRepaint(covariant _StoryTreeLinkPainter oldDelegate) {
+    return oldDelegate.posMap.length != posMap.length || oldDelegate.edges.length != edges.length || oldDelegate.currentChapter != currentChapter;
+  }
 }
 
 class _RouteLinkPainter extends CustomPainter {

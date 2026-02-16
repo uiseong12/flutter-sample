@@ -33,6 +33,7 @@ flutter:
     - assets/story_v2/story_map_layout.json
     - assets/story_v2/chapter_node_index.json
     - story_v2/story_manifest.json
+    - story_v2/chapter_node_names.json
     - assets/art/
     - assets/ui/
     - assets/ui/nav_gen/
