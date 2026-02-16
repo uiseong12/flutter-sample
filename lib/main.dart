@@ -4493,7 +4493,7 @@ class _GameShellState extends State<GameShell> with TickerProviderStateMixin {
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
                               Text('클리어 $cleared/${_story.length}', style: const TextStyle(color: Color(0xFFF6F1E8), fontWeight: FontWeight.w700, fontSize: 16, shadows: [Shadow(color: Color(0x99000000), blurRadius: 6)])),
-                              Text('현재: CH ${_storyIndex + 1} · ${preview.title}', style: const TextStyle(color: Color(0xFFF6F1E8)),
+                              Text('현재: CH ${_storyIndex + 1} · ${preview.title}', style: const TextStyle(color: Color(0xFFF6F1E8))),
                               if (_endingCharacterName != null)
                                 Text('확정 엔딩: $_endingCharacterName', style: const TextStyle(color: Colors.amberAccent, fontWeight: FontWeight.bold)),
                             ],
