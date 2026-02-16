@@ -4699,61 +4699,82 @@ class _GameShellState extends State<GameShell> with TickerProviderStateMixin {
 
   Widget _branchRouteMap({required double height}) {
     final viewH = height.clamp(300.0, 680.0).toDouble();
-    final tree = _treeNodes
-        .where((e) => (e['chapter'] as int? ?? 0) >= 1 && (e['chapter'] as int? ?? 0) <= 30)
-        .toList()
-      ..sort((a, b) {
-        final ca = (a['chapter'] as int? ?? 0);
-        final cb = (b['chapter'] as int? ?? 0);
-        if (ca != cb) return ca.compareTo(cb);
-        return (a['id'] as String).compareTo(b['id'] as String);
+    final maxChapter = _story.length;
+
+    int frontier = _storySelections.lastIndexWhere((e) => e != null) + 1;
+    if (frontier < 1) frontier = 1;
+    if (frontier > maxChapter) frontier = maxChapter;
+
+    final nodes = <Map<String, dynamic>>[];
+    final edges = <Map<String, dynamic>>[];
+
+    double jitter(String seed, double amp) {
+      final h = seed.hashCode.abs() % 1000;
+      return ((h / 1000.0) - 0.5) * amp;
+    }
+
+    // 이미 선택된 메인 경로만 표시
+    for (var ch = 1; ch <= frontier; ch++) {
+      nodes.add({
+        'id': 'PATH_C${ch.toString().padLeft(2, '0')}',
+        'chapter': ch,
+        'lane': 0,
+        'unknown': false,
+      });
+      if (ch > 1) {
+        edges.add({
+          'from': 'PATH_C${(ch - 1).toString().padLeft(2, '0')}',
+          'to': 'PATH_C${ch.toString().padLeft(2, '0')}',
+        });
+      }
+    }
+
+    // 다음 챕터는 "선택 가능한 분기"만 표시, 미선택 분기는 ?? 처리
+    if (frontier < maxChapter) {
+      final currentBeat = _story[frontier - 1];
+      final branchCount = currentBeat.choices.isEmpty ? 1 : currentBeat.choices.length;
+      final nextCh = frontier + 1;
+      nodes.add({
+        'id': 'NEXT_MAIN_C${nextCh.toString().padLeft(2, '0')}',
+        'chapter': nextCh,
+        'lane': 0,
+        'unknown': false,
+      });
+      edges.add({
+        'from': 'PATH_C${frontier.toString().padLeft(2, '0')}',
+        'to': 'NEXT_MAIN_C${nextCh.toString().padLeft(2, '0')}',
       });
 
-    if (tree.isEmpty) {
-      return const Center(child: Text('스토리 트리맵 로딩 중...', style: TextStyle(color: Colors.white70)));
-    }
-
-    final xs = tree.map((e) => (e['x'] as num).toDouble()).toList();
-    final ys = tree.map((e) => (e['y'] as num).toDouble()).toList();
-    final minX = xs.reduce((a, b) => a < b ? a : b);
-    final maxX = xs.reduce((a, b) => a > b ? a : b);
-    final minY = ys.reduce((a, b) => a < b ? a : b);
-    final maxY = ys.reduce((a, b) => a > b ? a : b);
-
-    final chapterBuckets = <int, List<Map<String, dynamic>>>{};
-    for (final n in tree) {
-      final ch = (n['chapter'] as int? ?? 0);
-      chapterBuckets.putIfAbsent(ch, () => []).add(n);
-    }
-    final chapterIndexById = <String, int>{};
-    var maxChapterStack = 1;
-    chapterBuckets.forEach((ch, arr) {
-      arr.sort((a, b) => (a['id'] as String).compareTo(b['id'] as String));
-      maxChapterStack = arr.length > maxChapterStack ? arr.length : maxChapterStack;
-      for (var i = 0; i < arr.length; i++) {
-        chapterIndexById[arr[i]['id'].toString()] = i;
+      for (var i = 0; i < branchCount - 1; i++) {
+        final side = (i.isEven ? 1 : -1) * (1 + (i ~/ 2));
+        final id = 'NEXT_UNKNOWN_${nextCh}_$i';
+        nodes.add({
+          'id': id,
+          'chapter': nextCh,
+          'lane': side,
+          'unknown': true,
+        });
+        edges.add({
+          'from': 'PATH_C${frontier.toString().padLeft(2, '0')}',
+          'to': id,
+        });
       }
-    });
+    }
 
-    const scaleX = 0.58;
-    const scaleY = 0.18;
-    final mapW = ((maxX - minX) * scaleX).abs() + 180 + (maxChapterStack * 34);
-    final mapH = ((maxY - minY) * scaleY).abs() + 180;
+    final mapW = 620.0;
+    final mapH = (frontier + 2) * 94.0 + 80;
 
     Offset posOf(Map<String, dynamic> n) {
       final id = n['id'].toString();
-      final x = (n['x'] as num).toDouble();
-      final y = (n['y'] as num).toDouble();
-      final idx = chapterIndexById[id] ?? 0;
-      final chapterSpread = (idx - (maxChapterStack / 2)) * 34.0;
-      final px = 60 + ((x - minX) * scaleX) + chapterSpread;
-      final py = 60 + ((y - minY) * scaleY);
-      return Offset(px, py);
+      final ch = n['chapter'] as int;
+      final lane = (n['lane'] as int? ?? 0).toDouble();
+      final x = 300 + lane * 130 + jitter(id, 22);
+      final y = 44 + (ch - 1) * 94 + jitter('$id-y', 16);
+      return Offset(x, y);
     }
 
-    final byId = {for (final n in tree) n['id'].toString(): n};
-    final edges = _treeEdges.where((e) => byId.containsKey(e['from']) && byId.containsKey(e['to'])).toList();
-    final posMap = {for (final n in tree) n['id'].toString(): posOf(n)};
+    final byId = {for (final n in nodes) n['id'].toString(): n};
+    final posMap = {for (final n in nodes) n['id'].toString(): posOf(n)};
 
     return Container(
       height: viewH,
@@ -4763,7 +4784,6 @@ class _GameShellState extends State<GameShell> with TickerProviderStateMixin {
         child: SizedBox(
           width: mapW,
           child: SingleChildScrollView(
-            reverse: true,
             child: SizedBox(
               width: mapW,
               height: mapH,
@@ -4774,33 +4794,37 @@ class _GameShellState extends State<GameShell> with TickerProviderStateMixin {
                       painter: _StoryTreeLinkPainter(
                         posMap: posMap,
                         edges: edges,
-                        currentChapter: _storyIndex + 1,
+                        currentChapter: frontier,
                       ),
                     ),
                   ),
-                  ...tree.map((n) {
+                  ...nodes.map((n) {
                     final id = n['id'].toString();
-                    final ch = (n['chapter'] as int? ?? 1);
+                    final ch = n['chapter'] as int;
+                    final unknown = n['unknown'] == true;
                     final p = posMap[id]!;
-                    final done = _storySelections[ch - 1] != null;
+                    final done = ch <= frontier;
                     final selected = ch == _storyIndex + 1;
                     final locked = ch > _storyIndex + 1;
-                    final title = _treeNodeNames[id] ?? id;
+                    final title = unknown ? '미확정 분기' : (_treeNodeNames['C${ch.toString().padLeft(2, '0')}_N1'] ?? 'CH ${ch.toString().padLeft(2, '0')}');
+
                     return Positioned(
-                      left: p.dx - 18,
-                      top: p.dy - 18,
+                      left: p.dx - 20,
+                      top: p.dy - 20,
                       child: GestureDetector(
-                        onTap: () {
-                          _playClick();
-                          if (locked) {
-                            ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('잠긴 챕터입니다. 이전 챕터를 먼저 진행해 주세요.')));
-                            return;
-                          }
-                          setState(() {
-                            _storyIndex = ch - 1;
-                            _nodeDialogueIndex = 0;
-                          });
-                        },
+                        onTap: unknown
+                            ? null
+                            : () {
+                                _playClick();
+                                if (locked) {
+                                  ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('잠긴 챕터입니다. 이전 챕터를 먼저 진행해 주세요.')));
+                                  return;
+                                }
+                                setState(() {
+                                  _storyIndex = ch - 1;
+                                  _nodeDialogueIndex = 0;
+                                });
+                              },
                         onLongPress: () async {
                           await showModalBottomSheet(
                             context: context,
@@ -4813,7 +4837,7 @@ class _GameShellState extends State<GameShell> with TickerProviderStateMixin {
                                 children: [
                                   Text(title, style: const TextStyle(fontWeight: FontWeight.bold)),
                                   const SizedBox(height: 6),
-                                  Text('노드: $id'),
+                                  Text('노드: ${unknown ? '??' : id}'),
                                   Text('챕터: CH ${ch.toString().padLeft(2, '0')}'),
                                 ],
                               ),
@@ -4821,24 +4845,28 @@ class _GameShellState extends State<GameShell> with TickerProviderStateMixin {
                           );
                         },
                         child: Container(
-                          width: 36,
-                          height: 36,
+                          width: 40,
+                          height: 40,
                           alignment: Alignment.center,
                           decoration: BoxDecoration(
                             shape: BoxShape.circle,
                             gradient: LinearGradient(
-                              colors: locked
-                                  ? const [Color(0xFF33333F), Color(0xFF20202A)]
-                                  : selected
-                                      ? const [Color(0xFF9C84FF), Color(0xFF5C47B6)]
-                                      : (done ? const [Color(0xFFC89D66), Color(0xFF7A5A39)] : const [Color(0xFF5E7599), Color(0xFF364A66)]),
+                              colors: unknown
+                                  ? const [Color(0xFF3B3B49), Color(0xFF252530)]
+                                  : locked
+                                      ? const [Color(0xFF33333F), Color(0xFF20202A)]
+                                      : selected
+                                          ? const [Color(0xFF9C84FF), Color(0xFF5C47B6)]
+                                          : (done ? const [Color(0xFFC89D66), Color(0xFF7A5A39)] : const [Color(0xFF5E7599), Color(0xFF364A66)]),
                             ),
-                            border: Border.all(color: locked ? const Color(0x88C9C9C9) : const Color(0xDDF6E9CC), width: 2),
+                            border: Border.all(color: unknown ? const Color(0x88E4E4E4) : (locked ? const Color(0x88C9C9C9) : const Color(0xDDF6E9CC)), width: 2),
                             boxShadow: selected ? [const BoxShadow(color: Color(0xCC7E67FF), blurRadius: 10)] : null,
                           ),
-                          child: locked
-                              ? const Icon(Icons.lock_rounded, size: 14, color: Color(0xFFE7DCC8))
-                              : Text('C${ch.toString().padLeft(2, '0')}', style: const TextStyle(color: Colors.white, fontSize: 7, fontWeight: FontWeight.bold)),
+                          child: unknown
+                              ? const Text('??', style: TextStyle(color: Colors.white, fontSize: 10, fontWeight: FontWeight.w900))
+                              : (locked
+                                  ? const Icon(Icons.lock_rounded, size: 14, color: Color(0xFFE7DCC8))
+                                  : Text('C${ch.toString().padLeft(2, '0')}', style: const TextStyle(color: Colors.white, fontSize: 7, fontWeight: FontWeight.bold))),
                         ),
                       ),
                     );
