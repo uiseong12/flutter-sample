@@ -4720,16 +4720,34 @@ class _GameShellState extends State<GameShell> with TickerProviderStateMixin {
     final minY = ys.reduce((a, b) => a < b ? a : b);
     final maxY = ys.reduce((a, b) => a > b ? a : b);
 
-    final mapW = 360.0;
-    final mapH = ((maxY - minY) * 0.22) + 220;
+    final chapterBuckets = <int, List<Map<String, dynamic>>>{};
+    for (final n in tree) {
+      final ch = (n['chapter'] as int? ?? 0);
+      chapterBuckets.putIfAbsent(ch, () => []).add(n);
+    }
+    final chapterIndexById = <String, int>{};
+    var maxChapterStack = 1;
+    chapterBuckets.forEach((ch, arr) {
+      arr.sort((a, b) => (a['id'] as String).compareTo(b['id'] as String));
+      maxChapterStack = arr.length > maxChapterStack ? arr.length : maxChapterStack;
+      for (var i = 0; i < arr.length; i++) {
+        chapterIndexById[arr[i]['id'].toString()] = i;
+      }
+    });
+
+    const scaleX = 0.58;
+    const scaleY = 0.18;
+    final mapW = ((maxX - minX) * scaleX).abs() + 180 + (maxChapterStack * 34);
+    final mapH = ((maxY - minY) * scaleY).abs() + 180;
 
     Offset posOf(Map<String, dynamic> n) {
+      final id = n['id'].toString();
       final x = (n['x'] as num).toDouble();
       final y = (n['y'] as num).toDouble();
-      final nx = (maxX - minX).abs() < 1 ? 0.5 : (x - minX) / (maxX - minX);
-      final ny = (maxY - minY).abs() < 1 ? 0.0 : (y - minY) / (maxY - minY);
-      final px = 26 + nx * (mapW - 52);
-      final py = 26 + ny * (mapH - 52);
+      final idx = chapterIndexById[id] ?? 0;
+      final chapterSpread = (idx - (maxChapterStack / 2)) * 34.0;
+      final px = 60 + ((x - minX) * scaleX) + chapterSpread;
+      final py = 60 + ((y - minY) * scaleY);
       return Offset(px, py);
     }
 
@@ -4741,88 +4759,92 @@ class _GameShellState extends State<GameShell> with TickerProviderStateMixin {
       height: viewH,
       decoration: BoxDecoration(borderRadius: BorderRadius.circular(14)),
       child: SingleChildScrollView(
-        reverse: true,
-        child: Center(
-          child: SizedBox(
-            width: mapW,
-            height: mapH,
-            child: Stack(
-              children: [
-                Positioned.fill(
-                  child: CustomPaint(
-                    painter: _StoryTreeLinkPainter(
-                      posMap: posMap,
-                      edges: edges,
-                      currentChapter: _storyIndex + 1,
-                    ),
-                  ),
-                ),
-                ...tree.map((n) {
-                  final id = n['id'].toString();
-                  final ch = (n['chapter'] as int? ?? 1);
-                  final p = posMap[id]!;
-                  final done = _storySelections[ch - 1] != null;
-                  final selected = ch == _storyIndex + 1;
-                  final locked = ch > _storyIndex + 1;
-                  final title = _treeNodeNames[id] ?? id;
-                  return Positioned(
-                    left: p.dx - 18,
-                    top: p.dy - 18,
-                    child: GestureDetector(
-                      onTap: () {
-                        _playClick();
-                        if (locked) {
-                          ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('잠긴 챕터입니다. 이전 챕터를 먼저 진행해 주세요.')));
-                          return;
-                        }
-                        setState(() {
-                          _storyIndex = ch - 1;
-                          _nodeDialogueIndex = 0;
-                        });
-                      },
-                      onLongPress: () async {
-                        await showModalBottomSheet(
-                          context: context,
-                          showDragHandle: true,
-                          builder: (_) => Padding(
-                            padding: const EdgeInsets.all(14),
-                            child: Column(
-                              mainAxisSize: MainAxisSize.min,
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text(title, style: const TextStyle(fontWeight: FontWeight.bold)),
-                                const SizedBox(height: 6),
-                                Text('노드: $id'),
-                                Text('챕터: CH ${ch.toString().padLeft(2, '0')}'),
-                              ],
-                            ),
-                          ),
-                        );
-                      },
-                      child: Container(
-                        width: 36,
-                        height: 36,
-                        alignment: Alignment.center,
-                        decoration: BoxDecoration(
-                          shape: BoxShape.circle,
-                          gradient: LinearGradient(
-                            colors: locked
-                                ? const [Color(0xFF33333F), Color(0xFF20202A)]
-                                : selected
-                                    ? const [Color(0xFF9C84FF), Color(0xFF5C47B6)]
-                                    : (done ? const [Color(0xFFC89D66), Color(0xFF7A5A39)] : const [Color(0xFF5E7599), Color(0xFF364A66)]),
-                          ),
-                          border: Border.all(color: locked ? const Color(0x88C9C9C9) : const Color(0xDDF6E9CC), width: 2),
-                          boxShadow: selected ? [const BoxShadow(color: Color(0xCC7E67FF), blurRadius: 10)] : null,
-                        ),
-                        child: locked
-                            ? const Icon(Icons.lock_rounded, size: 14, color: Color(0xFFE7DCC8))
-                            : Text('C${ch.toString().padLeft(2, '0')}', style: const TextStyle(color: Colors.white, fontSize: 7, fontWeight: FontWeight.bold)),
+        scrollDirection: Axis.horizontal,
+        child: SizedBox(
+          width: mapW,
+          child: SingleChildScrollView(
+            reverse: true,
+            child: SizedBox(
+              width: mapW,
+              height: mapH,
+              child: Stack(
+                children: [
+                  Positioned.fill(
+                    child: CustomPaint(
+                      painter: _StoryTreeLinkPainter(
+                        posMap: posMap,
+                        edges: edges,
+                        currentChapter: _storyIndex + 1,
                       ),
                     ),
-                  );
-                }),
-              ],
+                  ),
+                  ...tree.map((n) {
+                    final id = n['id'].toString();
+                    final ch = (n['chapter'] as int? ?? 1);
+                    final p = posMap[id]!;
+                    final done = _storySelections[ch - 1] != null;
+                    final selected = ch == _storyIndex + 1;
+                    final locked = ch > _storyIndex + 1;
+                    final title = _treeNodeNames[id] ?? id;
+                    return Positioned(
+                      left: p.dx - 18,
+                      top: p.dy - 18,
+                      child: GestureDetector(
+                        onTap: () {
+                          _playClick();
+                          if (locked) {
+                            ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('잠긴 챕터입니다. 이전 챕터를 먼저 진행해 주세요.')));
+                            return;
+                          }
+                          setState(() {
+                            _storyIndex = ch - 1;
+                            _nodeDialogueIndex = 0;
+                          });
+                        },
+                        onLongPress: () async {
+                          await showModalBottomSheet(
+                            context: context,
+                            showDragHandle: true,
+                            builder: (_) => Padding(
+                              padding: const EdgeInsets.all(14),
+                              child: Column(
+                                mainAxisSize: MainAxisSize.min,
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(title, style: const TextStyle(fontWeight: FontWeight.bold)),
+                                  const SizedBox(height: 6),
+                                  Text('노드: $id'),
+                                  Text('챕터: CH ${ch.toString().padLeft(2, '0')}'),
+                                ],
+                              ),
+                            ),
+                          );
+                        },
+                        child: Container(
+                          width: 36,
+                          height: 36,
+                          alignment: Alignment.center,
+                          decoration: BoxDecoration(
+                            shape: BoxShape.circle,
+                            gradient: LinearGradient(
+                              colors: locked
+                                  ? const [Color(0xFF33333F), Color(0xFF20202A)]
+                                  : selected
+                                      ? const [Color(0xFF9C84FF), Color(0xFF5C47B6)]
+                                      : (done ? const [Color(0xFFC89D66), Color(0xFF7A5A39)] : const [Color(0xFF5E7599), Color(0xFF364A66)]),
+                            ),
+                            border: Border.all(color: locked ? const Color(0x88C9C9C9) : const Color(0xDDF6E9CC), width: 2),
+                            boxShadow: selected ? [const BoxShadow(color: Color(0xCC7E67FF), blurRadius: 10)] : null,
+                          ),
+                          child: locked
+                              ? const Icon(Icons.lock_rounded, size: 14, color: Color(0xFFE7DCC8))
+                              : Text('C${ch.toString().padLeft(2, '0')}', style: const TextStyle(color: Colors.white, fontSize: 7, fontWeight: FontWeight.bold)),
+                        ),
+                      ),
+                    );
+                  }),
+                ],
+              ),
             ),
           ),
         ),
