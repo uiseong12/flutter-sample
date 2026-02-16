@@ -1,7 +1,7 @@
 # 시작 가이드 (편하게 읽기)
 
 ## 1) 챕터 순서대로 읽기
-- `full_scripts/C01.md`부터 `full_scripts/C20.md`까지 순서대로 읽으면 중반부까지 완전판을 볼 수 있습니다.
+- `full_scripts/C01.md`부터 `full_scripts/C30.md`까지 순서대로 읽으면 본편 완전판을 볼 수 있습니다.
 
 ## 2) 분기 따라 읽기
 - C05, C06에서 첫 큰 분기가 열립니다.
@@ -14,3 +14,7 @@
 - 엔진은 `story_manifest.json` 기준으로 next 이동
 - 스토리 텍스트는 우선 `full_scripts/`를 표시하고,
   분기 노드 세부는 `nodes/`를 fallback으로 사용하세요.
+
+
+## 5) 엔딩 연출 강화본
+- `endings_cinematic/` 폴더에서 엔딩별 시네마틱 연출 텍스트를 확인하세요.

@@ -21,6 +21,10 @@
 - `route`, `priority`
 
 
-## 추가: 풀 원고(1~20챕터)
-- `full_scripts/C01.md` ~ `full_scripts/C20.md`
+## 추가: 풀 원고(1~30챕터)
+- `full_scripts/C01.md` ~ `full_scripts/C30.md`
 - 읽기 가이드: `READ_START_HERE.md`
+
+
+## 엔딩 연출 강화본
+- `endings_cinematic/*.md`
