@@ -296,28 +296,46 @@ class _GameShellState extends State<GameShell> with TickerProviderStateMixin {
 
   final List<Character> _characters = [
     Character(
-      name: '엘리안',
-      role: '왕실 근위대장',
-      fullBodyAsset: 'assets/generated/elian/001-full-body-handsome-male-knight-romance-w.png',
-      description: '엄격하지만 당신 앞에서는 무너지는 기사.',
+      name: '윤서하',
+      role: '주인공 / 핵심 증언자',
+      fullBodyAsset: 'character-image/YunSeoha-1.png',
+      description: '기억 위조 사건의 중심에 선 여성 주인공.',
+      affection: 40,
     ),
     Character(
-      name: '루시안',
-      role: '궁정 마도학자',
-      fullBodyAsset: 'assets/generated/lucian/001-full-body-beautiful-male-mage-scholar-ro.png',
-      description: '이성과 감정 사이에서 흔들리는 전략가.',
+      name: '강나연',
+      role: '검사',
+      fullBodyAsset: 'character-image/Kang Nayeon-1.png',
+      description: '정면돌파형. 단호하고 결단이 빠른 타입.',
     ),
     Character(
-      name: '세레나',
-      role: '귀족 외교관',
-      fullBodyAsset: 'assets/generated/serena/001-full-body-elegant-female-diplomat-romanc.png',
-      description: '우아한 미소 뒤에 칼날을 숨긴 외교가.',
-      affection: 26,
+      name: '한시유',
+      role: '보호 담당 변호사',
+      fullBodyAsset: 'character-image/Han Siyu-1.png',
+      description: '보호와 완충에 강한 타입.',
+    ),
+    Character(
+      name: '민하린',
+      role: '감정복원 분석가',
+      fullBodyAsset: 'character-image/Min Harin-1.png',
+      description: '분석형. 감정과 증거를 정밀하게 다룬다.',
+    ),
+    Character(
+      name: '주이든',
+      role: '로그 추적 해커',
+      fullBodyAsset: 'character-image/Joo Iden-1.png',
+      description: '직설적이고 속도가 빠른 폭로형.',
+    ),
+    Character(
+      name: '설유라',
+      role: '왕실 감찰 / 협상가',
+      fullBodyAsset: 'character-image/Seol Yura-1.png',
+      description: '절차와 협상에 강한 조율형.',
     ),
   ];
 
   final List<OutfitItem> _outfits = [
-    OutfitItem(id: 'default', name: '수수한 여행복', price: 0, charmBonus: 0, avatarAsset: 'assets/generated/heroine/001-full-body-2d-romance-webtoon-style-heroi.png'),
+    OutfitItem(id: 'default', name: '수수한 여행복', price: 0, charmBonus: 0, avatarAsset: 'character-image/YunSeoha-1.png'),
     OutfitItem(id: 'noble_dress', name: '귀족 연회 드레스', price: 220, charmBonus: 4, avatarAsset: 'assets/generated/outfit_noble/001-full-body-female-protagonist-romance-web.png'),
     OutfitItem(id: 'ranger_look', name: '숲의 레인저 복장', price: 180, charmBonus: 3, avatarAsset: 'assets/generated/outfit_ranger/001-full-body-female-protagonist-romance-web.png'),
     OutfitItem(id: 'moon_gown', name: '월광 궁정 예복', price: 380, charmBonus: 7, avatarAsset: 'assets/generated/outfit_moon/001-full-body-female-protagonist-romance-web.png'),
@@ -695,7 +713,26 @@ class _GameShellState extends State<GameShell> with TickerProviderStateMixin {
   late List<int?> _storySelections;
   Map<int, int> _stepNodePick = {};
 
-  Character _characterByName(String name) => _characters.firstWhere((e) => e.name == name);
+    String _normalizeCharacterName(String raw) {
+    switch (raw) {
+      case '엘리안':
+        return '강나연';
+      case '루시안':
+        return '민하린';
+      case '세레나':
+        return '설유라';
+      default:
+        return raw;
+    }
+  }
+
+  Character _characterByName(String name) {
+    final normalized = _normalizeCharacterName(name);
+    for (final c in _characters) {
+      if (c.name == normalized) return c;
+    }
+    return _characters.first;
+  }
 
   int get _equippedCharm => _outfits.firstWhere((e) => e.id == _equippedOutfitId).charmBonus;
   String get _playerAvatar => _outfits.firstWhere((e) => e.id == _equippedOutfitId).avatarAsset;
@@ -1221,10 +1258,12 @@ class _GameShellState extends State<GameShell> with TickerProviderStateMixin {
 
 
   String _bridgeTargetForChoice(String text, int idx) {
-    if (text.contains('공개') || text.contains('진실') || text.contains('폭로')) return '루시안';
-    if (text.contains('보호') || text.contains('유지') || text.contains('안정')) return '세레나';
-    if (text.contains('강행') || text.contains('돌파') || text.contains('기소')) return '엘리안';
-    const cycle = ['엘리안', '루시안', '세레나'];
+    if (text.contains('공개') || text.contains('진실') || text.contains('폭로')) return '주이든';
+    if (text.contains('보호') || text.contains('유지') || text.contains('안정')) return '한시유';
+    if (text.contains('강행') || text.contains('돌파') || text.contains('기소')) return '강나연';
+    if (text.contains('분석') || text.contains('복원') || text.contains('증거')) return '민하린';
+    if (text.contains('협상') || text.contains('절차') || text.contains('조율')) return '설유라';
+    const cycle = ['강나연', '한시유', '민하린', '주이든', '설유라'];
     return cycle[idx % cycle.length];
   }
 
@@ -1241,10 +1280,10 @@ class _GameShellState extends State<GameShell> with TickerProviderStateMixin {
         speaker: '나레이션',
         line: 'story_v2 기본 챕터 C${ch.toString().padLeft(2, '0')} · 첫사랑 위조 x 왕실 대역',
         backgroundAsset: bg[i % bg.length],
-        leftCharacter: '엘리안',
-        rightCharacter: '세레나',
+        leftCharacter: '윤서하',
+        rightCharacter: '강나연',
         choices: [
-          StoryChoice(label: '진행', mainTarget: '엘리안', mainDelta: 4, result: '다음 챕터 진행'),
+          StoryChoice(label: '진행', mainTarget: '강나연', mainDelta: 4, result: '다음 챕터 진행'),
         ],
       );
     });
@@ -1289,15 +1328,16 @@ class _GameShellState extends State<GameShell> with TickerProviderStateMixin {
           ));
         }
         if (choices.isEmpty) {
-          choices.add(StoryChoice(label: '진행', mainTarget: '엘리안', mainDelta: 4, result: '다음 챕터 진행'));
+          choices.add(StoryChoice(label: '진행', mainTarget: '강나연', mainDelta: 4, result: '다음 챕터 진행'));
         }
+        final focus = choices.first.mainTarget;
         beats.add(StoryBeat(
           title: nodeName,
           speaker: '나레이션',
           line: 'story_v2 브릿지 적용 챕터 C${ch.toString().padLeft(2, '0')} · $nodeName',
           backgroundAsset: bg[(ch - 1) % bg.length],
-          leftCharacter: '엘리안',
-          rightCharacter: '세레나',
+          leftCharacter: '윤서하',
+          rightCharacter: focus,
           choices: choices,
         ));
       }
@@ -1554,7 +1594,7 @@ class _GameShellState extends State<GameShell> with TickerProviderStateMixin {
     final partner = condRaw['partner_lock']?.toString();
     if (partner != null) {
       final locked = _lockedRouteCharacterName;
-      final code = locked == '엘리안' ? 'elian' : locked == '루시안' ? 'lucian' : locked == '세레나' ? 'serena' : null;
+      final code = (locked == '엘리안' || locked == '강나연') ? 'elian' : (locked == '루시안' || locked == '민하린') ? 'lucian' : (locked == '세레나' || locked == '설유라' || locked == '한시유' || locked == '주이든') ? 'serena' : null;
       if (code != partner) return false;
     }
 
@@ -1571,9 +1611,9 @@ class _GameShellState extends State<GameShell> with TickerProviderStateMixin {
   }
 
   String? _lockedRouteCode() {
-    if (_lockedRouteCharacterName == '엘리안') return 'elian';
-    if (_lockedRouteCharacterName == '루시안') return 'lucian';
-    if (_lockedRouteCharacterName == '세레나') return 'serena';
+    if (_lockedRouteCharacterName == '엘리안' || _lockedRouteCharacterName == '강나연') return 'elian';
+    if (_lockedRouteCharacterName == '루시안' || _lockedRouteCharacterName == '민하린') return 'lucian';
+    if (_lockedRouteCharacterName == '세레나' || _lockedRouteCharacterName == '설유라' || _lockedRouteCharacterName == '한시유' || _lockedRouteCharacterName == '주이든') return 'serena';
     return null;
   }
 
@@ -3342,8 +3382,9 @@ class _GameShellState extends State<GameShell> with TickerProviderStateMixin {
   }
 
   String _cutinSheet(String name) {
-    if (name == '엘리안') return 'assets/ui/dot_elian_sheet.png';
-    if (name == '세레나') return 'assets/ui/dot_serena_sheet.png';
+    final n = _normalizeCharacterName(name);
+    if (n == '윤서하') return 'assets/ui/dot_serena_sheet.png';
+    if (n == '강나연' || n == '주이든') return 'assets/ui/dot_elian_sheet.png';
     return 'assets/ui/dot_lucian_sheet.png';
   }
 
@@ -4984,7 +5025,7 @@ class _GameShellState extends State<GameShell> with TickerProviderStateMixin {
   }
 
   Character _speakerCharacterForBeat(StoryBeat beat) {
-    final speaker = _currentSpeaker();
+    final speaker = _normalizeCharacterName(_currentSpeaker());
     for (final c in _characters) {
       if (speaker.contains(c.name)) return c;
     }
