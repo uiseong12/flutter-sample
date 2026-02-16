@@ -19,3 +19,8 @@
 - `truth`, `order`, `stability`
 - `love_nayeon`, `love_siyu`, `love_harin`, `love_iden`, `love_yura`
 - `route`, `priority`
+
+
+## 추가: 풀 원고(초반 10챕터)
+- `full_scripts/C01.md` ~ `full_scripts/C10.md`
+- 읽기 가이드: `READ_START_HERE.md`
