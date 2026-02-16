@@ -1,909 +1,6 @@
 {
   "title": "첫사랑 위조 x 왕실 대역",
   "chapters": 30,
-  "nodes": [
-    {
-      "id": "C01_N1",
-      "chapter": 1,
-      "type": "scene",
-      "file": "nodes/C01_N1.md",
-      "choices": [
-        {
-          "id": "A",
-          "text": "초기 보고서 제출",
-          "effects": {},
-          "next": "C02_N1"
-        }
-      ],
-      "name": "C01 · 유출의 밤"
-    },
-    {
-      "id": "C02_N1",
-      "chapter": 2,
-      "type": "scene",
-      "file": "nodes/C02_N1.md",
-      "choices": [
-        {
-          "id": "A",
-          "text": "법원 프로토콜 유지",
-          "effects": {
-            "truth": 1
-          },
-          "next": "C03_N1"
-        },
-        {
-          "id": "B",
-          "text": "비공식 감정 병행",
-          "effects": {
-            "love_iden": 1
-          },
-          "next": "C03_N1"
-        }
-      ],
-      "name": "C02 · 프로토콜의 균열"
-    },
-    {
-      "id": "C03_N1",
-      "chapter": 3,
-      "type": "scene",
-      "file": "nodes/C03_N1.md",
-      "choices": [
-        {
-          "id": "A",
-          "text": "합동 브리핑 수락",
-          "effects": {
-            "stability": 1
-          },
-          "next": "C04_N1"
-        }
-      ],
-      "name": "C03 · 합동 브리핑"
-    },
-    {
-      "id": "C04_N1",
-      "chapter": 4,
-      "type": "scene",
-      "file": "nodes/C04_N1.md",
-      "choices": [
-        {
-          "id": "A",
-          "text": "대역 가설 채택",
-          "effects": {
-            "truth": 1
-          },
-          "next": "C05_N1"
-        }
-      ],
-      "name": "C04 · 첫사랑 모순"
-    },
-    {
-      "id": "C05_N1",
-      "chapter": 5,
-      "type": "scene",
-      "file": "nodes/C05_N1.md",
-      "choices": [
-        {
-          "id": "A",
-          "text": "정식 영장",
-          "effects": {
-            "order": 1,
-            "love_nayeon": 1
-          },
-          "next": "C06_N1"
-        },
-        {
-          "id": "B",
-          "text": "우회 침입",
-          "effects": {
-            "truth": 1,
-            "love_iden": 1
-          },
-          "next": "C06_N2"
-        },
-        {
-          "id": "C",
-          "text": "감찰 협상",
-          "effects": {
-            "order": 1,
-            "love_yura": 1
-          },
-          "next": "C06_N3"
-        }
-      ],
-      "name": "C05 · 접근 방식"
-    },
-    {
-      "id": "C06_N1",
-      "chapter": 6,
-      "type": "scene",
-      "file": "nodes/C06_N1.md",
-      "choices": [
-        {
-          "id": "A",
-          "text": "제출기록 분석",
-          "effects": {
-            "truth": 1
-          },
-          "next": "C07_N1"
-        }
-      ],
-      "name": "합법추적 라인"
-    },
-    {
-      "id": "C06_N2",
-      "chapter": 6,
-      "type": "scene",
-      "file": "nodes/C06_N2.md",
-      "choices": [
-        {
-          "id": "A",
-          "text": "로그삭제 도주",
-          "effects": {
-            "truth": 1
-          },
-          "next": "C07_N1"
-        },
-        {
-          "id": "B",
-          "text": "단독책임",
-          "effects": {},
-          "next": "BE_01"
-        },
-        {
-          "id": "C",
-          "text": "내부고발 카드",
-          "effects": {
-            "order": -1,
-            "truth": 1
-          },
-          "next": "C07_N1"
-        }
-      ],
-      "name": "우회침투 라인"
-    },
-    {
-      "id": "C06_N3",
-      "chapter": 6,
-      "type": "scene",
-      "file": "nodes/C06_N3.md",
-      "choices": [
-        {
-          "id": "A",
-          "text": "비공개 열람 수락",
-          "effects": {
-            "order": 1
-          },
-          "next": "C07_N1"
-        }
-      ],
-      "name": "감찰협상 라인"
-    },
-    {
-      "id": "C07_N1",
-      "chapter": 7,
-      "type": "scene",
-      "file": "nodes/C07_N1.md",
-      "choices": [
-        {
-          "id": "A",
-          "text": "코드명 추적",
-          "effects": {
-            "truth": 1
-          },
-          "next": "C08_N1"
-        }
-      ],
-      "name": "C07 · 코드명 페르소나"
-    },
-    {
-      "id": "C08_N1",
-      "chapter": 8,
-      "type": "scene",
-      "file": "nodes/C08_N1.md",
-      "choices": [
-        {
-          "id": "A",
-          "text": "재판 가설 상정",
-          "effects": {},
-          "next": "C09_N1"
-        }
-      ],
-      "name": "C08 · 문장 전쟁"
-    },
-    {
-      "id": "C09_N1",
-      "chapter": 9,
-      "type": "scene",
-      "file": "nodes/C09_N1.md",
-      "choices": [
-        {
-          "id": "A",
-          "text": "증거 보강 후 기소",
-          "effects": {
-            "order": 1
-          },
-          "next": "C10_N1"
-        },
-        {
-          "id": "B",
-          "text": "성급 기소",
-          "effects": {},
-          "next": "BE_02"
-        }
-      ],
-      "name": "C09 · 함정 작전"
-    },
-    {
-      "id": "C10_N1",
-      "chapter": 10,
-      "type": "scene",
-      "file": "nodes/C10_N1.md",
-      "choices": [
-        {
-          "id": "A",
-          "text": "중간심리 통과",
-          "effects": {},
-          "next": "C11_N1"
-        }
-      ],
-      "name": "C10 · 중간심리"
-    },
-    {
-      "id": "C11_N1",
-      "chapter": 11,
-      "type": "scene",
-      "file": "nodes/C11_N1.md",
-      "choices": [
-        {
-          "id": "A",
-          "text": "신뢰 점검",
-          "effects": {},
-          "next": "C12_N1"
-        }
-      ],
-      "name": "C11 · 신뢰축 형성"
-    },
-    {
-      "id": "C12_N1",
-      "chapter": 12,
-      "type": "scene",
-      "file": "nodes/C12_N1.md",
-      "choices": [
-        {
-          "id": "A",
-          "text": "나연 동행",
-          "effects": {
-            "route": "NAYEON"
-          },
-          "next": "C13_R_NAYEON"
-        },
-        {
-          "id": "B",
-          "text": "시유 동행",
-          "effects": {
-            "route": "SIYU"
-          },
-          "next": "C13_R_SIYU"
-        },
-        {
-          "id": "C",
-          "text": "하린 동행",
-          "effects": {
-            "route": "HARIN"
-          },
-          "next": "C13_R_HARIN"
-        },
-        {
-          "id": "D",
-          "text": "이든 동행",
-          "effects": {
-            "route": "IDEN"
-          },
-          "next": "C13_R_IDEN"
-        },
-        {
-          "id": "E",
-          "text": "유라 동행",
-          "effects": {
-            "route": "YURA"
-          },
-          "next": "C13_R_YURA"
-        }
-      ],
-      "name": "C12 · 루트 잠금"
-    },
-    {
-      "id": "C13_R_NAYEON",
-      "chapter": 13,
-      "type": "route",
-      "file": "nodes/C13_R_NAYEON.md",
-      "choices": [
-        {
-          "id": "A",
-          "text": "재기소 준비",
-          "effects": {
-            "love_nayeon": 2
-          },
-          "next": "C14_N1"
-        }
-      ],
-      "name": "나연 루트 · 정면 기소"
-    },
-    {
-      "id": "C13_R_SIYU",
-      "chapter": 13,
-      "type": "route",
-      "file": "nodes/C13_R_SIYU.md",
-      "choices": [
-        {
-          "id": "A",
-          "text": "보호명령 준비",
-          "effects": {
-            "love_siyu": 2
-          },
-          "next": "C14_N1"
-        }
-      ],
-      "name": "시유 루트 · 보호명령"
-    },
-    {
-      "id": "C13_R_HARIN",
-      "chapter": 13,
-      "type": "route",
-      "file": "nodes/C13_R_HARIN.md",
-      "choices": [
-        {
-          "id": "A",
-          "text": "복원 실험",
-          "effects": {
-            "love_harin": 2
-          },
-          "next": "C14_N1"
-        }
-      ],
-      "name": "하린 루트 · 복원 설계"
-    },
-    {
-      "id": "C13_R_IDEN",
-      "chapter": 13,
-      "type": "route",
-      "file": "nodes/C13_R_IDEN.md",
-      "choices": [
-        {
-          "id": "A",
-          "text": "삭제로그 추적",
-          "effects": {
-            "love_iden": 2
-          },
-          "next": "C14_N1"
-        }
-      ],
-      "name": "이든 루트 · 외곽 서버"
-    },
-    {
-      "id": "C13_R_YURA",
-      "chapter": 13,
-      "type": "route",
-      "file": "nodes/C13_R_YURA.md",
-      "choices": [
-        {
-          "id": "A",
-          "text": "왕실 열람권",
-          "effects": {
-            "love_yura": 2
-          },
-          "next": "C14_N1"
-        }
-      ],
-      "name": "유라 루트 · 왕실 통행증"
-    },
-    {
-      "id": "C14_N1",
-      "chapter": 14,
-      "type": "scene",
-      "file": "nodes/C14_N1.md",
-      "choices": [
-        {
-          "id": "A",
-          "text": "실명 공개",
-          "effects": {
-            "truth": 2,
-            "stability": -2
-          },
-          "next": "BE_05"
-        },
-        {
-          "id": "B",
-          "text": "코드명 공개",
-          "effects": {
-            "truth": 1
-          },
-          "next": "C15_N1"
-        },
-        {
-          "id": "C",
-          "text": "비공개 유지",
-          "effects": {
-            "order": 1
-          },
-          "next": "C15_N1"
-        }
-      ],
-      "name": "C14 · 1차 폭로"
-    },
-    {
-      "id": "C15_N1",
-      "chapter": 15,
-      "type": "scene",
-      "file": "nodes/C15_N1.md",
-      "choices": [
-        {
-          "id": "A",
-          "text": "원본 1차복원",
-          "effects": {
-            "truth": 1
-          },
-          "next": "C16_N1"
-        }
-      ],
-      "name": "C15 · 원본 조각"
-    },
-    {
-      "id": "C16_N1",
-      "chapter": 16,
-      "type": "scene",
-      "file": "nodes/C16_N1.md",
-      "choices": [
-        {
-          "id": "A",
-          "text": "복원 계속",
-          "effects": {},
-          "next": "C17_N1"
-        }
-      ],
-      "name": "C16 · 붕괴 경고"
-    },
-    {
-      "id": "C17_N1",
-      "chapter": 17,
-      "type": "scene",
-      "file": "nodes/C17_N1.md",
-      "choices": [
-        {
-          "id": "A",
-          "text": "과거 진실 우선",
-          "effects": {
-            "truth": 2,
-            "stability": -1
-          },
-          "next": "C18_N1"
-        },
-        {
-          "id": "B",
-          "text": "현재 관계 우선",
-          "effects": {
-            "stability": 1
-          },
-          "next": "C18_N1"
-        },
-        {
-          "id": "C",
-          "text": "양립 강행",
-          "effects": {
-            "truth": 1,
-            "stability": -2
-          },
-          "next": "BE_03"
-        }
-      ],
-      "name": "C17 · 진실과 현재"
-    },
-    {
-      "id": "C18_N1",
-      "chapter": 18,
-      "type": "scene",
-      "file": "nodes/C18_N1.md",
-      "choices": [
-        {
-          "id": "A",
-          "text": "왕실 거래 거절",
-          "effects": {
-            "truth": 1
-          },
-          "next": "C19_N1"
-        },
-        {
-          "id": "B",
-          "text": "조건부 수락",
-          "effects": {
-            "order": 1
-          },
-          "next": "C19_N1"
-        }
-      ],
-      "name": "C18 · 왕실의 제안"
-    },
-    {
-      "id": "C19_N1",
-      "chapter": 19,
-      "type": "scene",
-      "file": "nodes/C19_N1.md",
-      "choices": [
-        {
-          "id": "A",
-          "text": "핵심증거 채택",
-          "effects": {},
-          "next": "C20_N1"
-        },
-        {
-          "id": "B",
-          "text": "불완전 채택",
-          "effects": {},
-          "next": "BE_06"
-        }
-      ],
-      "name": "C19 · 최종 증거전"
-    },
-    {
-      "id": "C20_N1",
-      "chapter": 20,
-      "type": "scene",
-      "file": "nodes/C20_N1.md",
-      "choices": [
-        {
-          "id": "A",
-          "text": "루트 사실 확정",
-          "effects": {},
-          "next": "C21_N1"
-        }
-      ],
-      "name": "C20 · 중반 결산"
-    },
-    {
-      "id": "C21_N1",
-      "chapter": 21,
-      "type": "scene",
-      "file": "nodes/C21_N1.md",
-      "choices": [
-        {
-          "id": "A",
-          "text": "진본성 통과",
-          "effects": {
-            "truth": 1
-          },
-          "next": "C22_N1"
-        }
-      ],
-      "name": "C21 · 진본성 테스트"
-    },
-    {
-      "id": "C22_N1",
-      "chapter": 22,
-      "type": "scene",
-      "file": "nodes/C22_N1.md",
-      "choices": [
-        {
-          "id": "A",
-          "text": "강경진압",
-          "effects": {
-            "order": 2,
-            "stability": -1
-          },
-          "next": "C23_N1"
-        },
-        {
-          "id": "B",
-          "text": "공개사과",
-          "effects": {
-            "stability": 1
-          },
-          "next": "C23_N1"
-        },
-        {
-          "id": "C",
-          "text": "판단 유예",
-          "effects": {},
-          "next": "BE_04"
-        }
-      ],
-      "name": "C22 · 여론 폭주"
-    },
-    {
-      "id": "C23_N1",
-      "chapter": 23,
-      "type": "scene",
-      "file": "nodes/C23_N1.md",
-      "choices": [
-        {
-          "id": "A",
-          "text": "왕실 거래 수락",
-          "effects": {
-            "order": 1
-          },
-          "next": "C24_N1"
-        },
-        {
-          "id": "B",
-          "text": "왕실 거래 거절",
-          "effects": {
-            "truth": 1
-          },
-          "next": "C24_N1"
-        }
-      ],
-      "name": "C23 · 왕실 최종 거래"
-    },
-    {
-      "id": "C24_N1",
-      "chapter": 24,
-      "type": "scene",
-      "file": "nodes/C24_N1.md",
-      "choices": [
-        {
-          "id": "A",
-          "text": "전면 공개재판",
-          "effects": {
-            "truth": 2,
-            "stability": -1
-          },
-          "next": "C25_N1"
-        },
-        {
-          "id": "B",
-          "text": "편집 공개",
-          "effects": {
-            "truth": 1
-          },
-          "next": "C25_N1"
-        },
-        {
-          "id": "C",
-          "text": "비공개 전환",
-          "effects": {
-            "order": 2
-          },
-          "next": "BE_07"
-        }
-      ],
-      "name": "C24 · 공개재판 개시"
-    },
-    {
-      "id": "C25_N1",
-      "chapter": 25,
-      "type": "scene",
-      "file": "nodes/C25_N1.md",
-      "choices": [
-        {
-          "id": "A",
-          "text": "서하 진술",
-          "effects": {},
-          "next": "ROUTE_CH26"
-        }
-      ],
-      "name": "C25 · 서하의 진술"
-    },
-    {
-      "id": "C26_R_NAYEON",
-      "chapter": 26,
-      "type": "route",
-      "file": "nodes/C26_R_NAYEON.md",
-      "choices": [
-        {
-          "id": "A",
-          "text": "나연 신뢰 확정",
-          "effects": {
-            "love_nayeon": 2
-          },
-          "next": "C27_N1"
-        }
-      ],
-      "name": "나연 루트 · 정면돌파 서약"
-    },
-    {
-      "id": "C26_R_SIYU",
-      "chapter": 26,
-      "type": "route",
-      "file": "nodes/C26_R_SIYU.md",
-      "choices": [
-        {
-          "id": "A",
-          "text": "시유 신뢰 확정",
-          "effects": {
-            "love_siyu": 2
-          },
-          "next": "C27_N1"
-        }
-      ],
-      "name": "시유 루트 · 보호의 선"
-    },
-    {
-      "id": "C26_R_HARIN",
-      "chapter": 26,
-      "type": "route",
-      "file": "nodes/C26_R_HARIN.md",
-      "choices": [
-        {
-          "id": "A",
-          "text": "하린 신뢰 확정",
-          "effects": {
-            "love_harin": 2
-          },
-          "next": "C27_N1"
-        }
-      ],
-      "name": "하린 루트 · 회복의 설계"
-    },
-    {
-      "id": "C26_R_IDEN",
-      "chapter": 26,
-      "type": "route",
-      "file": "nodes/C26_R_IDEN.md",
-      "choices": [
-        {
-          "id": "A",
-          "text": "이든 신뢰 확정",
-          "effects": {
-            "love_iden": 2
-          },
-          "next": "C27_N1"
-        }
-      ],
-      "name": "이든 루트 · 폭로의 밤"
-    },
-    {
-      "id": "C26_R_YURA",
-      "chapter": 26,
-      "type": "route",
-      "file": "nodes/C26_R_YURA.md",
-      "choices": [
-        {
-          "id": "A",
-          "text": "유라 신뢰 확정",
-          "effects": {
-            "love_yura": 2
-          },
-          "next": "C27_N1"
-        }
-      ],
-      "name": "유라 루트 · 봉인의 조건"
-    },
-    {
-      "id": "C27_N1",
-      "chapter": 27,
-      "type": "scene",
-      "file": "nodes/C27_N1.md",
-      "choices": [
-        {
-          "id": "A",
-          "text": "원본까지 공개",
-          "effects": {
-            "truth": 2,
-            "stability": -2
-          },
-          "next": "BE_08"
-        },
-        {
-          "id": "B",
-          "text": "프로젝트만 공개",
-          "effects": {
-            "truth": 1
-          },
-          "next": "C28_N1"
-        },
-        {
-          "id": "C",
-          "text": "특검 이관 봉인",
-          "effects": {
-            "order": 1
-          },
-          "next": "C28_N1"
-        }
-      ],
-      "name": "C27 · 공개 범위 최종결정"
-    },
-    {
-      "id": "C28_N1",
-      "chapter": 28,
-      "type": "scene",
-      "file": "nodes/C28_N1.md",
-      "choices": [
-        {
-          "id": "A",
-          "text": "판결문 확정",
-          "effects": {},
-          "next": "C29_N1"
-        }
-      ],
-      "name": "C28 · 판결문 작성"
-    },
-    {
-      "id": "C29_N1",
-      "chapter": 29,
-      "type": "scene",
-      "file": "nodes/C29_N1.md",
-      "choices": [
-        {
-          "id": "A",
-          "text": "진실 최우선",
-          "effects": {
-            "priority": "TRUTH"
-          },
-          "next": "C30_N1"
-        },
-        {
-          "id": "B",
-          "text": "질서 최우선",
-          "effects": {
-            "priority": "ORDER"
-          },
-          "next": "C30_N1"
-        },
-        {
-          "id": "C",
-          "text": "사랑 최우선",
-          "effects": {
-            "priority": "LOVE"
-          },
-          "next": "C30_N1"
-        }
-      ],
-      "name": "C29 · 최후 우선순위"
-    },
-    {
-      "id": "C30_N1",
-      "chapter": 30,
-      "type": "scene",
-      "file": "nodes/C30_N1.md",
-      "choices": [
-        {
-          "id": "A",
-          "text": "루트/수치 판정 실행",
-          "effects": {},
-          "next": "HE_NAYEON"
-        }
-      ],
-      "name": "C30 · 판결과 새 기억"
-    }
-  ],
-  "endings": {
-    "happy": [
-      "HE_NAYEON",
-      "HE_SIYU",
-      "HE_HARIN",
-      "HE_IDEN",
-      "HE_YURA"
-    ],
-    "bad": [
-      "BE_01",
-      "BE_02",
-      "BE_03",
-      "BE_04",
-      "BE_05",
-      "BE_06",
-      "BE_07",
-      "BE_08",
-      "BE_09",
-      "BE_10"
-    ]
-  },
-  "engine_notes": {
-    "route_nodes_at_ch26": {
-      "NAYEON": "C26_R_NAYEON",
-      "SIYU": "C26_R_SIYU",
-      "HARIN": "C26_R_HARIN",
-      "IDEN": "C26_R_IDEN",
-      "YURA": "C26_R_YURA"
-    },
-    "ending_resolution": {
-      "if priority==ORDER and route in any and stability<0": "BE_09",
-      "if priority==LOVE and truth<3": "BE_10",
-      "if route==NAYEON": "HE_NAYEON",
-      "if route==SIYU": "HE_SIYU",
-      "if route==HARIN": "HE_HARIN",
-      "if route==IDEN": "HE_IDEN",
-      "if route==YURA": "HE_YURA"
-    }
-  },
   "chapter_titles": [
     {
       "chapter": 1,
@@ -1007,11 +104,11 @@
     },
     {
       "chapter": 26,
-      "name": "루트별 결의"
+      "name": "루트 결의"
     },
     {
       "chapter": 27,
-      "name": "공개 범위 최종결정"
+      "name": "공개 범위 결정"
     },
     {
       "chapter": 28,
@@ -1025,5 +122,2049 @@
       "chapter": 30,
       "name": "판결과 새 기억"
     }
-  ]
+  ],
+  "nodes": [
+    {
+      "id": "C01_N1",
+      "chapter": 1,
+      "type": "scene",
+      "file": "nodes/C01_N1.md",
+      "name": "C01 · 유출의 밤",
+      "choices": [
+        {
+          "id": "A",
+          "text": "진행",
+          "effects": {},
+          "next": "C02_N1"
+        }
+      ]
+    },
+    {
+      "id": "C02_N1",
+      "chapter": 2,
+      "type": "scene",
+      "file": "nodes/C02_N1.md",
+      "name": "C02 · 프로토콜의 균열",
+      "choices": [
+        {
+          "id": "A",
+          "text": "진행",
+          "effects": {},
+          "next": "C03_N1"
+        }
+      ]
+    },
+    {
+      "id": "C03_N1",
+      "chapter": 3,
+      "type": "scene",
+      "file": "nodes/C03_N1.md",
+      "name": "C03 · 합동 브리핑",
+      "choices": [
+        {
+          "id": "A",
+          "text": "진행",
+          "effects": {},
+          "next": "C04_N1"
+        }
+      ]
+    },
+    {
+      "id": "C04_N1",
+      "chapter": 4,
+      "type": "scene",
+      "file": "nodes/C04_N1.md",
+      "name": "C04 · 첫사랑 모순",
+      "choices": [
+        {
+          "id": "A",
+          "text": "진행",
+          "effects": {},
+          "next": "C05_N1"
+        }
+      ]
+    },
+    {
+      "id": "C05_N1",
+      "chapter": 5,
+      "type": "scene",
+      "file": "nodes/C05_N1.md",
+      "name": "C05 · 접근 방식",
+      "choices": [
+        {
+          "id": "A",
+          "text": "정식 영장",
+          "effects": {
+            "order": 1
+          },
+          "next": "C06_N1"
+        },
+        {
+          "id": "B",
+          "text": "우회 침입",
+          "effects": {
+            "truth": 1
+          },
+          "next": "C06_N2"
+        },
+        {
+          "id": "C",
+          "text": "감찰 협상",
+          "effects": {
+            "order": 1
+          },
+          "next": "C06_N3"
+        }
+      ]
+    },
+    {
+      "id": "C06_N1",
+      "chapter": 6,
+      "type": "scene",
+      "file": "nodes/C06_N1.md",
+      "name": "C06 · 침투의 대가",
+      "choices": [
+        {
+          "id": "A",
+          "text": "진행",
+          "effects": {},
+          "next": "C07_N1"
+        }
+      ]
+    },
+    {
+      "id": "C07_N1",
+      "chapter": 7,
+      "type": "scene",
+      "file": "nodes/C07_N1.md",
+      "name": "C07 · 코드명 페르소나",
+      "choices": [
+        {
+          "id": "A",
+          "text": "진행",
+          "effects": {},
+          "next": "C08_N1"
+        }
+      ]
+    },
+    {
+      "id": "C08_N1",
+      "chapter": 8,
+      "type": "scene",
+      "file": "nodes/C08_N1.md",
+      "name": "C08 · 문장 전쟁",
+      "choices": [
+        {
+          "id": "A",
+          "text": "진행",
+          "effects": {},
+          "next": "C09_N1"
+        }
+      ]
+    },
+    {
+      "id": "C09_N1",
+      "chapter": 9,
+      "type": "scene",
+      "file": "nodes/C09_N1.md",
+      "name": "C09 · 함정 작전",
+      "choices": [
+        {
+          "id": "A",
+          "text": "증거 보강 후 기소",
+          "effects": {
+            "order": 1
+          },
+          "next": "C10_N1"
+        },
+        {
+          "id": "B",
+          "text": "성급 기소",
+          "effects": {},
+          "next": "BE_02"
+        }
+      ]
+    },
+    {
+      "id": "C10_N1",
+      "chapter": 10,
+      "type": "scene",
+      "file": "nodes/C10_N1.md",
+      "name": "C10 · 중간심리",
+      "choices": [
+        {
+          "id": "A",
+          "text": "진행",
+          "effects": {},
+          "next": "C11_N1"
+        }
+      ]
+    },
+    {
+      "id": "C11_N1",
+      "chapter": 11,
+      "type": "scene",
+      "file": "nodes/C11_N1.md",
+      "name": "C11 · 신뢰축 형성",
+      "choices": [
+        {
+          "id": "A",
+          "text": "진행",
+          "effects": {},
+          "next": "C12_N1"
+        }
+      ]
+    },
+    {
+      "id": "C06_N1",
+      "chapter": 6,
+      "type": "scene",
+      "file": "nodes/C06_N1.md",
+      "name": "C06 · 합법추적 라인",
+      "choices": [
+        {
+          "id": "A",
+          "text": "제출기록 분석",
+          "effects": {
+            "truth": 1
+          },
+          "next": "C07_N1"
+        }
+      ]
+    },
+    {
+      "id": "C06_N2",
+      "chapter": 6,
+      "type": "scene",
+      "file": "nodes/C06_N2.md",
+      "name": "C06 · 우회침투 라인",
+      "choices": [
+        {
+          "id": "A",
+          "text": "로그삭제 도주",
+          "effects": {
+            "truth": 1
+          },
+          "next": "C07_N1"
+        },
+        {
+          "id": "B",
+          "text": "단독책임",
+          "effects": {},
+          "next": "BE_01"
+        },
+        {
+          "id": "C",
+          "text": "내부고발 카드",
+          "effects": {
+            "truth": 1
+          },
+          "next": "C07_N1"
+        }
+      ]
+    },
+    {
+      "id": "C06_N3",
+      "chapter": 6,
+      "type": "scene",
+      "file": "nodes/C06_N3.md",
+      "name": "C06 · 감찰협상 라인",
+      "choices": [
+        {
+          "id": "A",
+          "text": "비공개 열람 수락",
+          "effects": {
+            "order": 1
+          },
+          "next": "C07_N1"
+        }
+      ]
+    },
+    {
+      "id": "C13_R_NAYEON",
+      "chapter": 13,
+      "type": "scene",
+      "file": "nodes/C13_R_NAYEON.md",
+      "name": "C13 · 동행자 선택 (나연 루트)",
+      "choices": [
+        {
+          "id": "A",
+          "text": "루트 진행",
+          "effects": {
+            "love_nayeon": 1
+          },
+          "next": "C14_R_NAYEON"
+        }
+      ]
+    },
+    {
+      "id": "C14_R_NAYEON",
+      "chapter": 14,
+      "type": "scene",
+      "file": "nodes/C14_R_NAYEON.md",
+      "name": "C14 · 1차 폭로 (나연 루트)",
+      "choices": [
+        {
+          "id": "A",
+          "text": "루트 진행",
+          "effects": {
+            "love_nayeon": 1
+          },
+          "next": "C15_R_NAYEON"
+        },
+        {
+          "id": "B",
+          "text": "실명 전면 공개",
+          "effects": {},
+          "next": "BE_05"
+        }
+      ]
+    },
+    {
+      "id": "C15_R_NAYEON",
+      "chapter": 15,
+      "type": "scene",
+      "file": "nodes/C15_R_NAYEON.md",
+      "name": "C15 · 원본 조각 (나연 루트)",
+      "choices": [
+        {
+          "id": "A",
+          "text": "루트 진행",
+          "effects": {
+            "love_nayeon": 1
+          },
+          "next": "C16_R_NAYEON"
+        }
+      ]
+    },
+    {
+      "id": "C16_R_NAYEON",
+      "chapter": 16,
+      "type": "scene",
+      "file": "nodes/C16_R_NAYEON.md",
+      "name": "C16 · 붕괴 경고 (나연 루트)",
+      "choices": [
+        {
+          "id": "A",
+          "text": "루트 진행",
+          "effects": {
+            "love_nayeon": 1
+          },
+          "next": "C17_R_NAYEON"
+        }
+      ]
+    },
+    {
+      "id": "C17_R_NAYEON",
+      "chapter": 17,
+      "type": "scene",
+      "file": "nodes/C17_R_NAYEON.md",
+      "name": "C17 · 진실과 현재 (나연 루트)",
+      "choices": [
+        {
+          "id": "A",
+          "text": "루트 진행",
+          "effects": {
+            "love_nayeon": 1
+          },
+          "next": "C18_R_NAYEON"
+        },
+        {
+          "id": "B",
+          "text": "양립 강행",
+          "effects": {},
+          "next": "BE_03"
+        }
+      ]
+    },
+    {
+      "id": "C18_R_NAYEON",
+      "chapter": 18,
+      "type": "scene",
+      "file": "nodes/C18_R_NAYEON.md",
+      "name": "C18 · 왕실의 제안 (나연 루트)",
+      "choices": [
+        {
+          "id": "A",
+          "text": "루트 진행",
+          "effects": {
+            "love_nayeon": 1
+          },
+          "next": "C19_R_NAYEON"
+        }
+      ]
+    },
+    {
+      "id": "C19_R_NAYEON",
+      "chapter": 19,
+      "type": "scene",
+      "file": "nodes/C19_R_NAYEON.md",
+      "name": "C19 · 최종 증거전 (나연 루트)",
+      "choices": [
+        {
+          "id": "A",
+          "text": "루트 진행",
+          "effects": {
+            "love_nayeon": 1
+          },
+          "next": "C20_R_NAYEON"
+        },
+        {
+          "id": "B",
+          "text": "불완전 채택 강행",
+          "effects": {},
+          "next": "BE_06"
+        }
+      ]
+    },
+    {
+      "id": "C20_R_NAYEON",
+      "chapter": 20,
+      "type": "scene",
+      "file": "nodes/C20_R_NAYEON.md",
+      "name": "C20 · 중반 결산 (나연 루트)",
+      "choices": [
+        {
+          "id": "A",
+          "text": "루트 진행",
+          "effects": {
+            "love_nayeon": 1
+          },
+          "next": "C21_R_NAYEON"
+        }
+      ]
+    },
+    {
+      "id": "C21_R_NAYEON",
+      "chapter": 21,
+      "type": "scene",
+      "file": "nodes/C21_R_NAYEON.md",
+      "name": "C21 · 진본성 테스트 (나연 루트)",
+      "choices": [
+        {
+          "id": "A",
+          "text": "루트 진행",
+          "effects": {
+            "love_nayeon": 1
+          },
+          "next": "C22_R_NAYEON"
+        }
+      ]
+    },
+    {
+      "id": "C22_R_NAYEON",
+      "chapter": 22,
+      "type": "scene",
+      "file": "nodes/C22_R_NAYEON.md",
+      "name": "C22 · 여론 폭주 (나연 루트)",
+      "choices": [
+        {
+          "id": "A",
+          "text": "루트 진행",
+          "effects": {
+            "love_nayeon": 1
+          },
+          "next": "C23_R_NAYEON"
+        },
+        {
+          "id": "B",
+          "text": "판단 유예",
+          "effects": {},
+          "next": "BE_04"
+        }
+      ]
+    },
+    {
+      "id": "C23_R_NAYEON",
+      "chapter": 23,
+      "type": "scene",
+      "file": "nodes/C23_R_NAYEON.md",
+      "name": "C23 · 왕실 최종 거래 (나연 루트)",
+      "choices": [
+        {
+          "id": "A",
+          "text": "루트 진행",
+          "effects": {
+            "love_nayeon": 1
+          },
+          "next": "C24_R_NAYEON"
+        }
+      ]
+    },
+    {
+      "id": "C24_R_NAYEON",
+      "chapter": 24,
+      "type": "scene",
+      "file": "nodes/C24_R_NAYEON.md",
+      "name": "C24 · 공개재판 개시 (나연 루트)",
+      "choices": [
+        {
+          "id": "A",
+          "text": "루트 진행",
+          "effects": {
+            "love_nayeon": 1
+          },
+          "next": "C25_R_NAYEON"
+        },
+        {
+          "id": "B",
+          "text": "비공개 전환",
+          "effects": {},
+          "next": "BE_07"
+        }
+      ]
+    },
+    {
+      "id": "C25_R_NAYEON",
+      "chapter": 25,
+      "type": "scene",
+      "file": "nodes/C25_R_NAYEON.md",
+      "name": "C25 · 서하의 진술 (나연 루트)",
+      "choices": [
+        {
+          "id": "A",
+          "text": "루트 진행",
+          "effects": {
+            "love_nayeon": 1
+          },
+          "next": "C26_R_NAYEON"
+        }
+      ]
+    },
+    {
+      "id": "C26_R_NAYEON",
+      "chapter": 26,
+      "type": "scene",
+      "file": "nodes/C26_R_NAYEON.md",
+      "name": "C26 · 루트 결의 (나연 루트)",
+      "choices": [
+        {
+          "id": "A",
+          "text": "루트 진행",
+          "effects": {
+            "love_nayeon": 1
+          },
+          "next": "C27_R_NAYEON"
+        }
+      ]
+    },
+    {
+      "id": "C27_R_NAYEON",
+      "chapter": 27,
+      "type": "scene",
+      "file": "nodes/C27_R_NAYEON.md",
+      "name": "C27 · 공개 범위 결정 (나연 루트)",
+      "choices": [
+        {
+          "id": "A",
+          "text": "루트 진행",
+          "effects": {
+            "love_nayeon": 1
+          },
+          "next": "C28_R_NAYEON"
+        },
+        {
+          "id": "B",
+          "text": "원본 전면 공개",
+          "effects": {},
+          "next": "BE_08"
+        }
+      ]
+    },
+    {
+      "id": "C28_R_NAYEON",
+      "chapter": 28,
+      "type": "scene",
+      "file": "nodes/C28_R_NAYEON.md",
+      "name": "C28 · 판결문 작성 (나연 루트)",
+      "choices": [
+        {
+          "id": "A",
+          "text": "루트 진행",
+          "effects": {
+            "love_nayeon": 1
+          },
+          "next": "C29_R_NAYEON"
+        }
+      ]
+    },
+    {
+      "id": "C29_R_NAYEON",
+      "chapter": 29,
+      "type": "scene",
+      "file": "nodes/C29_R_NAYEON.md",
+      "name": "C29 · 최후 우선순위 (나연 루트)",
+      "choices": [
+        {
+          "id": "A",
+          "text": "루트 진행",
+          "effects": {
+            "love_nayeon": 1
+          },
+          "next": "C30_R_NAYEON"
+        },
+        {
+          "id": "B",
+          "text": "질서 과잉",
+          "effects": {},
+          "next": "BE_09"
+        },
+        {
+          "id": "C",
+          "text": "진실 과잉",
+          "effects": {},
+          "next": "BE_10"
+        }
+      ]
+    },
+    {
+      "id": "C30_R_NAYEON",
+      "chapter": 30,
+      "type": "scene",
+      "file": "nodes/C30_R_NAYEON.md",
+      "name": "C30 · 판결과 새 기억 (나연 루트)",
+      "choices": [
+        {
+          "id": "A",
+          "text": "엔딩 판정",
+          "effects": {},
+          "next": "HE_NAYEON"
+        }
+      ]
+    },
+    {
+      "id": "C13_R_SIYU",
+      "chapter": 13,
+      "type": "scene",
+      "file": "nodes/C13_R_SIYU.md",
+      "name": "C13 · 동행자 선택 (시유 루트)",
+      "choices": [
+        {
+          "id": "A",
+          "text": "루트 진행",
+          "effects": {
+            "love_siyu": 1
+          },
+          "next": "C14_R_SIYU"
+        }
+      ]
+    },
+    {
+      "id": "C14_R_SIYU",
+      "chapter": 14,
+      "type": "scene",
+      "file": "nodes/C14_R_SIYU.md",
+      "name": "C14 · 1차 폭로 (시유 루트)",
+      "choices": [
+        {
+          "id": "A",
+          "text": "루트 진행",
+          "effects": {
+            "love_siyu": 1
+          },
+          "next": "C15_R_SIYU"
+        },
+        {
+          "id": "B",
+          "text": "실명 전면 공개",
+          "effects": {},
+          "next": "BE_05"
+        }
+      ]
+    },
+    {
+      "id": "C15_R_SIYU",
+      "chapter": 15,
+      "type": "scene",
+      "file": "nodes/C15_R_SIYU.md",
+      "name": "C15 · 원본 조각 (시유 루트)",
+      "choices": [
+        {
+          "id": "A",
+          "text": "루트 진행",
+          "effects": {
+            "love_siyu": 1
+          },
+          "next": "C16_R_SIYU"
+        }
+      ]
+    },
+    {
+      "id": "C16_R_SIYU",
+      "chapter": 16,
+      "type": "scene",
+      "file": "nodes/C16_R_SIYU.md",
+      "name": "C16 · 붕괴 경고 (시유 루트)",
+      "choices": [
+        {
+          "id": "A",
+          "text": "루트 진행",
+          "effects": {
+            "love_siyu": 1
+          },
+          "next": "C17_R_SIYU"
+        }
+      ]
+    },
+    {
+      "id": "C17_R_SIYU",
+      "chapter": 17,
+      "type": "scene",
+      "file": "nodes/C17_R_SIYU.md",
+      "name": "C17 · 진실과 현재 (시유 루트)",
+      "choices": [
+        {
+          "id": "A",
+          "text": "루트 진행",
+          "effects": {
+            "love_siyu": 1
+          },
+          "next": "C18_R_SIYU"
+        },
+        {
+          "id": "B",
+          "text": "양립 강행",
+          "effects": {},
+          "next": "BE_03"
+        }
+      ]
+    },
+    {
+      "id": "C18_R_SIYU",
+      "chapter": 18,
+      "type": "scene",
+      "file": "nodes/C18_R_SIYU.md",
+      "name": "C18 · 왕실의 제안 (시유 루트)",
+      "choices": [
+        {
+          "id": "A",
+          "text": "루트 진행",
+          "effects": {
+            "love_siyu": 1
+          },
+          "next": "C19_R_SIYU"
+        }
+      ]
+    },
+    {
+      "id": "C19_R_SIYU",
+      "chapter": 19,
+      "type": "scene",
+      "file": "nodes/C19_R_SIYU.md",
+      "name": "C19 · 최종 증거전 (시유 루트)",
+      "choices": [
+        {
+          "id": "A",
+          "text": "루트 진행",
+          "effects": {
+            "love_siyu": 1
+          },
+          "next": "C20_R_SIYU"
+        },
+        {
+          "id": "B",
+          "text": "불완전 채택 강행",
+          "effects": {},
+          "next": "BE_06"
+        }
+      ]
+    },
+    {
+      "id": "C20_R_SIYU",
+      "chapter": 20,
+      "type": "scene",
+      "file": "nodes/C20_R_SIYU.md",
+      "name": "C20 · 중반 결산 (시유 루트)",
+      "choices": [
+        {
+          "id": "A",
+          "text": "루트 진행",
+          "effects": {
+            "love_siyu": 1
+          },
+          "next": "C21_R_SIYU"
+        }
+      ]
+    },
+    {
+      "id": "C21_R_SIYU",
+      "chapter": 21,
+      "type": "scene",
+      "file": "nodes/C21_R_SIYU.md",
+      "name": "C21 · 진본성 테스트 (시유 루트)",
+      "choices": [
+        {
+          "id": "A",
+          "text": "루트 진행",
+          "effects": {
+            "love_siyu": 1
+          },
+          "next": "C22_R_SIYU"
+        }
+      ]
+    },
+    {
+      "id": "C22_R_SIYU",
+      "chapter": 22,
+      "type": "scene",
+      "file": "nodes/C22_R_SIYU.md",
+      "name": "C22 · 여론 폭주 (시유 루트)",
+      "choices": [
+        {
+          "id": "A",
+          "text": "루트 진행",
+          "effects": {
+            "love_siyu": 1
+          },
+          "next": "C23_R_SIYU"
+        },
+        {
+          "id": "B",
+          "text": "판단 유예",
+          "effects": {},
+          "next": "BE_04"
+        }
+      ]
+    },
+    {
+      "id": "C23_R_SIYU",
+      "chapter": 23,
+      "type": "scene",
+      "file": "nodes/C23_R_SIYU.md",
+      "name": "C23 · 왕실 최종 거래 (시유 루트)",
+      "choices": [
+        {
+          "id": "A",
+          "text": "루트 진행",
+          "effects": {
+            "love_siyu": 1
+          },
+          "next": "C24_R_SIYU"
+        }
+      ]
+    },
+    {
+      "id": "C24_R_SIYU",
+      "chapter": 24,
+      "type": "scene",
+      "file": "nodes/C24_R_SIYU.md",
+      "name": "C24 · 공개재판 개시 (시유 루트)",
+      "choices": [
+        {
+          "id": "A",
+          "text": "루트 진행",
+          "effects": {
+            "love_siyu": 1
+          },
+          "next": "C25_R_SIYU"
+        },
+        {
+          "id": "B",
+          "text": "비공개 전환",
+          "effects": {},
+          "next": "BE_07"
+        }
+      ]
+    },
+    {
+      "id": "C25_R_SIYU",
+      "chapter": 25,
+      "type": "scene",
+      "file": "nodes/C25_R_SIYU.md",
+      "name": "C25 · 서하의 진술 (시유 루트)",
+      "choices": [
+        {
+          "id": "A",
+          "text": "루트 진행",
+          "effects": {
+            "love_siyu": 1
+          },
+          "next": "C26_R_SIYU"
+        }
+      ]
+    },
+    {
+      "id": "C26_R_SIYU",
+      "chapter": 26,
+      "type": "scene",
+      "file": "nodes/C26_R_SIYU.md",
+      "name": "C26 · 루트 결의 (시유 루트)",
+      "choices": [
+        {
+          "id": "A",
+          "text": "루트 진행",
+          "effects": {
+            "love_siyu": 1
+          },
+          "next": "C27_R_SIYU"
+        }
+      ]
+    },
+    {
+      "id": "C27_R_SIYU",
+      "chapter": 27,
+      "type": "scene",
+      "file": "nodes/C27_R_SIYU.md",
+      "name": "C27 · 공개 범위 결정 (시유 루트)",
+      "choices": [
+        {
+          "id": "A",
+          "text": "루트 진행",
+          "effects": {
+            "love_siyu": 1
+          },
+          "next": "C28_R_SIYU"
+        },
+        {
+          "id": "B",
+          "text": "원본 전면 공개",
+          "effects": {},
+          "next": "BE_08"
+        }
+      ]
+    },
+    {
+      "id": "C28_R_SIYU",
+      "chapter": 28,
+      "type": "scene",
+      "file": "nodes/C28_R_SIYU.md",
+      "name": "C28 · 판결문 작성 (시유 루트)",
+      "choices": [
+        {
+          "id": "A",
+          "text": "루트 진행",
+          "effects": {
+            "love_siyu": 1
+          },
+          "next": "C29_R_SIYU"
+        }
+      ]
+    },
+    {
+      "id": "C29_R_SIYU",
+      "chapter": 29,
+      "type": "scene",
+      "file": "nodes/C29_R_SIYU.md",
+      "name": "C29 · 최후 우선순위 (시유 루트)",
+      "choices": [
+        {
+          "id": "A",
+          "text": "루트 진행",
+          "effects": {
+            "love_siyu": 1
+          },
+          "next": "C30_R_SIYU"
+        },
+        {
+          "id": "B",
+          "text": "질서 과잉",
+          "effects": {},
+          "next": "BE_09"
+        },
+        {
+          "id": "C",
+          "text": "진실 과잉",
+          "effects": {},
+          "next": "BE_10"
+        }
+      ]
+    },
+    {
+      "id": "C30_R_SIYU",
+      "chapter": 30,
+      "type": "scene",
+      "file": "nodes/C30_R_SIYU.md",
+      "name": "C30 · 판결과 새 기억 (시유 루트)",
+      "choices": [
+        {
+          "id": "A",
+          "text": "엔딩 판정",
+          "effects": {},
+          "next": "HE_SIYU"
+        }
+      ]
+    },
+    {
+      "id": "C13_R_HARIN",
+      "chapter": 13,
+      "type": "scene",
+      "file": "nodes/C13_R_HARIN.md",
+      "name": "C13 · 동행자 선택 (하린 루트)",
+      "choices": [
+        {
+          "id": "A",
+          "text": "루트 진행",
+          "effects": {
+            "love_harin": 1
+          },
+          "next": "C14_R_HARIN"
+        }
+      ]
+    },
+    {
+      "id": "C14_R_HARIN",
+      "chapter": 14,
+      "type": "scene",
+      "file": "nodes/C14_R_HARIN.md",
+      "name": "C14 · 1차 폭로 (하린 루트)",
+      "choices": [
+        {
+          "id": "A",
+          "text": "루트 진행",
+          "effects": {
+            "love_harin": 1
+          },
+          "next": "C15_R_HARIN"
+        },
+        {
+          "id": "B",
+          "text": "실명 전면 공개",
+          "effects": {},
+          "next": "BE_05"
+        }
+      ]
+    },
+    {
+      "id": "C15_R_HARIN",
+      "chapter": 15,
+      "type": "scene",
+      "file": "nodes/C15_R_HARIN.md",
+      "name": "C15 · 원본 조각 (하린 루트)",
+      "choices": [
+        {
+          "id": "A",
+          "text": "루트 진행",
+          "effects": {
+            "love_harin": 1
+          },
+          "next": "C16_R_HARIN"
+        }
+      ]
+    },
+    {
+      "id": "C16_R_HARIN",
+      "chapter": 16,
+      "type": "scene",
+      "file": "nodes/C16_R_HARIN.md",
+      "name": "C16 · 붕괴 경고 (하린 루트)",
+      "choices": [
+        {
+          "id": "A",
+          "text": "루트 진행",
+          "effects": {
+            "love_harin": 1
+          },
+          "next": "C17_R_HARIN"
+        }
+      ]
+    },
+    {
+      "id": "C17_R_HARIN",
+      "chapter": 17,
+      "type": "scene",
+      "file": "nodes/C17_R_HARIN.md",
+      "name": "C17 · 진실과 현재 (하린 루트)",
+      "choices": [
+        {
+          "id": "A",
+          "text": "루트 진행",
+          "effects": {
+            "love_harin": 1
+          },
+          "next": "C18_R_HARIN"
+        },
+        {
+          "id": "B",
+          "text": "양립 강행",
+          "effects": {},
+          "next": "BE_03"
+        }
+      ]
+    },
+    {
+      "id": "C18_R_HARIN",
+      "chapter": 18,
+      "type": "scene",
+      "file": "nodes/C18_R_HARIN.md",
+      "name": "C18 · 왕실의 제안 (하린 루트)",
+      "choices": [
+        {
+          "id": "A",
+          "text": "루트 진행",
+          "effects": {
+            "love_harin": 1
+          },
+          "next": "C19_R_HARIN"
+        }
+      ]
+    },
+    {
+      "id": "C19_R_HARIN",
+      "chapter": 19,
+      "type": "scene",
+      "file": "nodes/C19_R_HARIN.md",
+      "name": "C19 · 최종 증거전 (하린 루트)",
+      "choices": [
+        {
+          "id": "A",
+          "text": "루트 진행",
+          "effects": {
+            "love_harin": 1
+          },
+          "next": "C20_R_HARIN"
+        },
+        {
+          "id": "B",
+          "text": "불완전 채택 강행",
+          "effects": {},
+          "next": "BE_06"
+        }
+      ]
+    },
+    {
+      "id": "C20_R_HARIN",
+      "chapter": 20,
+      "type": "scene",
+      "file": "nodes/C20_R_HARIN.md",
+      "name": "C20 · 중반 결산 (하린 루트)",
+      "choices": [
+        {
+          "id": "A",
+          "text": "루트 진행",
+          "effects": {
+            "love_harin": 1
+          },
+          "next": "C21_R_HARIN"
+        }
+      ]
+    },
+    {
+      "id": "C21_R_HARIN",
+      "chapter": 21,
+      "type": "scene",
+      "file": "nodes/C21_R_HARIN.md",
+      "name": "C21 · 진본성 테스트 (하린 루트)",
+      "choices": [
+        {
+          "id": "A",
+          "text": "루트 진행",
+          "effects": {
+            "love_harin": 1
+          },
+          "next": "C22_R_HARIN"
+        }
+      ]
+    },
+    {
+      "id": "C22_R_HARIN",
+      "chapter": 22,
+      "type": "scene",
+      "file": "nodes/C22_R_HARIN.md",
+      "name": "C22 · 여론 폭주 (하린 루트)",
+      "choices": [
+        {
+          "id": "A",
+          "text": "루트 진행",
+          "effects": {
+            "love_harin": 1
+          },
+          "next": "C23_R_HARIN"
+        },
+        {
+          "id": "B",
+          "text": "판단 유예",
+          "effects": {},
+          "next": "BE_04"
+        }
+      ]
+    },
+    {
+      "id": "C23_R_HARIN",
+      "chapter": 23,
+      "type": "scene",
+      "file": "nodes/C23_R_HARIN.md",
+      "name": "C23 · 왕실 최종 거래 (하린 루트)",
+      "choices": [
+        {
+          "id": "A",
+          "text": "루트 진행",
+          "effects": {
+            "love_harin": 1
+          },
+          "next": "C24_R_HARIN"
+        }
+      ]
+    },
+    {
+      "id": "C24_R_HARIN",
+      "chapter": 24,
+      "type": "scene",
+      "file": "nodes/C24_R_HARIN.md",
+      "name": "C24 · 공개재판 개시 (하린 루트)",
+      "choices": [
+        {
+          "id": "A",
+          "text": "루트 진행",
+          "effects": {
+            "love_harin": 1
+          },
+          "next": "C25_R_HARIN"
+        },
+        {
+          "id": "B",
+          "text": "비공개 전환",
+          "effects": {},
+          "next": "BE_07"
+        }
+      ]
+    },
+    {
+      "id": "C25_R_HARIN",
+      "chapter": 25,
+      "type": "scene",
+      "file": "nodes/C25_R_HARIN.md",
+      "name": "C25 · 서하의 진술 (하린 루트)",
+      "choices": [
+        {
+          "id": "A",
+          "text": "루트 진행",
+          "effects": {
+            "love_harin": 1
+          },
+          "next": "C26_R_HARIN"
+        }
+      ]
+    },
+    {
+      "id": "C26_R_HARIN",
+      "chapter": 26,
+      "type": "scene",
+      "file": "nodes/C26_R_HARIN.md",
+      "name": "C26 · 루트 결의 (하린 루트)",
+      "choices": [
+        {
+          "id": "A",
+          "text": "루트 진행",
+          "effects": {
+            "love_harin": 1
+          },
+          "next": "C27_R_HARIN"
+        }
+      ]
+    },
+    {
+      "id": "C27_R_HARIN",
+      "chapter": 27,
+      "type": "scene",
+      "file": "nodes/C27_R_HARIN.md",
+      "name": "C27 · 공개 범위 결정 (하린 루트)",
+      "choices": [
+        {
+          "id": "A",
+          "text": "루트 진행",
+          "effects": {
+            "love_harin": 1
+          },
+          "next": "C28_R_HARIN"
+        },
+        {
+          "id": "B",
+          "text": "원본 전면 공개",
+          "effects": {},
+          "next": "BE_08"
+        }
+      ]
+    },
+    {
+      "id": "C28_R_HARIN",
+      "chapter": 28,
+      "type": "scene",
+      "file": "nodes/C28_R_HARIN.md",
+      "name": "C28 · 판결문 작성 (하린 루트)",
+      "choices": [
+        {
+          "id": "A",
+          "text": "루트 진행",
+          "effects": {
+            "love_harin": 1
+          },
+          "next": "C29_R_HARIN"
+        }
+      ]
+    },
+    {
+      "id": "C29_R_HARIN",
+      "chapter": 29,
+      "type": "scene",
+      "file": "nodes/C29_R_HARIN.md",
+      "name": "C29 · 최후 우선순위 (하린 루트)",
+      "choices": [
+        {
+          "id": "A",
+          "text": "루트 진행",
+          "effects": {
+            "love_harin": 1
+          },
+          "next": "C30_R_HARIN"
+        },
+        {
+          "id": "B",
+          "text": "질서 과잉",
+          "effects": {},
+          "next": "BE_09"
+        },
+        {
+          "id": "C",
+          "text": "진실 과잉",
+          "effects": {},
+          "next": "BE_10"
+        }
+      ]
+    },
+    {
+      "id": "C30_R_HARIN",
+      "chapter": 30,
+      "type": "scene",
+      "file": "nodes/C30_R_HARIN.md",
+      "name": "C30 · 판결과 새 기억 (하린 루트)",
+      "choices": [
+        {
+          "id": "A",
+          "text": "엔딩 판정",
+          "effects": {},
+          "next": "HE_HARIN"
+        }
+      ]
+    },
+    {
+      "id": "C13_R_IDEN",
+      "chapter": 13,
+      "type": "scene",
+      "file": "nodes/C13_R_IDEN.md",
+      "name": "C13 · 동행자 선택 (이든 루트)",
+      "choices": [
+        {
+          "id": "A",
+          "text": "루트 진행",
+          "effects": {
+            "love_iden": 1
+          },
+          "next": "C14_R_IDEN"
+        }
+      ]
+    },
+    {
+      "id": "C14_R_IDEN",
+      "chapter": 14,
+      "type": "scene",
+      "file": "nodes/C14_R_IDEN.md",
+      "name": "C14 · 1차 폭로 (이든 루트)",
+      "choices": [
+        {
+          "id": "A",
+          "text": "루트 진행",
+          "effects": {
+            "love_iden": 1
+          },
+          "next": "C15_R_IDEN"
+        },
+        {
+          "id": "B",
+          "text": "실명 전면 공개",
+          "effects": {},
+          "next": "BE_05"
+        }
+      ]
+    },
+    {
+      "id": "C15_R_IDEN",
+      "chapter": 15,
+      "type": "scene",
+      "file": "nodes/C15_R_IDEN.md",
+      "name": "C15 · 원본 조각 (이든 루트)",
+      "choices": [
+        {
+          "id": "A",
+          "text": "루트 진행",
+          "effects": {
+            "love_iden": 1
+          },
+          "next": "C16_R_IDEN"
+        }
+      ]
+    },
+    {
+      "id": "C16_R_IDEN",
+      "chapter": 16,
+      "type": "scene",
+      "file": "nodes/C16_R_IDEN.md",
+      "name": "C16 · 붕괴 경고 (이든 루트)",
+      "choices": [
+        {
+          "id": "A",
+          "text": "루트 진행",
+          "effects": {
+            "love_iden": 1
+          },
+          "next": "C17_R_IDEN"
+        }
+      ]
+    },
+    {
+      "id": "C17_R_IDEN",
+      "chapter": 17,
+      "type": "scene",
+      "file": "nodes/C17_R_IDEN.md",
+      "name": "C17 · 진실과 현재 (이든 루트)",
+      "choices": [
+        {
+          "id": "A",
+          "text": "루트 진행",
+          "effects": {
+            "love_iden": 1
+          },
+          "next": "C18_R_IDEN"
+        },
+        {
+          "id": "B",
+          "text": "양립 강행",
+          "effects": {},
+          "next": "BE_03"
+        }
+      ]
+    },
+    {
+      "id": "C18_R_IDEN",
+      "chapter": 18,
+      "type": "scene",
+      "file": "nodes/C18_R_IDEN.md",
+      "name": "C18 · 왕실의 제안 (이든 루트)",
+      "choices": [
+        {
+          "id": "A",
+          "text": "루트 진행",
+          "effects": {
+            "love_iden": 1
+          },
+          "next": "C19_R_IDEN"
+        }
+      ]
+    },
+    {
+      "id": "C19_R_IDEN",
+      "chapter": 19,
+      "type": "scene",
+      "file": "nodes/C19_R_IDEN.md",
+      "name": "C19 · 최종 증거전 (이든 루트)",
+      "choices": [
+        {
+          "id": "A",
+          "text": "루트 진행",
+          "effects": {
+            "love_iden": 1
+          },
+          "next": "C20_R_IDEN"
+        },
+        {
+          "id": "B",
+          "text": "불완전 채택 강행",
+          "effects": {},
+          "next": "BE_06"
+        }
+      ]
+    },
+    {
+      "id": "C20_R_IDEN",
+      "chapter": 20,
+      "type": "scene",
+      "file": "nodes/C20_R_IDEN.md",
+      "name": "C20 · 중반 결산 (이든 루트)",
+      "choices": [
+        {
+          "id": "A",
+          "text": "루트 진행",
+          "effects": {
+            "love_iden": 1
+          },
+          "next": "C21_R_IDEN"
+        }
+      ]
+    },
+    {
+      "id": "C21_R_IDEN",
+      "chapter": 21,
+      "type": "scene",
+      "file": "nodes/C21_R_IDEN.md",
+      "name": "C21 · 진본성 테스트 (이든 루트)",
+      "choices": [
+        {
+          "id": "A",
+          "text": "루트 진행",
+          "effects": {
+            "love_iden": 1
+          },
+          "next": "C22_R_IDEN"
+        }
+      ]
+    },
+    {
+      "id": "C22_R_IDEN",
+      "chapter": 22,
+      "type": "scene",
+      "file": "nodes/C22_R_IDEN.md",
+      "name": "C22 · 여론 폭주 (이든 루트)",
+      "choices": [
+        {
+          "id": "A",
+          "text": "루트 진행",
+          "effects": {
+            "love_iden": 1
+          },
+          "next": "C23_R_IDEN"
+        },
+        {
+          "id": "B",
+          "text": "판단 유예",
+          "effects": {},
+          "next": "BE_04"
+        }
+      ]
+    },
+    {
+      "id": "C23_R_IDEN",
+      "chapter": 23,
+      "type": "scene",
+      "file": "nodes/C23_R_IDEN.md",
+      "name": "C23 · 왕실 최종 거래 (이든 루트)",
+      "choices": [
+        {
+          "id": "A",
+          "text": "루트 진행",
+          "effects": {
+            "love_iden": 1
+          },
+          "next": "C24_R_IDEN"
+        }
+      ]
+    },
+    {
+      "id": "C24_R_IDEN",
+      "chapter": 24,
+      "type": "scene",
+      "file": "nodes/C24_R_IDEN.md",
+      "name": "C24 · 공개재판 개시 (이든 루트)",
+      "choices": [
+        {
+          "id": "A",
+          "text": "루트 진행",
+          "effects": {
+            "love_iden": 1
+          },
+          "next": "C25_R_IDEN"
+        },
+        {
+          "id": "B",
+          "text": "비공개 전환",
+          "effects": {},
+          "next": "BE_07"
+        }
+      ]
+    },
+    {
+      "id": "C25_R_IDEN",
+      "chapter": 25,
+      "type": "scene",
+      "file": "nodes/C25_R_IDEN.md",
+      "name": "C25 · 서하의 진술 (이든 루트)",
+      "choices": [
+        {
+          "id": "A",
+          "text": "루트 진행",
+          "effects": {
+            "love_iden": 1
+          },
+          "next": "C26_R_IDEN"
+        }
+      ]
+    },
+    {
+      "id": "C26_R_IDEN",
+      "chapter": 26,
+      "type": "scene",
+      "file": "nodes/C26_R_IDEN.md",
+      "name": "C26 · 루트 결의 (이든 루트)",
+      "choices": [
+        {
+          "id": "A",
+          "text": "루트 진행",
+          "effects": {
+            "love_iden": 1
+          },
+          "next": "C27_R_IDEN"
+        }
+      ]
+    },
+    {
+      "id": "C27_R_IDEN",
+      "chapter": 27,
+      "type": "scene",
+      "file": "nodes/C27_R_IDEN.md",
+      "name": "C27 · 공개 범위 결정 (이든 루트)",
+      "choices": [
+        {
+          "id": "A",
+          "text": "루트 진행",
+          "effects": {
+            "love_iden": 1
+          },
+          "next": "C28_R_IDEN"
+        },
+        {
+          "id": "B",
+          "text": "원본 전면 공개",
+          "effects": {},
+          "next": "BE_08"
+        }
+      ]
+    },
+    {
+      "id": "C28_R_IDEN",
+      "chapter": 28,
+      "type": "scene",
+      "file": "nodes/C28_R_IDEN.md",
+      "name": "C28 · 판결문 작성 (이든 루트)",
+      "choices": [
+        {
+          "id": "A",
+          "text": "루트 진행",
+          "effects": {
+            "love_iden": 1
+          },
+          "next": "C29_R_IDEN"
+        }
+      ]
+    },
+    {
+      "id": "C29_R_IDEN",
+      "chapter": 29,
+      "type": "scene",
+      "file": "nodes/C29_R_IDEN.md",
+      "name": "C29 · 최후 우선순위 (이든 루트)",
+      "choices": [
+        {
+          "id": "A",
+          "text": "루트 진행",
+          "effects": {
+            "love_iden": 1
+          },
+          "next": "C30_R_IDEN"
+        },
+        {
+          "id": "B",
+          "text": "질서 과잉",
+          "effects": {},
+          "next": "BE_09"
+        },
+        {
+          "id": "C",
+          "text": "진실 과잉",
+          "effects": {},
+          "next": "BE_10"
+        }
+      ]
+    },
+    {
+      "id": "C30_R_IDEN",
+      "chapter": 30,
+      "type": "scene",
+      "file": "nodes/C30_R_IDEN.md",
+      "name": "C30 · 판결과 새 기억 (이든 루트)",
+      "choices": [
+        {
+          "id": "A",
+          "text": "엔딩 판정",
+          "effects": {},
+          "next": "HE_IDEN"
+        }
+      ]
+    },
+    {
+      "id": "C13_R_YURA",
+      "chapter": 13,
+      "type": "scene",
+      "file": "nodes/C13_R_YURA.md",
+      "name": "C13 · 동행자 선택 (유라 루트)",
+      "choices": [
+        {
+          "id": "A",
+          "text": "루트 진행",
+          "effects": {
+            "love_yura": 1
+          },
+          "next": "C14_R_YURA"
+        }
+      ]
+    },
+    {
+      "id": "C14_R_YURA",
+      "chapter": 14,
+      "type": "scene",
+      "file": "nodes/C14_R_YURA.md",
+      "name": "C14 · 1차 폭로 (유라 루트)",
+      "choices": [
+        {
+          "id": "A",
+          "text": "루트 진행",
+          "effects": {
+            "love_yura": 1
+          },
+          "next": "C15_R_YURA"
+        },
+        {
+          "id": "B",
+          "text": "실명 전면 공개",
+          "effects": {},
+          "next": "BE_05"
+        }
+      ]
+    },
+    {
+      "id": "C15_R_YURA",
+      "chapter": 15,
+      "type": "scene",
+      "file": "nodes/C15_R_YURA.md",
+      "name": "C15 · 원본 조각 (유라 루트)",
+      "choices": [
+        {
+          "id": "A",
+          "text": "루트 진행",
+          "effects": {
+            "love_yura": 1
+          },
+          "next": "C16_R_YURA"
+        }
+      ]
+    },
+    {
+      "id": "C16_R_YURA",
+      "chapter": 16,
+      "type": "scene",
+      "file": "nodes/C16_R_YURA.md",
+      "name": "C16 · 붕괴 경고 (유라 루트)",
+      "choices": [
+        {
+          "id": "A",
+          "text": "루트 진행",
+          "effects": {
+            "love_yura": 1
+          },
+          "next": "C17_R_YURA"
+        }
+      ]
+    },
+    {
+      "id": "C17_R_YURA",
+      "chapter": 17,
+      "type": "scene",
+      "file": "nodes/C17_R_YURA.md",
+      "name": "C17 · 진실과 현재 (유라 루트)",
+      "choices": [
+        {
+          "id": "A",
+          "text": "루트 진행",
+          "effects": {
+            "love_yura": 1
+          },
+          "next": "C18_R_YURA"
+        },
+        {
+          "id": "B",
+          "text": "양립 강행",
+          "effects": {},
+          "next": "BE_03"
+        }
+      ]
+    },
+    {
+      "id": "C18_R_YURA",
+      "chapter": 18,
+      "type": "scene",
+      "file": "nodes/C18_R_YURA.md",
+      "name": "C18 · 왕실의 제안 (유라 루트)",
+      "choices": [
+        {
+          "id": "A",
+          "text": "루트 진행",
+          "effects": {
+            "love_yura": 1
+          },
+          "next": "C19_R_YURA"
+        }
+      ]
+    },
+    {
+      "id": "C19_R_YURA",
+      "chapter": 19,
+      "type": "scene",
+      "file": "nodes/C19_R_YURA.md",
+      "name": "C19 · 최종 증거전 (유라 루트)",
+      "choices": [
+        {
+          "id": "A",
+          "text": "루트 진행",
+          "effects": {
+            "love_yura": 1
+          },
+          "next": "C20_R_YURA"
+        },
+        {
+          "id": "B",
+          "text": "불완전 채택 강행",
+          "effects": {},
+          "next": "BE_06"
+        }
+      ]
+    },
+    {
+      "id": "C20_R_YURA",
+      "chapter": 20,
+      "type": "scene",
+      "file": "nodes/C20_R_YURA.md",
+      "name": "C20 · 중반 결산 (유라 루트)",
+      "choices": [
+        {
+          "id": "A",
+          "text": "루트 진행",
+          "effects": {
+            "love_yura": 1
+          },
+          "next": "C21_R_YURA"
+        }
+      ]
+    },
+    {
+      "id": "C21_R_YURA",
+      "chapter": 21,
+      "type": "scene",
+      "file": "nodes/C21_R_YURA.md",
+      "name": "C21 · 진본성 테스트 (유라 루트)",
+      "choices": [
+        {
+          "id": "A",
+          "text": "루트 진행",
+          "effects": {
+            "love_yura": 1
+          },
+          "next": "C22_R_YURA"
+        }
+      ]
+    },
+    {
+      "id": "C22_R_YURA",
+      "chapter": 22,
+      "type": "scene",
+      "file": "nodes/C22_R_YURA.md",
+      "name": "C22 · 여론 폭주 (유라 루트)",
+      "choices": [
+        {
+          "id": "A",
+          "text": "루트 진행",
+          "effects": {
+            "love_yura": 1
+          },
+          "next": "C23_R_YURA"
+        },
+        {
+          "id": "B",
+          "text": "판단 유예",
+          "effects": {},
+          "next": "BE_04"
+        }
+      ]
+    },
+    {
+      "id": "C23_R_YURA",
+      "chapter": 23,
+      "type": "scene",
+      "file": "nodes/C23_R_YURA.md",
+      "name": "C23 · 왕실 최종 거래 (유라 루트)",
+      "choices": [
+        {
+          "id": "A",
+          "text": "루트 진행",
+          "effects": {
+            "love_yura": 1
+          },
+          "next": "C24_R_YURA"
+        }
+      ]
+    },
+    {
+      "id": "C24_R_YURA",
+      "chapter": 24,
+      "type": "scene",
+      "file": "nodes/C24_R_YURA.md",
+      "name": "C24 · 공개재판 개시 (유라 루트)",
+      "choices": [
+        {
+          "id": "A",
+          "text": "루트 진행",
+          "effects": {
+            "love_yura": 1
+          },
+          "next": "C25_R_YURA"
+        },
+        {
+          "id": "B",
+          "text": "비공개 전환",
+          "effects": {},
+          "next": "BE_07"
+        }
+      ]
+    },
+    {
+      "id": "C25_R_YURA",
+      "chapter": 25,
+      "type": "scene",
+      "file": "nodes/C25_R_YURA.md",
+      "name": "C25 · 서하의 진술 (유라 루트)",
+      "choices": [
+        {
+          "id": "A",
+          "text": "루트 진행",
+          "effects": {
+            "love_yura": 1
+          },
+          "next": "C26_R_YURA"
+        }
+      ]
+    },
+    {
+      "id": "C26_R_YURA",
+      "chapter": 26,
+      "type": "scene",
+      "file": "nodes/C26_R_YURA.md",
+      "name": "C26 · 루트 결의 (유라 루트)",
+      "choices": [
+        {
+          "id": "A",
+          "text": "루트 진행",
+          "effects": {
+            "love_yura": 1
+          },
+          "next": "C27_R_YURA"
+        }
+      ]
+    },
+    {
+      "id": "C27_R_YURA",
+      "chapter": 27,
+      "type": "scene",
+      "file": "nodes/C27_R_YURA.md",
+      "name": "C27 · 공개 범위 결정 (유라 루트)",
+      "choices": [
+        {
+          "id": "A",
+          "text": "루트 진행",
+          "effects": {
+            "love_yura": 1
+          },
+          "next": "C28_R_YURA"
+        },
+        {
+          "id": "B",
+          "text": "원본 전면 공개",
+          "effects": {},
+          "next": "BE_08"
+        }
+      ]
+    },
+    {
+      "id": "C28_R_YURA",
+      "chapter": 28,
+      "type": "scene",
+      "file": "nodes/C28_R_YURA.md",
+      "name": "C28 · 판결문 작성 (유라 루트)",
+      "choices": [
+        {
+          "id": "A",
+          "text": "루트 진행",
+          "effects": {
+            "love_yura": 1
+          },
+          "next": "C29_R_YURA"
+        }
+      ]
+    },
+    {
+      "id": "C29_R_YURA",
+      "chapter": 29,
+      "type": "scene",
+      "file": "nodes/C29_R_YURA.md",
+      "name": "C29 · 최후 우선순위 (유라 루트)",
+      "choices": [
+        {
+          "id": "A",
+          "text": "루트 진행",
+          "effects": {
+            "love_yura": 1
+          },
+          "next": "C30_R_YURA"
+        },
+        {
+          "id": "B",
+          "text": "질서 과잉",
+          "effects": {},
+          "next": "BE_09"
+        },
+        {
+          "id": "C",
+          "text": "진실 과잉",
+          "effects": {},
+          "next": "BE_10"
+        }
+      ]
+    },
+    {
+      "id": "C30_R_YURA",
+      "chapter": 30,
+      "type": "scene",
+      "file": "nodes/C30_R_YURA.md",
+      "name": "C30 · 판결과 새 기억 (유라 루트)",
+      "choices": [
+        {
+          "id": "A",
+          "text": "엔딩 판정",
+          "effects": {},
+          "next": "HE_YURA"
+        }
+      ]
+    }
+  ],
+  "endings": {
+    "happy": [
+      "HE_NAYEON",
+      "HE_SIYU",
+      "HE_HARIN",
+      "HE_IDEN",
+      "HE_YURA"
+    ],
+    "bad": [
+      "BE_01",
+      "BE_02",
+      "BE_03",
+      "BE_04",
+      "BE_05",
+      "BE_06",
+      "BE_07",
+      "BE_08",
+      "BE_09",
+      "BE_10"
+    ]
+  },
+  "engine_notes": {
+    "tree_depth": 30,
+    "final_route_count": 5,
+    "branch_policy": "C12 split -> route-fixed C13~C30 with mid bad-end branches"
+  }
 }

@@ -1,10 +1,10 @@
 {
   "title": "첫사랑 위조 x 왕실 대역",
-  "version": 1,
+  "version": 2,
   "meta": {
     "chapters": 30,
-    "nodeCount": 55,
-    "edgeCount": 65
+    "nodeCount": 119,
+    "edgeCount": 149
   },
   "nodes": [
     {
@@ -19,7 +19,7 @@
       "id": "C02_N1",
       "chapter": 2,
       "x": 0,
-      "y": 180,
+      "y": 190,
       "type": "scene",
       "file": "nodes/C02_N1.md"
     },
@@ -27,7 +27,7 @@
       "id": "C03_N1",
       "chapter": 3,
       "x": 0,
-      "y": 360,
+      "y": 380,
       "type": "scene",
       "file": "nodes/C03_N1.md"
     },
@@ -35,7 +35,7 @@
       "id": "C04_N1",
       "chapter": 4,
       "x": 0,
-      "y": 540,
+      "y": 570,
       "type": "scene",
       "file": "nodes/C04_N1.md"
     },
@@ -43,39 +43,23 @@
       "id": "C05_N1",
       "chapter": 5,
       "x": 0,
-      "y": 720,
+      "y": 760,
       "type": "scene",
       "file": "nodes/C05_N1.md"
     },
     {
       "id": "C06_N1",
       "chapter": 6,
-      "x": -280.0,
-      "y": 900,
+      "x": -220,
+      "y": 950,
       "type": "scene",
       "file": "nodes/C06_N1.md"
-    },
-    {
-      "id": "C06_N2",
-      "chapter": 6,
-      "x": 0.0,
-      "y": 900,
-      "type": "scene",
-      "file": "nodes/C06_N2.md"
-    },
-    {
-      "id": "C06_N3",
-      "chapter": 6,
-      "x": 280.0,
-      "y": 900,
-      "type": "scene",
-      "file": "nodes/C06_N3.md"
     },
     {
       "id": "C07_N1",
       "chapter": 7,
       "x": 0,
-      "y": 1080,
+      "y": 1140,
       "type": "scene",
       "file": "nodes/C07_N1.md"
     },
@@ -83,7 +67,7 @@
       "id": "C08_N1",
       "chapter": 8,
       "x": 0,
-      "y": 1260,
+      "y": 1330,
       "type": "scene",
       "file": "nodes/C08_N1.md"
     },
@@ -91,7 +75,7 @@
       "id": "C09_N1",
       "chapter": 9,
       "x": 0,
-      "y": 1440,
+      "y": 1520,
       "type": "scene",
       "file": "nodes/C09_N1.md"
     },
@@ -99,7 +83,7 @@
       "id": "C10_N1",
       "chapter": 10,
       "x": 0,
-      "y": 1620,
+      "y": 1710,
       "type": "scene",
       "file": "nodes/C10_N1.md"
     },
@@ -107,239 +91,767 @@
       "id": "C11_N1",
       "chapter": 11,
       "x": 0,
-      "y": 1800,
+      "y": 1900,
       "type": "scene",
       "file": "nodes/C11_N1.md"
     },
     {
-      "id": "C12_N1",
-      "chapter": 12,
-      "x": 0,
-      "y": 1980,
+      "id": "C06_N1",
+      "chapter": 6,
+      "x": -220,
+      "y": 950,
       "type": "scene",
-      "file": "nodes/C12_N1.md"
+      "file": "nodes/C06_N1.md"
     },
     {
-      "id": "C13_R_HARIN",
-      "chapter": 13,
-      "x": -560.0,
-      "y": 2160,
-      "type": "route",
-      "file": "nodes/C13_R_HARIN.md"
+      "id": "C06_N2",
+      "chapter": 6,
+      "x": 0,
+      "y": 950,
+      "type": "scene",
+      "file": "nodes/C06_N2.md"
     },
     {
-      "id": "C13_R_IDEN",
-      "chapter": 13,
-      "x": -280.0,
-      "y": 2160,
-      "type": "route",
-      "file": "nodes/C13_R_IDEN.md"
+      "id": "C06_N3",
+      "chapter": 6,
+      "x": 220,
+      "y": 950,
+      "type": "scene",
+      "file": "nodes/C06_N3.md"
     },
     {
       "id": "C13_R_NAYEON",
       "chapter": 13,
-      "x": 0.0,
-      "y": 2160,
+      "x": -560,
+      "y": 2280,
       "type": "route",
       "file": "nodes/C13_R_NAYEON.md"
     },
     {
-      "id": "C13_R_SIYU",
-      "chapter": 13,
-      "x": 280.0,
-      "y": 2160,
-      "type": "route",
-      "file": "nodes/C13_R_SIYU.md"
-    },
-    {
-      "id": "C13_R_YURA",
-      "chapter": 13,
-      "x": 560.0,
-      "y": 2160,
-      "type": "route",
-      "file": "nodes/C13_R_YURA.md"
-    },
-    {
-      "id": "C14_N1",
+      "id": "C14_R_NAYEON",
       "chapter": 14,
-      "x": 0,
-      "y": 2340,
-      "type": "scene",
-      "file": "nodes/C14_N1.md"
+      "x": -560,
+      "y": 2470,
+      "type": "route",
+      "file": "nodes/C14_R_NAYEON.md"
     },
     {
-      "id": "C15_N1",
+      "id": "C15_R_NAYEON",
       "chapter": 15,
-      "x": 0,
-      "y": 2520,
-      "type": "scene",
-      "file": "nodes/C15_N1.md"
+      "x": -560,
+      "y": 2660,
+      "type": "route",
+      "file": "nodes/C15_R_NAYEON.md"
     },
     {
-      "id": "C16_N1",
+      "id": "C16_R_NAYEON",
       "chapter": 16,
-      "x": 0,
-      "y": 2700,
-      "type": "scene",
-      "file": "nodes/C16_N1.md"
+      "x": -560,
+      "y": 2850,
+      "type": "route",
+      "file": "nodes/C16_R_NAYEON.md"
     },
     {
-      "id": "C17_N1",
+      "id": "C17_R_NAYEON",
       "chapter": 17,
-      "x": 0,
-      "y": 2880,
-      "type": "scene",
-      "file": "nodes/C17_N1.md"
+      "x": -560,
+      "y": 3040,
+      "type": "route",
+      "file": "nodes/C17_R_NAYEON.md"
     },
     {
-      "id": "C18_N1",
+      "id": "C18_R_NAYEON",
       "chapter": 18,
-      "x": 0,
-      "y": 3060,
-      "type": "scene",
-      "file": "nodes/C18_N1.md"
+      "x": -560,
+      "y": 3230,
+      "type": "route",
+      "file": "nodes/C18_R_NAYEON.md"
     },
     {
-      "id": "C19_N1",
+      "id": "C19_R_NAYEON",
       "chapter": 19,
-      "x": 0,
-      "y": 3240,
-      "type": "scene",
-      "file": "nodes/C19_N1.md"
-    },
-    {
-      "id": "C20_N1",
-      "chapter": 20,
-      "x": 0,
+      "x": -560,
       "y": 3420,
-      "type": "scene",
-      "file": "nodes/C20_N1.md"
+      "type": "route",
+      "file": "nodes/C19_R_NAYEON.md"
     },
     {
-      "id": "C21_N1",
+      "id": "C20_R_NAYEON",
+      "chapter": 20,
+      "x": -560,
+      "y": 3610,
+      "type": "route",
+      "file": "nodes/C20_R_NAYEON.md"
+    },
+    {
+      "id": "C21_R_NAYEON",
       "chapter": 21,
-      "x": 0,
-      "y": 3600,
-      "type": "scene",
-      "file": "nodes/C21_N1.md"
+      "x": -560,
+      "y": 3800,
+      "type": "route",
+      "file": "nodes/C21_R_NAYEON.md"
     },
     {
-      "id": "C22_N1",
+      "id": "C22_R_NAYEON",
       "chapter": 22,
-      "x": 0,
-      "y": 3780,
-      "type": "scene",
-      "file": "nodes/C22_N1.md"
+      "x": -560,
+      "y": 3990,
+      "type": "route",
+      "file": "nodes/C22_R_NAYEON.md"
     },
     {
-      "id": "C23_N1",
+      "id": "C23_R_NAYEON",
       "chapter": 23,
-      "x": 0,
-      "y": 3960,
-      "type": "scene",
-      "file": "nodes/C23_N1.md"
+      "x": -560,
+      "y": 4180,
+      "type": "route",
+      "file": "nodes/C23_R_NAYEON.md"
     },
     {
-      "id": "C24_N1",
+      "id": "C24_R_NAYEON",
       "chapter": 24,
-      "x": 0,
-      "y": 4140,
-      "type": "scene",
-      "file": "nodes/C24_N1.md"
+      "x": -560,
+      "y": 4370,
+      "type": "route",
+      "file": "nodes/C24_R_NAYEON.md"
     },
     {
-      "id": "C25_N1",
+      "id": "C25_R_NAYEON",
       "chapter": 25,
-      "x": 0,
-      "y": 4320,
-      "type": "scene",
-      "file": "nodes/C25_N1.md"
-    },
-    {
-      "id": "C26_R_HARIN",
-      "chapter": 26,
-      "x": -560.0,
-      "y": 4500,
+      "x": -560,
+      "y": 4560,
       "type": "route",
-      "file": "nodes/C26_R_HARIN.md"
-    },
-    {
-      "id": "C26_R_IDEN",
-      "chapter": 26,
-      "x": -280.0,
-      "y": 4500,
-      "type": "route",
-      "file": "nodes/C26_R_IDEN.md"
+      "file": "nodes/C25_R_NAYEON.md"
     },
     {
       "id": "C26_R_NAYEON",
       "chapter": 26,
-      "x": 0.0,
-      "y": 4500,
+      "x": -560,
+      "y": 4750,
       "type": "route",
       "file": "nodes/C26_R_NAYEON.md"
     },
     {
+      "id": "C27_R_NAYEON",
+      "chapter": 27,
+      "x": -560,
+      "y": 4940,
+      "type": "route",
+      "file": "nodes/C27_R_NAYEON.md"
+    },
+    {
+      "id": "C28_R_NAYEON",
+      "chapter": 28,
+      "x": -560,
+      "y": 5130,
+      "type": "route",
+      "file": "nodes/C28_R_NAYEON.md"
+    },
+    {
+      "id": "C29_R_NAYEON",
+      "chapter": 29,
+      "x": -560,
+      "y": 5320,
+      "type": "route",
+      "file": "nodes/C29_R_NAYEON.md"
+    },
+    {
+      "id": "C30_R_NAYEON",
+      "chapter": 30,
+      "x": -560,
+      "y": 5510,
+      "type": "route",
+      "file": "nodes/C30_R_NAYEON.md"
+    },
+    {
+      "id": "C13_R_SIYU",
+      "chapter": 13,
+      "x": -280,
+      "y": 2280,
+      "type": "route",
+      "file": "nodes/C13_R_SIYU.md"
+    },
+    {
+      "id": "C14_R_SIYU",
+      "chapter": 14,
+      "x": -280,
+      "y": 2470,
+      "type": "route",
+      "file": "nodes/C14_R_SIYU.md"
+    },
+    {
+      "id": "C15_R_SIYU",
+      "chapter": 15,
+      "x": -280,
+      "y": 2660,
+      "type": "route",
+      "file": "nodes/C15_R_SIYU.md"
+    },
+    {
+      "id": "C16_R_SIYU",
+      "chapter": 16,
+      "x": -280,
+      "y": 2850,
+      "type": "route",
+      "file": "nodes/C16_R_SIYU.md"
+    },
+    {
+      "id": "C17_R_SIYU",
+      "chapter": 17,
+      "x": -280,
+      "y": 3040,
+      "type": "route",
+      "file": "nodes/C17_R_SIYU.md"
+    },
+    {
+      "id": "C18_R_SIYU",
+      "chapter": 18,
+      "x": -280,
+      "y": 3230,
+      "type": "route",
+      "file": "nodes/C18_R_SIYU.md"
+    },
+    {
+      "id": "C19_R_SIYU",
+      "chapter": 19,
+      "x": -280,
+      "y": 3420,
+      "type": "route",
+      "file": "nodes/C19_R_SIYU.md"
+    },
+    {
+      "id": "C20_R_SIYU",
+      "chapter": 20,
+      "x": -280,
+      "y": 3610,
+      "type": "route",
+      "file": "nodes/C20_R_SIYU.md"
+    },
+    {
+      "id": "C21_R_SIYU",
+      "chapter": 21,
+      "x": -280,
+      "y": 3800,
+      "type": "route",
+      "file": "nodes/C21_R_SIYU.md"
+    },
+    {
+      "id": "C22_R_SIYU",
+      "chapter": 22,
+      "x": -280,
+      "y": 3990,
+      "type": "route",
+      "file": "nodes/C22_R_SIYU.md"
+    },
+    {
+      "id": "C23_R_SIYU",
+      "chapter": 23,
+      "x": -280,
+      "y": 4180,
+      "type": "route",
+      "file": "nodes/C23_R_SIYU.md"
+    },
+    {
+      "id": "C24_R_SIYU",
+      "chapter": 24,
+      "x": -280,
+      "y": 4370,
+      "type": "route",
+      "file": "nodes/C24_R_SIYU.md"
+    },
+    {
+      "id": "C25_R_SIYU",
+      "chapter": 25,
+      "x": -280,
+      "y": 4560,
+      "type": "route",
+      "file": "nodes/C25_R_SIYU.md"
+    },
+    {
       "id": "C26_R_SIYU",
       "chapter": 26,
-      "x": 280.0,
-      "y": 4500,
+      "x": -280,
+      "y": 4750,
       "type": "route",
       "file": "nodes/C26_R_SIYU.md"
     },
     {
+      "id": "C27_R_SIYU",
+      "chapter": 27,
+      "x": -280,
+      "y": 4940,
+      "type": "route",
+      "file": "nodes/C27_R_SIYU.md"
+    },
+    {
+      "id": "C28_R_SIYU",
+      "chapter": 28,
+      "x": -280,
+      "y": 5130,
+      "type": "route",
+      "file": "nodes/C28_R_SIYU.md"
+    },
+    {
+      "id": "C29_R_SIYU",
+      "chapter": 29,
+      "x": -280,
+      "y": 5320,
+      "type": "route",
+      "file": "nodes/C29_R_SIYU.md"
+    },
+    {
+      "id": "C30_R_SIYU",
+      "chapter": 30,
+      "x": -280,
+      "y": 5510,
+      "type": "route",
+      "file": "nodes/C30_R_SIYU.md"
+    },
+    {
+      "id": "C13_R_HARIN",
+      "chapter": 13,
+      "x": 0,
+      "y": 2280,
+      "type": "route",
+      "file": "nodes/C13_R_HARIN.md"
+    },
+    {
+      "id": "C14_R_HARIN",
+      "chapter": 14,
+      "x": 0,
+      "y": 2470,
+      "type": "route",
+      "file": "nodes/C14_R_HARIN.md"
+    },
+    {
+      "id": "C15_R_HARIN",
+      "chapter": 15,
+      "x": 0,
+      "y": 2660,
+      "type": "route",
+      "file": "nodes/C15_R_HARIN.md"
+    },
+    {
+      "id": "C16_R_HARIN",
+      "chapter": 16,
+      "x": 0,
+      "y": 2850,
+      "type": "route",
+      "file": "nodes/C16_R_HARIN.md"
+    },
+    {
+      "id": "C17_R_HARIN",
+      "chapter": 17,
+      "x": 0,
+      "y": 3040,
+      "type": "route",
+      "file": "nodes/C17_R_HARIN.md"
+    },
+    {
+      "id": "C18_R_HARIN",
+      "chapter": 18,
+      "x": 0,
+      "y": 3230,
+      "type": "route",
+      "file": "nodes/C18_R_HARIN.md"
+    },
+    {
+      "id": "C19_R_HARIN",
+      "chapter": 19,
+      "x": 0,
+      "y": 3420,
+      "type": "route",
+      "file": "nodes/C19_R_HARIN.md"
+    },
+    {
+      "id": "C20_R_HARIN",
+      "chapter": 20,
+      "x": 0,
+      "y": 3610,
+      "type": "route",
+      "file": "nodes/C20_R_HARIN.md"
+    },
+    {
+      "id": "C21_R_HARIN",
+      "chapter": 21,
+      "x": 0,
+      "y": 3800,
+      "type": "route",
+      "file": "nodes/C21_R_HARIN.md"
+    },
+    {
+      "id": "C22_R_HARIN",
+      "chapter": 22,
+      "x": 0,
+      "y": 3990,
+      "type": "route",
+      "file": "nodes/C22_R_HARIN.md"
+    },
+    {
+      "id": "C23_R_HARIN",
+      "chapter": 23,
+      "x": 0,
+      "y": 4180,
+      "type": "route",
+      "file": "nodes/C23_R_HARIN.md"
+    },
+    {
+      "id": "C24_R_HARIN",
+      "chapter": 24,
+      "x": 0,
+      "y": 4370,
+      "type": "route",
+      "file": "nodes/C24_R_HARIN.md"
+    },
+    {
+      "id": "C25_R_HARIN",
+      "chapter": 25,
+      "x": 0,
+      "y": 4560,
+      "type": "route",
+      "file": "nodes/C25_R_HARIN.md"
+    },
+    {
+      "id": "C26_R_HARIN",
+      "chapter": 26,
+      "x": 0,
+      "y": 4750,
+      "type": "route",
+      "file": "nodes/C26_R_HARIN.md"
+    },
+    {
+      "id": "C27_R_HARIN",
+      "chapter": 27,
+      "x": 0,
+      "y": 4940,
+      "type": "route",
+      "file": "nodes/C27_R_HARIN.md"
+    },
+    {
+      "id": "C28_R_HARIN",
+      "chapter": 28,
+      "x": 0,
+      "y": 5130,
+      "type": "route",
+      "file": "nodes/C28_R_HARIN.md"
+    },
+    {
+      "id": "C29_R_HARIN",
+      "chapter": 29,
+      "x": 0,
+      "y": 5320,
+      "type": "route",
+      "file": "nodes/C29_R_HARIN.md"
+    },
+    {
+      "id": "C30_R_HARIN",
+      "chapter": 30,
+      "x": 0,
+      "y": 5510,
+      "type": "route",
+      "file": "nodes/C30_R_HARIN.md"
+    },
+    {
+      "id": "C13_R_IDEN",
+      "chapter": 13,
+      "x": 280,
+      "y": 2280,
+      "type": "route",
+      "file": "nodes/C13_R_IDEN.md"
+    },
+    {
+      "id": "C14_R_IDEN",
+      "chapter": 14,
+      "x": 280,
+      "y": 2470,
+      "type": "route",
+      "file": "nodes/C14_R_IDEN.md"
+    },
+    {
+      "id": "C15_R_IDEN",
+      "chapter": 15,
+      "x": 280,
+      "y": 2660,
+      "type": "route",
+      "file": "nodes/C15_R_IDEN.md"
+    },
+    {
+      "id": "C16_R_IDEN",
+      "chapter": 16,
+      "x": 280,
+      "y": 2850,
+      "type": "route",
+      "file": "nodes/C16_R_IDEN.md"
+    },
+    {
+      "id": "C17_R_IDEN",
+      "chapter": 17,
+      "x": 280,
+      "y": 3040,
+      "type": "route",
+      "file": "nodes/C17_R_IDEN.md"
+    },
+    {
+      "id": "C18_R_IDEN",
+      "chapter": 18,
+      "x": 280,
+      "y": 3230,
+      "type": "route",
+      "file": "nodes/C18_R_IDEN.md"
+    },
+    {
+      "id": "C19_R_IDEN",
+      "chapter": 19,
+      "x": 280,
+      "y": 3420,
+      "type": "route",
+      "file": "nodes/C19_R_IDEN.md"
+    },
+    {
+      "id": "C20_R_IDEN",
+      "chapter": 20,
+      "x": 280,
+      "y": 3610,
+      "type": "route",
+      "file": "nodes/C20_R_IDEN.md"
+    },
+    {
+      "id": "C21_R_IDEN",
+      "chapter": 21,
+      "x": 280,
+      "y": 3800,
+      "type": "route",
+      "file": "nodes/C21_R_IDEN.md"
+    },
+    {
+      "id": "C22_R_IDEN",
+      "chapter": 22,
+      "x": 280,
+      "y": 3990,
+      "type": "route",
+      "file": "nodes/C22_R_IDEN.md"
+    },
+    {
+      "id": "C23_R_IDEN",
+      "chapter": 23,
+      "x": 280,
+      "y": 4180,
+      "type": "route",
+      "file": "nodes/C23_R_IDEN.md"
+    },
+    {
+      "id": "C24_R_IDEN",
+      "chapter": 24,
+      "x": 280,
+      "y": 4370,
+      "type": "route",
+      "file": "nodes/C24_R_IDEN.md"
+    },
+    {
+      "id": "C25_R_IDEN",
+      "chapter": 25,
+      "x": 280,
+      "y": 4560,
+      "type": "route",
+      "file": "nodes/C25_R_IDEN.md"
+    },
+    {
+      "id": "C26_R_IDEN",
+      "chapter": 26,
+      "x": 280,
+      "y": 4750,
+      "type": "route",
+      "file": "nodes/C26_R_IDEN.md"
+    },
+    {
+      "id": "C27_R_IDEN",
+      "chapter": 27,
+      "x": 280,
+      "y": 4940,
+      "type": "route",
+      "file": "nodes/C27_R_IDEN.md"
+    },
+    {
+      "id": "C28_R_IDEN",
+      "chapter": 28,
+      "x": 280,
+      "y": 5130,
+      "type": "route",
+      "file": "nodes/C28_R_IDEN.md"
+    },
+    {
+      "id": "C29_R_IDEN",
+      "chapter": 29,
+      "x": 280,
+      "y": 5320,
+      "type": "route",
+      "file": "nodes/C29_R_IDEN.md"
+    },
+    {
+      "id": "C30_R_IDEN",
+      "chapter": 30,
+      "x": 280,
+      "y": 5510,
+      "type": "route",
+      "file": "nodes/C30_R_IDEN.md"
+    },
+    {
+      "id": "C13_R_YURA",
+      "chapter": 13,
+      "x": 560,
+      "y": 2280,
+      "type": "route",
+      "file": "nodes/C13_R_YURA.md"
+    },
+    {
+      "id": "C14_R_YURA",
+      "chapter": 14,
+      "x": 560,
+      "y": 2470,
+      "type": "route",
+      "file": "nodes/C14_R_YURA.md"
+    },
+    {
+      "id": "C15_R_YURA",
+      "chapter": 15,
+      "x": 560,
+      "y": 2660,
+      "type": "route",
+      "file": "nodes/C15_R_YURA.md"
+    },
+    {
+      "id": "C16_R_YURA",
+      "chapter": 16,
+      "x": 560,
+      "y": 2850,
+      "type": "route",
+      "file": "nodes/C16_R_YURA.md"
+    },
+    {
+      "id": "C17_R_YURA",
+      "chapter": 17,
+      "x": 560,
+      "y": 3040,
+      "type": "route",
+      "file": "nodes/C17_R_YURA.md"
+    },
+    {
+      "id": "C18_R_YURA",
+      "chapter": 18,
+      "x": 560,
+      "y": 3230,
+      "type": "route",
+      "file": "nodes/C18_R_YURA.md"
+    },
+    {
+      "id": "C19_R_YURA",
+      "chapter": 19,
+      "x": 560,
+      "y": 3420,
+      "type": "route",
+      "file": "nodes/C19_R_YURA.md"
+    },
+    {
+      "id": "C20_R_YURA",
+      "chapter": 20,
+      "x": 560,
+      "y": 3610,
+      "type": "route",
+      "file": "nodes/C20_R_YURA.md"
+    },
+    {
+      "id": "C21_R_YURA",
+      "chapter": 21,
+      "x": 560,
+      "y": 3800,
+      "type": "route",
+      "file": "nodes/C21_R_YURA.md"
+    },
+    {
+      "id": "C22_R_YURA",
+      "chapter": 22,
+      "x": 560,
+      "y": 3990,
+      "type": "route",
+      "file": "nodes/C22_R_YURA.md"
+    },
+    {
+      "id": "C23_R_YURA",
+      "chapter": 23,
+      "x": 560,
+      "y": 4180,
+      "type": "route",
+      "file": "nodes/C23_R_YURA.md"
+    },
+    {
+      "id": "C24_R_YURA",
+      "chapter": 24,
+      "x": 560,
+      "y": 4370,
+      "type": "route",
+      "file": "nodes/C24_R_YURA.md"
+    },
+    {
+      "id": "C25_R_YURA",
+      "chapter": 25,
+      "x": 560,
+      "y": 4560,
+      "type": "route",
+      "file": "nodes/C25_R_YURA.md"
+    },
+    {
       "id": "C26_R_YURA",
       "chapter": 26,
-      "x": 560.0,
-      "y": 4500,
+      "x": 560,
+      "y": 4750,
       "type": "route",
       "file": "nodes/C26_R_YURA.md"
     },
     {
-      "id": "C27_N1",
+      "id": "C27_R_YURA",
       "chapter": 27,
-      "x": 0,
-      "y": 4680,
-      "type": "scene",
-      "file": "nodes/C27_N1.md"
+      "x": 560,
+      "y": 4940,
+      "type": "route",
+      "file": "nodes/C27_R_YURA.md"
     },
     {
-      "id": "C28_N1",
+      "id": "C28_R_YURA",
       "chapter": 28,
-      "x": 0,
-      "y": 4860,
-      "type": "scene",
-      "file": "nodes/C28_N1.md"
+      "x": 560,
+      "y": 5130,
+      "type": "route",
+      "file": "nodes/C28_R_YURA.md"
     },
     {
-      "id": "C29_N1",
+      "id": "C29_R_YURA",
       "chapter": 29,
-      "x": 0,
-      "y": 5040,
-      "type": "scene",
-      "file": "nodes/C29_N1.md"
+      "x": 560,
+      "y": 5320,
+      "type": "route",
+      "file": "nodes/C29_R_YURA.md"
     },
     {
-      "id": "C30_N1",
+      "id": "C30_R_YURA",
       "chapter": 30,
-      "x": 0,
-      "y": 5220,
-      "type": "scene",
-      "file": "nodes/C30_N1.md"
+      "x": 560,
+      "y": 5510,
+      "type": "route",
+      "file": "nodes/C30_R_YURA.md"
     },
     {
       "id": "HE_NAYEON",
       "chapter": 31,
-      "x": -520,
-      "y": 5640,
+      "x": -560,
+      "y": 5920,
       "type": "ending_happy",
       "file": "endings/HE_NAYEON.md"
     },
     {
       "id": "HE_SIYU",
       "chapter": 31,
-      "x": -260,
-      "y": 5640,
+      "x": -280,
+      "y": 5920,
       "type": "ending_happy",
       "file": "endings/HE_SIYU.md"
     },
@@ -347,103 +859,103 @@
       "id": "HE_HARIN",
       "chapter": 31,
       "x": 0,
-      "y": 5640,
+      "y": 5920,
       "type": "ending_happy",
       "file": "endings/HE_HARIN.md"
     },
     {
       "id": "HE_IDEN",
       "chapter": 31,
-      "x": 260,
-      "y": 5640,
+      "x": 280,
+      "y": 5920,
       "type": "ending_happy",
       "file": "endings/HE_IDEN.md"
     },
     {
       "id": "HE_YURA",
       "chapter": 31,
-      "x": 520,
-      "y": 5640,
+      "x": 560,
+      "y": 5920,
       "type": "ending_happy",
       "file": "endings/HE_YURA.md"
     },
     {
       "id": "BE_01",
       "chapter": 32,
-      "x": -900.0,
-      "y": 5860,
+      "x": -700,
+      "y": 6120,
       "type": "ending_bad",
       "file": "endings/BE_01.md"
     },
     {
       "id": "BE_02",
       "chapter": 32,
-      "x": -700.0,
-      "y": 5860,
+      "x": -545,
+      "y": 6120,
       "type": "ending_bad",
       "file": "endings/BE_02.md"
     },
     {
       "id": "BE_03",
       "chapter": 32,
-      "x": -500.0,
-      "y": 5860,
+      "x": -390,
+      "y": 6120,
       "type": "ending_bad",
       "file": "endings/BE_03.md"
     },
     {
       "id": "BE_04",
       "chapter": 32,
-      "x": -300.0,
-      "y": 5860,
+      "x": -235,
+      "y": 6120,
       "type": "ending_bad",
       "file": "endings/BE_04.md"
     },
     {
       "id": "BE_05",
       "chapter": 32,
-      "x": -100.0,
-      "y": 5860,
+      "x": -80,
+      "y": 6120,
       "type": "ending_bad",
       "file": "endings/BE_05.md"
     },
     {
       "id": "BE_06",
       "chapter": 32,
-      "x": 100.0,
-      "y": 5860,
+      "x": 75,
+      "y": 6120,
       "type": "ending_bad",
       "file": "endings/BE_06.md"
     },
     {
       "id": "BE_07",
       "chapter": 32,
-      "x": 300.0,
-      "y": 5860,
+      "x": 230,
+      "y": 6120,
       "type": "ending_bad",
       "file": "endings/BE_07.md"
     },
     {
       "id": "BE_08",
       "chapter": 32,
-      "x": 500.0,
-      "y": 5860,
+      "x": 385,
+      "y": 6120,
       "type": "ending_bad",
       "file": "endings/BE_08.md"
     },
     {
       "id": "BE_09",
       "chapter": 32,
-      "x": 700.0,
-      "y": 5860,
+      "x": 540,
+      "y": 6120,
       "type": "ending_bad",
       "file": "endings/BE_09.md"
     },
     {
       "id": "BE_10",
       "chapter": 32,
-      "x": 900.0,
-      "y": 5860,
+      "x": 695,
+      "y": 6120,
       "type": "ending_bad",
       "file": "endings/BE_10.md"
     }
@@ -451,409 +963,897 @@
   "edges": [
     {
       "from": "C01_N1",
+      "to": "C02_N1",
       "choiceId": "A",
-      "label": "초기 보고서 제출",
-      "to": "C02_N1"
+      "label": "진행"
     },
     {
       "from": "C02_N1",
+      "to": "C03_N1",
       "choiceId": "A",
-      "label": "법원 프로토콜 유지",
-      "to": "C03_N1"
-    },
-    {
-      "from": "C02_N1",
-      "choiceId": "B",
-      "label": "비공식 감정 병행",
-      "to": "C03_N1"
+      "label": "진행"
     },
     {
       "from": "C03_N1",
+      "to": "C04_N1",
       "choiceId": "A",
-      "label": "합동 브리핑 수락",
-      "to": "C04_N1"
+      "label": "진행"
     },
     {
       "from": "C04_N1",
+      "to": "C05_N1",
       "choiceId": "A",
-      "label": "대역 가설 채택",
-      "to": "C05_N1"
+      "label": "진행"
     },
     {
       "from": "C05_N1",
+      "to": "C06_N1",
       "choiceId": "A",
-      "label": "정식 영장",
-      "to": "C06_N1"
+      "label": "정식 영장"
     },
     {
       "from": "C05_N1",
+      "to": "C06_N2",
       "choiceId": "B",
-      "label": "우회 침입",
-      "to": "C06_N2"
+      "label": "우회 침입"
     },
     {
       "from": "C05_N1",
+      "to": "C06_N3",
       "choiceId": "C",
-      "label": "감찰 협상",
-      "to": "C06_N3"
+      "label": "감찰 협상"
     },
     {
       "from": "C06_N1",
+      "to": "C07_N1",
       "choiceId": "A",
-      "label": "제출기록 분석",
-      "to": "C07_N1"
-    },
-    {
-      "from": "C06_N2",
-      "choiceId": "A",
-      "label": "로그삭제 도주",
-      "to": "C07_N1"
-    },
-    {
-      "from": "C06_N2",
-      "choiceId": "B",
-      "label": "단독책임",
-      "to": "BE_01"
-    },
-    {
-      "from": "C06_N2",
-      "choiceId": "C",
-      "label": "내부고발 카드",
-      "to": "C07_N1"
-    },
-    {
-      "from": "C06_N3",
-      "choiceId": "A",
-      "label": "비공개 열람 수락",
-      "to": "C07_N1"
+      "label": "진행"
     },
     {
       "from": "C07_N1",
+      "to": "C08_N1",
       "choiceId": "A",
-      "label": "코드명 추적",
-      "to": "C08_N1"
+      "label": "진행"
     },
     {
       "from": "C08_N1",
+      "to": "C09_N1",
       "choiceId": "A",
-      "label": "재판 가설 상정",
-      "to": "C09_N1"
+      "label": "진행"
     },
     {
       "from": "C09_N1",
+      "to": "C10_N1",
       "choiceId": "A",
-      "label": "증거 보강 후 기소",
-      "to": "C10_N1"
+      "label": "증거 보강 후 기소"
     },
     {
       "from": "C09_N1",
+      "to": "BE_02",
       "choiceId": "B",
-      "label": "성급 기소",
-      "to": "BE_02"
+      "label": "성급 기소"
     },
     {
       "from": "C10_N1",
+      "to": "C11_N1",
       "choiceId": "A",
-      "label": "중간심리 통과",
-      "to": "C11_N1"
+      "label": "진행"
     },
     {
       "from": "C11_N1",
+      "to": "C12_N1",
       "choiceId": "A",
-      "label": "신뢰 점검",
-      "to": "C12_N1"
+      "label": "진행"
     },
     {
-      "from": "C12_N1",
+      "from": "C06_N1",
+      "to": "C07_N1",
       "choiceId": "A",
-      "label": "나연 동행",
-      "to": "C13_R_NAYEON"
+      "label": "제출기록 분석"
     },
     {
-      "from": "C12_N1",
+      "from": "C06_N2",
+      "to": "C07_N1",
+      "choiceId": "A",
+      "label": "로그삭제 도주"
+    },
+    {
+      "from": "C06_N2",
+      "to": "BE_01",
       "choiceId": "B",
-      "label": "시유 동행",
-      "to": "C13_R_SIYU"
+      "label": "단독책임"
     },
     {
-      "from": "C12_N1",
+      "from": "C06_N2",
+      "to": "C07_N1",
       "choiceId": "C",
-      "label": "하린 동행",
-      "to": "C13_R_HARIN"
+      "label": "내부고발 카드"
     },
     {
-      "from": "C12_N1",
-      "choiceId": "D",
-      "label": "이든 동행",
-      "to": "C13_R_IDEN"
-    },
-    {
-      "from": "C12_N1",
-      "choiceId": "E",
-      "label": "유라 동행",
-      "to": "C13_R_YURA"
-    },
-    {
-      "from": "C13_R_HARIN",
+      "from": "C06_N3",
+      "to": "C07_N1",
       "choiceId": "A",
-      "label": "복원 실험",
-      "to": "C14_N1"
-    },
-    {
-      "from": "C13_R_IDEN",
-      "choiceId": "A",
-      "label": "삭제로그 추적",
-      "to": "C14_N1"
+      "label": "비공개 열람 수락"
     },
     {
       "from": "C13_R_NAYEON",
+      "to": "C14_R_NAYEON",
       "choiceId": "A",
-      "label": "재기소 준비",
-      "to": "C14_N1"
+      "label": "루트 진행"
     },
     {
-      "from": "C13_R_SIYU",
+      "from": "C14_R_NAYEON",
+      "to": "C15_R_NAYEON",
       "choiceId": "A",
-      "label": "보호명령 준비",
-      "to": "C14_N1"
+      "label": "루트 진행"
     },
     {
-      "from": "C13_R_YURA",
-      "choiceId": "A",
-      "label": "왕실 열람권",
-      "to": "C14_N1"
-    },
-    {
-      "from": "C14_N1",
-      "choiceId": "A",
-      "label": "실명 공개",
-      "to": "BE_05"
-    },
-    {
-      "from": "C14_N1",
+      "from": "C14_R_NAYEON",
+      "to": "BE_05",
       "choiceId": "B",
-      "label": "코드명 공개",
-      "to": "C15_N1"
+      "label": "실명 전면 공개"
     },
     {
-      "from": "C14_N1",
-      "choiceId": "C",
-      "label": "비공개 유지",
-      "to": "C15_N1"
-    },
-    {
-      "from": "C15_N1",
+      "from": "C15_R_NAYEON",
+      "to": "C16_R_NAYEON",
       "choiceId": "A",
-      "label": "원본 1차복원",
-      "to": "C16_N1"
+      "label": "루트 진행"
     },
     {
-      "from": "C16_N1",
+      "from": "C16_R_NAYEON",
+      "to": "C17_R_NAYEON",
       "choiceId": "A",
-      "label": "복원 계속",
-      "to": "C17_N1"
+      "label": "루트 진행"
     },
     {
-      "from": "C17_N1",
+      "from": "C17_R_NAYEON",
+      "to": "C18_R_NAYEON",
       "choiceId": "A",
-      "label": "과거 진실 우선",
-      "to": "C18_N1"
+      "label": "루트 진행"
     },
     {
-      "from": "C17_N1",
+      "from": "C17_R_NAYEON",
+      "to": "BE_03",
       "choiceId": "B",
-      "label": "현재 관계 우선",
-      "to": "C18_N1"
+      "label": "양립 강행"
     },
     {
-      "from": "C17_N1",
-      "choiceId": "C",
-      "label": "양립 강행",
-      "to": "BE_03"
-    },
-    {
-      "from": "C18_N1",
+      "from": "C18_R_NAYEON",
+      "to": "C19_R_NAYEON",
       "choiceId": "A",
-      "label": "왕실 거래 거절",
-      "to": "C19_N1"
+      "label": "루트 진행"
     },
     {
-      "from": "C18_N1",
+      "from": "C19_R_NAYEON",
+      "to": "C20_R_NAYEON",
+      "choiceId": "A",
+      "label": "루트 진행"
+    },
+    {
+      "from": "C19_R_NAYEON",
+      "to": "BE_06",
       "choiceId": "B",
-      "label": "조건부 수락",
-      "to": "C19_N1"
+      "label": "불완전 채택 강행"
     },
     {
-      "from": "C19_N1",
+      "from": "C20_R_NAYEON",
+      "to": "C21_R_NAYEON",
       "choiceId": "A",
-      "label": "핵심증거 채택",
-      "to": "C20_N1"
+      "label": "루트 진행"
     },
     {
-      "from": "C19_N1",
+      "from": "C21_R_NAYEON",
+      "to": "C22_R_NAYEON",
+      "choiceId": "A",
+      "label": "루트 진행"
+    },
+    {
+      "from": "C22_R_NAYEON",
+      "to": "C23_R_NAYEON",
+      "choiceId": "A",
+      "label": "루트 진행"
+    },
+    {
+      "from": "C22_R_NAYEON",
+      "to": "BE_04",
       "choiceId": "B",
-      "label": "불완전 채택",
-      "to": "BE_06"
+      "label": "판단 유예"
     },
     {
-      "from": "C20_N1",
+      "from": "C23_R_NAYEON",
+      "to": "C24_R_NAYEON",
       "choiceId": "A",
-      "label": "루트 사실 확정",
-      "to": "C21_N1"
+      "label": "루트 진행"
     },
     {
-      "from": "C21_N1",
+      "from": "C24_R_NAYEON",
+      "to": "C25_R_NAYEON",
       "choiceId": "A",
-      "label": "진본성 통과",
-      "to": "C22_N1"
+      "label": "루트 진행"
     },
     {
-      "from": "C22_N1",
-      "choiceId": "A",
-      "label": "강경진압",
-      "to": "C23_N1"
-    },
-    {
-      "from": "C22_N1",
+      "from": "C24_R_NAYEON",
+      "to": "BE_07",
       "choiceId": "B",
-      "label": "공개사과",
-      "to": "C23_N1"
+      "label": "비공개 전환"
     },
     {
-      "from": "C22_N1",
-      "choiceId": "C",
-      "label": "판단 유예",
-      "to": "BE_04"
-    },
-    {
-      "from": "C23_N1",
+      "from": "C25_R_NAYEON",
+      "to": "C26_R_NAYEON",
       "choiceId": "A",
-      "label": "왕실 거래 수락",
-      "to": "C24_N1"
-    },
-    {
-      "from": "C23_N1",
-      "choiceId": "B",
-      "label": "왕실 거래 거절",
-      "to": "C24_N1"
-    },
-    {
-      "from": "C24_N1",
-      "choiceId": "A",
-      "label": "전면 공개재판",
-      "to": "C25_N1"
-    },
-    {
-      "from": "C24_N1",
-      "choiceId": "B",
-      "label": "편집 공개",
-      "to": "C25_N1"
-    },
-    {
-      "from": "C24_N1",
-      "choiceId": "C",
-      "label": "비공개 전환",
-      "to": "BE_07"
-    },
-    {
-      "from": "C25_N1",
-      "choiceId": "A",
-      "label": "서하 진술",
-      "to": "ROUTE_CH26"
-    },
-    {
-      "from": "C26_R_HARIN",
-      "choiceId": "A",
-      "label": "하린 신뢰 확정",
-      "to": "C27_N1"
-    },
-    {
-      "from": "C26_R_IDEN",
-      "choiceId": "A",
-      "label": "이든 신뢰 확정",
-      "to": "C27_N1"
+      "label": "루트 진행"
     },
     {
       "from": "C26_R_NAYEON",
+      "to": "C27_R_NAYEON",
       "choiceId": "A",
-      "label": "나연 신뢰 확정",
-      "to": "C27_N1"
+      "label": "루트 진행"
+    },
+    {
+      "from": "C27_R_NAYEON",
+      "to": "C28_R_NAYEON",
+      "choiceId": "A",
+      "label": "루트 진행"
+    },
+    {
+      "from": "C27_R_NAYEON",
+      "to": "BE_08",
+      "choiceId": "B",
+      "label": "원본 전면 공개"
+    },
+    {
+      "from": "C28_R_NAYEON",
+      "to": "C29_R_NAYEON",
+      "choiceId": "A",
+      "label": "루트 진행"
+    },
+    {
+      "from": "C29_R_NAYEON",
+      "to": "C30_R_NAYEON",
+      "choiceId": "A",
+      "label": "루트 진행"
+    },
+    {
+      "from": "C29_R_NAYEON",
+      "to": "BE_09",
+      "choiceId": "B",
+      "label": "질서 과잉"
+    },
+    {
+      "from": "C29_R_NAYEON",
+      "to": "BE_10",
+      "choiceId": "C",
+      "label": "진실 과잉"
+    },
+    {
+      "from": "C30_R_NAYEON",
+      "to": "HE_NAYEON",
+      "choiceId": "A",
+      "label": "엔딩 판정"
+    },
+    {
+      "from": "C13_R_SIYU",
+      "to": "C14_R_SIYU",
+      "choiceId": "A",
+      "label": "루트 진행"
+    },
+    {
+      "from": "C14_R_SIYU",
+      "to": "C15_R_SIYU",
+      "choiceId": "A",
+      "label": "루트 진행"
+    },
+    {
+      "from": "C14_R_SIYU",
+      "to": "BE_05",
+      "choiceId": "B",
+      "label": "실명 전면 공개"
+    },
+    {
+      "from": "C15_R_SIYU",
+      "to": "C16_R_SIYU",
+      "choiceId": "A",
+      "label": "루트 진행"
+    },
+    {
+      "from": "C16_R_SIYU",
+      "to": "C17_R_SIYU",
+      "choiceId": "A",
+      "label": "루트 진행"
+    },
+    {
+      "from": "C17_R_SIYU",
+      "to": "C18_R_SIYU",
+      "choiceId": "A",
+      "label": "루트 진행"
+    },
+    {
+      "from": "C17_R_SIYU",
+      "to": "BE_03",
+      "choiceId": "B",
+      "label": "양립 강행"
+    },
+    {
+      "from": "C18_R_SIYU",
+      "to": "C19_R_SIYU",
+      "choiceId": "A",
+      "label": "루트 진행"
+    },
+    {
+      "from": "C19_R_SIYU",
+      "to": "C20_R_SIYU",
+      "choiceId": "A",
+      "label": "루트 진행"
+    },
+    {
+      "from": "C19_R_SIYU",
+      "to": "BE_06",
+      "choiceId": "B",
+      "label": "불완전 채택 강행"
+    },
+    {
+      "from": "C20_R_SIYU",
+      "to": "C21_R_SIYU",
+      "choiceId": "A",
+      "label": "루트 진행"
+    },
+    {
+      "from": "C21_R_SIYU",
+      "to": "C22_R_SIYU",
+      "choiceId": "A",
+      "label": "루트 진행"
+    },
+    {
+      "from": "C22_R_SIYU",
+      "to": "C23_R_SIYU",
+      "choiceId": "A",
+      "label": "루트 진행"
+    },
+    {
+      "from": "C22_R_SIYU",
+      "to": "BE_04",
+      "choiceId": "B",
+      "label": "판단 유예"
+    },
+    {
+      "from": "C23_R_SIYU",
+      "to": "C24_R_SIYU",
+      "choiceId": "A",
+      "label": "루트 진행"
+    },
+    {
+      "from": "C24_R_SIYU",
+      "to": "C25_R_SIYU",
+      "choiceId": "A",
+      "label": "루트 진행"
+    },
+    {
+      "from": "C24_R_SIYU",
+      "to": "BE_07",
+      "choiceId": "B",
+      "label": "비공개 전환"
+    },
+    {
+      "from": "C25_R_SIYU",
+      "to": "C26_R_SIYU",
+      "choiceId": "A",
+      "label": "루트 진행"
     },
     {
       "from": "C26_R_SIYU",
+      "to": "C27_R_SIYU",
       "choiceId": "A",
-      "label": "시유 신뢰 확정",
-      "to": "C27_N1"
+      "label": "루트 진행"
+    },
+    {
+      "from": "C27_R_SIYU",
+      "to": "C28_R_SIYU",
+      "choiceId": "A",
+      "label": "루트 진행"
+    },
+    {
+      "from": "C27_R_SIYU",
+      "to": "BE_08",
+      "choiceId": "B",
+      "label": "원본 전면 공개"
+    },
+    {
+      "from": "C28_R_SIYU",
+      "to": "C29_R_SIYU",
+      "choiceId": "A",
+      "label": "루트 진행"
+    },
+    {
+      "from": "C29_R_SIYU",
+      "to": "C30_R_SIYU",
+      "choiceId": "A",
+      "label": "루트 진행"
+    },
+    {
+      "from": "C29_R_SIYU",
+      "to": "BE_09",
+      "choiceId": "B",
+      "label": "질서 과잉"
+    },
+    {
+      "from": "C29_R_SIYU",
+      "to": "BE_10",
+      "choiceId": "C",
+      "label": "진실 과잉"
+    },
+    {
+      "from": "C30_R_SIYU",
+      "to": "HE_SIYU",
+      "choiceId": "A",
+      "label": "엔딩 판정"
+    },
+    {
+      "from": "C13_R_HARIN",
+      "to": "C14_R_HARIN",
+      "choiceId": "A",
+      "label": "루트 진행"
+    },
+    {
+      "from": "C14_R_HARIN",
+      "to": "C15_R_HARIN",
+      "choiceId": "A",
+      "label": "루트 진행"
+    },
+    {
+      "from": "C14_R_HARIN",
+      "to": "BE_05",
+      "choiceId": "B",
+      "label": "실명 전면 공개"
+    },
+    {
+      "from": "C15_R_HARIN",
+      "to": "C16_R_HARIN",
+      "choiceId": "A",
+      "label": "루트 진행"
+    },
+    {
+      "from": "C16_R_HARIN",
+      "to": "C17_R_HARIN",
+      "choiceId": "A",
+      "label": "루트 진행"
+    },
+    {
+      "from": "C17_R_HARIN",
+      "to": "C18_R_HARIN",
+      "choiceId": "A",
+      "label": "루트 진행"
+    },
+    {
+      "from": "C17_R_HARIN",
+      "to": "BE_03",
+      "choiceId": "B",
+      "label": "양립 강행"
+    },
+    {
+      "from": "C18_R_HARIN",
+      "to": "C19_R_HARIN",
+      "choiceId": "A",
+      "label": "루트 진행"
+    },
+    {
+      "from": "C19_R_HARIN",
+      "to": "C20_R_HARIN",
+      "choiceId": "A",
+      "label": "루트 진행"
+    },
+    {
+      "from": "C19_R_HARIN",
+      "to": "BE_06",
+      "choiceId": "B",
+      "label": "불완전 채택 강행"
+    },
+    {
+      "from": "C20_R_HARIN",
+      "to": "C21_R_HARIN",
+      "choiceId": "A",
+      "label": "루트 진행"
+    },
+    {
+      "from": "C21_R_HARIN",
+      "to": "C22_R_HARIN",
+      "choiceId": "A",
+      "label": "루트 진행"
+    },
+    {
+      "from": "C22_R_HARIN",
+      "to": "C23_R_HARIN",
+      "choiceId": "A",
+      "label": "루트 진행"
+    },
+    {
+      "from": "C22_R_HARIN",
+      "to": "BE_04",
+      "choiceId": "B",
+      "label": "판단 유예"
+    },
+    {
+      "from": "C23_R_HARIN",
+      "to": "C24_R_HARIN",
+      "choiceId": "A",
+      "label": "루트 진행"
+    },
+    {
+      "from": "C24_R_HARIN",
+      "to": "C25_R_HARIN",
+      "choiceId": "A",
+      "label": "루트 진행"
+    },
+    {
+      "from": "C24_R_HARIN",
+      "to": "BE_07",
+      "choiceId": "B",
+      "label": "비공개 전환"
+    },
+    {
+      "from": "C25_R_HARIN",
+      "to": "C26_R_HARIN",
+      "choiceId": "A",
+      "label": "루트 진행"
+    },
+    {
+      "from": "C26_R_HARIN",
+      "to": "C27_R_HARIN",
+      "choiceId": "A",
+      "label": "루트 진행"
+    },
+    {
+      "from": "C27_R_HARIN",
+      "to": "C28_R_HARIN",
+      "choiceId": "A",
+      "label": "루트 진행"
+    },
+    {
+      "from": "C27_R_HARIN",
+      "to": "BE_08",
+      "choiceId": "B",
+      "label": "원본 전면 공개"
+    },
+    {
+      "from": "C28_R_HARIN",
+      "to": "C29_R_HARIN",
+      "choiceId": "A",
+      "label": "루트 진행"
+    },
+    {
+      "from": "C29_R_HARIN",
+      "to": "C30_R_HARIN",
+      "choiceId": "A",
+      "label": "루트 진행"
+    },
+    {
+      "from": "C29_R_HARIN",
+      "to": "BE_09",
+      "choiceId": "B",
+      "label": "질서 과잉"
+    },
+    {
+      "from": "C29_R_HARIN",
+      "to": "BE_10",
+      "choiceId": "C",
+      "label": "진실 과잉"
+    },
+    {
+      "from": "C30_R_HARIN",
+      "to": "HE_HARIN",
+      "choiceId": "A",
+      "label": "엔딩 판정"
+    },
+    {
+      "from": "C13_R_IDEN",
+      "to": "C14_R_IDEN",
+      "choiceId": "A",
+      "label": "루트 진행"
+    },
+    {
+      "from": "C14_R_IDEN",
+      "to": "C15_R_IDEN",
+      "choiceId": "A",
+      "label": "루트 진행"
+    },
+    {
+      "from": "C14_R_IDEN",
+      "to": "BE_05",
+      "choiceId": "B",
+      "label": "실명 전면 공개"
+    },
+    {
+      "from": "C15_R_IDEN",
+      "to": "C16_R_IDEN",
+      "choiceId": "A",
+      "label": "루트 진행"
+    },
+    {
+      "from": "C16_R_IDEN",
+      "to": "C17_R_IDEN",
+      "choiceId": "A",
+      "label": "루트 진행"
+    },
+    {
+      "from": "C17_R_IDEN",
+      "to": "C18_R_IDEN",
+      "choiceId": "A",
+      "label": "루트 진행"
+    },
+    {
+      "from": "C17_R_IDEN",
+      "to": "BE_03",
+      "choiceId": "B",
+      "label": "양립 강행"
+    },
+    {
+      "from": "C18_R_IDEN",
+      "to": "C19_R_IDEN",
+      "choiceId": "A",
+      "label": "루트 진행"
+    },
+    {
+      "from": "C19_R_IDEN",
+      "to": "C20_R_IDEN",
+      "choiceId": "A",
+      "label": "루트 진행"
+    },
+    {
+      "from": "C19_R_IDEN",
+      "to": "BE_06",
+      "choiceId": "B",
+      "label": "불완전 채택 강행"
+    },
+    {
+      "from": "C20_R_IDEN",
+      "to": "C21_R_IDEN",
+      "choiceId": "A",
+      "label": "루트 진행"
+    },
+    {
+      "from": "C21_R_IDEN",
+      "to": "C22_R_IDEN",
+      "choiceId": "A",
+      "label": "루트 진행"
+    },
+    {
+      "from": "C22_R_IDEN",
+      "to": "C23_R_IDEN",
+      "choiceId": "A",
+      "label": "루트 진행"
+    },
+    {
+      "from": "C22_R_IDEN",
+      "to": "BE_04",
+      "choiceId": "B",
+      "label": "판단 유예"
+    },
+    {
+      "from": "C23_R_IDEN",
+      "to": "C24_R_IDEN",
+      "choiceId": "A",
+      "label": "루트 진행"
+    },
+    {
+      "from": "C24_R_IDEN",
+      "to": "C25_R_IDEN",
+      "choiceId": "A",
+      "label": "루트 진행"
+    },
+    {
+      "from": "C24_R_IDEN",
+      "to": "BE_07",
+      "choiceId": "B",
+      "label": "비공개 전환"
+    },
+    {
+      "from": "C25_R_IDEN",
+      "to": "C26_R_IDEN",
+      "choiceId": "A",
+      "label": "루트 진행"
+    },
+    {
+      "from": "C26_R_IDEN",
+      "to": "C27_R_IDEN",
+      "choiceId": "A",
+      "label": "루트 진행"
+    },
+    {
+      "from": "C27_R_IDEN",
+      "to": "C28_R_IDEN",
+      "choiceId": "A",
+      "label": "루트 진행"
+    },
+    {
+      "from": "C27_R_IDEN",
+      "to": "BE_08",
+      "choiceId": "B",
+      "label": "원본 전면 공개"
+    },
+    {
+      "from": "C28_R_IDEN",
+      "to": "C29_R_IDEN",
+      "choiceId": "A",
+      "label": "루트 진행"
+    },
+    {
+      "from": "C29_R_IDEN",
+      "to": "C30_R_IDEN",
+      "choiceId": "A",
+      "label": "루트 진행"
+    },
+    {
+      "from": "C29_R_IDEN",
+      "to": "BE_09",
+      "choiceId": "B",
+      "label": "질서 과잉"
+    },
+    {
+      "from": "C29_R_IDEN",
+      "to": "BE_10",
+      "choiceId": "C",
+      "label": "진실 과잉"
+    },
+    {
+      "from": "C30_R_IDEN",
+      "to": "HE_IDEN",
+      "choiceId": "A",
+      "label": "엔딩 판정"
+    },
+    {
+      "from": "C13_R_YURA",
+      "to": "C14_R_YURA",
+      "choiceId": "A",
+      "label": "루트 진행"
+    },
+    {
+      "from": "C14_R_YURA",
+      "to": "C15_R_YURA",
+      "choiceId": "A",
+      "label": "루트 진행"
+    },
+    {
+      "from": "C14_R_YURA",
+      "to": "BE_05",
+      "choiceId": "B",
+      "label": "실명 전면 공개"
+    },
+    {
+      "from": "C15_R_YURA",
+      "to": "C16_R_YURA",
+      "choiceId": "A",
+      "label": "루트 진행"
+    },
+    {
+      "from": "C16_R_YURA",
+      "to": "C17_R_YURA",
+      "choiceId": "A",
+      "label": "루트 진행"
+    },
+    {
+      "from": "C17_R_YURA",
+      "to": "C18_R_YURA",
+      "choiceId": "A",
+      "label": "루트 진행"
+    },
+    {
+      "from": "C17_R_YURA",
+      "to": "BE_03",
+      "choiceId": "B",
+      "label": "양립 강행"
+    },
+    {
+      "from": "C18_R_YURA",
+      "to": "C19_R_YURA",
+      "choiceId": "A",
+      "label": "루트 진행"
+    },
+    {
+      "from": "C19_R_YURA",
+      "to": "C20_R_YURA",
+      "choiceId": "A",
+      "label": "루트 진행"
+    },
+    {
+      "from": "C19_R_YURA",
+      "to": "BE_06",
+      "choiceId": "B",
+      "label": "불완전 채택 강행"
+    },
+    {
+      "from": "C20_R_YURA",
+      "to": "C21_R_YURA",
+      "choiceId": "A",
+      "label": "루트 진행"
+    },
+    {
+      "from": "C21_R_YURA",
+      "to": "C22_R_YURA",
+      "choiceId": "A",
+      "label": "루트 진행"
+    },
+    {
+      "from": "C22_R_YURA",
+      "to": "C23_R_YURA",
+      "choiceId": "A",
+      "label": "루트 진행"
+    },
+    {
+      "from": "C22_R_YURA",
+      "to": "BE_04",
+      "choiceId": "B",
+      "label": "판단 유예"
+    },
+    {
+      "from": "C23_R_YURA",
+      "to": "C24_R_YURA",
+      "choiceId": "A",
+      "label": "루트 진행"
+    },
+    {
+      "from": "C24_R_YURA",
+      "to": "C25_R_YURA",
+      "choiceId": "A",
+      "label": "루트 진행"
+    },
+    {
+      "from": "C24_R_YURA",
+      "to": "BE_07",
+      "choiceId": "B",
+      "label": "비공개 전환"
+    },
+    {
+      "from": "C25_R_YURA",
+      "to": "C26_R_YURA",
+      "choiceId": "A",
+      "label": "루트 진행"
     },
     {
       "from": "C26_R_YURA",
+      "to": "C27_R_YURA",
       "choiceId": "A",
-      "label": "유라 신뢰 확정",
-      "to": "C27_N1"
+      "label": "루트 진행"
     },
     {
-      "from": "C27_N1",
+      "from": "C27_R_YURA",
+      "to": "C28_R_YURA",
       "choiceId": "A",
-      "label": "원본까지 공개",
-      "to": "BE_08"
+      "label": "루트 진행"
     },
     {
-      "from": "C27_N1",
+      "from": "C27_R_YURA",
+      "to": "BE_08",
       "choiceId": "B",
-      "label": "프로젝트만 공개",
-      "to": "C28_N1"
+      "label": "원본 전면 공개"
     },
     {
-      "from": "C27_N1",
-      "choiceId": "C",
-      "label": "특검 이관 봉인",
-      "to": "C28_N1"
-    },
-    {
-      "from": "C28_N1",
+      "from": "C28_R_YURA",
+      "to": "C29_R_YURA",
       "choiceId": "A",
-      "label": "판결문 확정",
-      "to": "C29_N1"
+      "label": "루트 진행"
     },
     {
-      "from": "C29_N1",
+      "from": "C29_R_YURA",
+      "to": "C30_R_YURA",
       "choiceId": "A",
-      "label": "진실 최우선",
-      "to": "C30_N1"
+      "label": "루트 진행"
     },
     {
-      "from": "C29_N1",
+      "from": "C29_R_YURA",
+      "to": "BE_09",
       "choiceId": "B",
-      "label": "질서 최우선",
-      "to": "C30_N1"
+      "label": "질서 과잉"
     },
     {
-      "from": "C29_N1",
+      "from": "C29_R_YURA",
+      "to": "BE_10",
       "choiceId": "C",
-      "label": "사랑 최우선",
-      "to": "C30_N1"
+      "label": "진실 과잉"
     },
     {
-      "from": "C30_N1",
+      "from": "C30_R_YURA",
+      "to": "HE_YURA",
       "choiceId": "A",
-      "label": "루트/수치 판정 실행",
-      "to": "HE_NAYEON"
+      "label": "엔딩 판정"
     }
-  ],
-  "routeNodesAtCh26": {
-    "NAYEON": "C26_R_NAYEON",
-    "SIYU": "C26_R_SIYU",
-    "HARIN": "C26_R_HARIN",
-    "IDEN": "C26_R_IDEN",
-    "YURA": "C26_R_YURA"
-  },
-  "endingResolution": {
-    "if priority==ORDER and route in any and stability<0": "BE_09",
-    "if priority==LOVE and truth<3": "BE_10",
-    "if route==NAYEON": "HE_NAYEON",
-    "if route==SIYU": "HE_SIYU",
-    "if route==HARIN": "HE_HARIN",
-    "if route==IDEN": "HE_IDEN",
-    "if route==YURA": "HE_YURA"
-  }
+  ]
 }
