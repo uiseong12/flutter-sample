@@ -326,7 +326,7 @@ class _GameShellState extends State<GameShell> with TickerProviderStateMixin {
     ShopItem(id: 'ancient_book', name: '고대 문양 서책', price: 140, description: '지적 자극을 주는 특별한 책.', affectionBoost: 11),
   ];
 
-    late final List<StoryBeat> _story = [
+    late List<StoryBeat> _story = [
     StoryBeat(
       title: '1-1 계약약혼',
       speaker: '나레이션',
@@ -1118,6 +1118,7 @@ class _GameShellState extends State<GameShell> with TickerProviderStateMixin {
 
   Future<void> _bootstrap() async {
     await _loadRuleFiles();
+    await _applyStoryV2RuntimeBridge();
     await _load();
   }
 
@@ -1208,6 +1209,74 @@ class _GameShellState extends State<GameShell> with TickerProviderStateMixin {
         } catch (_) {}
       }
     } catch (_) {}
+  }
+
+
+
+  String _bridgeTargetForChoice(String text, int idx) {
+    if (text.contains('공개') || text.contains('진실') || text.contains('폭로')) return '루시안';
+    if (text.contains('보호') || text.contains('유지') || text.contains('안정')) return '세레나';
+    if (text.contains('강행') || text.contains('돌파') || text.contains('기소')) return '엘리안';
+    const cycle = ['엘리안', '루시안', '세레나'];
+    return cycle[idx % cycle.length];
+  }
+
+  Future<void> _applyStoryV2RuntimeBridge() async {
+    try {
+      final raw = await rootBundle.loadString('story_v2/story_manifest.json');
+      final m = jsonDecode(raw) as Map<String, dynamic>;
+      final nodes = (m['nodes'] as List<dynamic>? ?? []).cast<Map<String, dynamic>>();
+      final byChapter = <int, List<Map<String, dynamic>>>{};
+      for (final n in nodes) {
+        final ch = (n['chapter'] as int? ?? 0);
+        byChapter.putIfAbsent(ch, () => []).add(n);
+      }
+      final bg = [
+        'assets/generated/bg_castle/001-medieval-fantasy-royal-castle-courtyard-.png',
+        'assets/generated/bg_ballroom/001-luxurious-medieval-ballroom-interior-at-.png',
+        'assets/generated/bg_tower/001-mystic-mage-tower-observatory-at-midnigh.png',
+      ];
+      final beats = <StoryBeat>[];
+      for (var ch = 1; ch <= 30; ch++) {
+        final list = byChapter[ch] ?? const [];
+        list.sort((a, b) => (a['id'] as String).compareTo(b['id'] as String));
+        final n = list.isNotEmpty ? list.first : {'id': 'C${ch.toString().padLeft(2, '0')}_N1', 'choices': []};
+        final nodeId = n['id']?.toString() ?? 'C${ch.toString().padLeft(2, '0')}_N1';
+        final choiceMaps = (n['choices'] as List<dynamic>? ?? []).cast<Map<String, dynamic>>();
+        final choices = <StoryChoice>[];
+        for (var i = 0; i < choiceMaps.length; i++) {
+          final c = choiceMaps[i];
+          final txt = c['text']?.toString() ?? '선택';
+          final target = _bridgeTargetForChoice(txt, i);
+          int delta = 5;
+          if (txt.contains('전면') || txt.contains('원본') || txt.contains('강행')) delta = 9;
+          if (txt.contains('유지') || txt.contains('조건부') || txt.contains('완충')) delta = 6;
+          choices.add(StoryChoice(
+            label: txt,
+            mainTarget: target,
+            mainDelta: delta,
+            result: '다음 노드: ${c['next'] ?? '-'}',
+          ));
+        }
+        if (choices.isEmpty) {
+          choices.add(StoryChoice(label: '진행', mainTarget: '엘리안', mainDelta: 4, result: '다음 챕터 진행'));
+        }
+        beats.add(StoryBeat(
+          title: '$nodeId',
+          speaker: '나레이션',
+          line: 'story_v2 브릿지 적용 챕터 C${ch.toString().padLeft(2, '0')} · 분기 중심 진행',
+          backgroundAsset: bg[(ch - 1) % bg.length],
+          leftCharacter: '엘리안',
+          rightCharacter: '세레나',
+          choices: choices,
+        ));
+      }
+      if (beats.length == 30) {
+        _story = beats;
+      }
+    } catch (_) {
+      // fallback
+    }
   }
 
   Future<void> _load() async {
