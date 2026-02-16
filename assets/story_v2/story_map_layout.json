@@ -1,0 +1,859 @@
+{
+  "title": "첫사랑 위조 x 왕실 대역",
+  "version": 1,
+  "meta": {
+    "chapters": 30,
+    "nodeCount": 55,
+    "edgeCount": 65
+  },
+  "nodes": [
+    {
+      "id": "C01_N1",
+      "chapter": 1,
+      "x": 0,
+      "y": 0,
+      "type": "scene",
+      "file": "nodes/C01_N1.md"
+    },
+    {
+      "id": "C02_N1",
+      "chapter": 2,
+      "x": 0,
+      "y": 180,
+      "type": "scene",
+      "file": "nodes/C02_N1.md"
+    },
+    {
+      "id": "C03_N1",
+      "chapter": 3,
+      "x": 0,
+      "y": 360,
+      "type": "scene",
+      "file": "nodes/C03_N1.md"
+    },
+    {
+      "id": "C04_N1",
+      "chapter": 4,
+      "x": 0,
+      "y": 540,
+      "type": "scene",
+      "file": "nodes/C04_N1.md"
+    },
+    {
+      "id": "C05_N1",
+      "chapter": 5,
+      "x": 0,
+      "y": 720,
+      "type": "scene",
+      "file": "nodes/C05_N1.md"
+    },
+    {
+      "id": "C06_N1",
+      "chapter": 6,
+      "x": -280.0,
+      "y": 900,
+      "type": "scene",
+      "file": "nodes/C06_N1.md"
+    },
+    {
+      "id": "C06_N2",
+      "chapter": 6,
+      "x": 0.0,
+      "y": 900,
+      "type": "scene",
+      "file": "nodes/C06_N2.md"
+    },
+    {
+      "id": "C06_N3",
+      "chapter": 6,
+      "x": 280.0,
+      "y": 900,
+      "type": "scene",
+      "file": "nodes/C06_N3.md"
+    },
+    {
+      "id": "C07_N1",
+      "chapter": 7,
+      "x": 0,
+      "y": 1080,
+      "type": "scene",
+      "file": "nodes/C07_N1.md"
+    },
+    {
+      "id": "C08_N1",
+      "chapter": 8,
+      "x": 0,
+      "y": 1260,
+      "type": "scene",
+      "file": "nodes/C08_N1.md"
+    },
+    {
+      "id": "C09_N1",
+      "chapter": 9,
+      "x": 0,
+      "y": 1440,
+      "type": "scene",
+      "file": "nodes/C09_N1.md"
+    },
+    {
+      "id": "C10_N1",
+      "chapter": 10,
+      "x": 0,
+      "y": 1620,
+      "type": "scene",
+      "file": "nodes/C10_N1.md"
+    },
+    {
+      "id": "C11_N1",
+      "chapter": 11,
+      "x": 0,
+      "y": 1800,
+      "type": "scene",
+      "file": "nodes/C11_N1.md"
+    },
+    {
+      "id": "C12_N1",
+      "chapter": 12,
+      "x": 0,
+      "y": 1980,
+      "type": "scene",
+      "file": "nodes/C12_N1.md"
+    },
+    {
+      "id": "C13_R_HARIN",
+      "chapter": 13,
+      "x": -560.0,
+      "y": 2160,
+      "type": "route",
+      "file": "nodes/C13_R_HARIN.md"
+    },
+    {
+      "id": "C13_R_IDEN",
+      "chapter": 13,
+      "x": -280.0,
+      "y": 2160,
+      "type": "route",
+      "file": "nodes/C13_R_IDEN.md"
+    },
+    {
+      "id": "C13_R_NAYEON",
+      "chapter": 13,
+      "x": 0.0,
+      "y": 2160,
+      "type": "route",
+      "file": "nodes/C13_R_NAYEON.md"
+    },
+    {
+      "id": "C13_R_SIYU",
+      "chapter": 13,
+      "x": 280.0,
+      "y": 2160,
+      "type": "route",
+      "file": "nodes/C13_R_SIYU.md"
+    },
+    {
+      "id": "C13_R_YURA",
+      "chapter": 13,
+      "x": 560.0,
+      "y": 2160,
+      "type": "route",
+      "file": "nodes/C13_R_YURA.md"
+    },
+    {
+      "id": "C14_N1",
+      "chapter": 14,
+      "x": 0,
+      "y": 2340,
+      "type": "scene",
+      "file": "nodes/C14_N1.md"
+    },
+    {
+      "id": "C15_N1",
+      "chapter": 15,
+      "x": 0,
+      "y": 2520,
+      "type": "scene",
+      "file": "nodes/C15_N1.md"
+    },
+    {
+      "id": "C16_N1",
+      "chapter": 16,
+      "x": 0,
+      "y": 2700,
+      "type": "scene",
+      "file": "nodes/C16_N1.md"
+    },
+    {
+      "id": "C17_N1",
+      "chapter": 17,
+      "x": 0,
+      "y": 2880,
+      "type": "scene",
+      "file": "nodes/C17_N1.md"
+    },
+    {
+      "id": "C18_N1",
+      "chapter": 18,
+      "x": 0,
+      "y": 3060,
+      "type": "scene",
+      "file": "nodes/C18_N1.md"
+    },
+    {
+      "id": "C19_N1",
+      "chapter": 19,
+      "x": 0,
+      "y": 3240,
+      "type": "scene",
+      "file": "nodes/C19_N1.md"
+    },
+    {
+      "id": "C20_N1",
+      "chapter": 20,
+      "x": 0,
+      "y": 3420,
+      "type": "scene",
+      "file": "nodes/C20_N1.md"
+    },
+    {
+      "id": "C21_N1",
+      "chapter": 21,
+      "x": 0,
+      "y": 3600,
+      "type": "scene",
+      "file": "nodes/C21_N1.md"
+    },
+    {
+      "id": "C22_N1",
+      "chapter": 22,
+      "x": 0,
+      "y": 3780,
+      "type": "scene",
+      "file": "nodes/C22_N1.md"
+    },
+    {
+      "id": "C23_N1",
+      "chapter": 23,
+      "x": 0,
+      "y": 3960,
+      "type": "scene",
+      "file": "nodes/C23_N1.md"
+    },
+    {
+      "id": "C24_N1",
+      "chapter": 24,
+      "x": 0,
+      "y": 4140,
+      "type": "scene",
+      "file": "nodes/C24_N1.md"
+    },
+    {
+      "id": "C25_N1",
+      "chapter": 25,
+      "x": 0,
+      "y": 4320,
+      "type": "scene",
+      "file": "nodes/C25_N1.md"
+    },
+    {
+      "id": "C26_R_HARIN",
+      "chapter": 26,
+      "x": -560.0,
+      "y": 4500,
+      "type": "route",
+      "file": "nodes/C26_R_HARIN.md"
+    },
+    {
+      "id": "C26_R_IDEN",
+      "chapter": 26,
+      "x": -280.0,
+      "y": 4500,
+      "type": "route",
+      "file": "nodes/C26_R_IDEN.md"
+    },
+    {
+      "id": "C26_R_NAYEON",
+      "chapter": 26,
+      "x": 0.0,
+      "y": 4500,
+      "type": "route",
+      "file": "nodes/C26_R_NAYEON.md"
+    },
+    {
+      "id": "C26_R_SIYU",
+      "chapter": 26,
+      "x": 280.0,
+      "y": 4500,
+      "type": "route",
+      "file": "nodes/C26_R_SIYU.md"
+    },
+    {
+      "id": "C26_R_YURA",
+      "chapter": 26,
+      "x": 560.0,
+      "y": 4500,
+      "type": "route",
+      "file": "nodes/C26_R_YURA.md"
+    },
+    {
+      "id": "C27_N1",
+      "chapter": 27,
+      "x": 0,
+      "y": 4680,
+      "type": "scene",
+      "file": "nodes/C27_N1.md"
+    },
+    {
+      "id": "C28_N1",
+      "chapter": 28,
+      "x": 0,
+      "y": 4860,
+      "type": "scene",
+      "file": "nodes/C28_N1.md"
+    },
+    {
+      "id": "C29_N1",
+      "chapter": 29,
+      "x": 0,
+      "y": 5040,
+      "type": "scene",
+      "file": "nodes/C29_N1.md"
+    },
+    {
+      "id": "C30_N1",
+      "chapter": 30,
+      "x": 0,
+      "y": 5220,
+      "type": "scene",
+      "file": "nodes/C30_N1.md"
+    },
+    {
+      "id": "HE_NAYEON",
+      "chapter": 31,
+      "x": -520,
+      "y": 5640,
+      "type": "ending_happy",
+      "file": "endings/HE_NAYEON.md"
+    },
+    {
+      "id": "HE_SIYU",
+      "chapter": 31,
+      "x": -260,
+      "y": 5640,
+      "type": "ending_happy",
+      "file": "endings/HE_SIYU.md"
+    },
+    {
+      "id": "HE_HARIN",
+      "chapter": 31,
+      "x": 0,
+      "y": 5640,
+      "type": "ending_happy",
+      "file": "endings/HE_HARIN.md"
+    },
+    {
+      "id": "HE_IDEN",
+      "chapter": 31,
+      "x": 260,
+      "y": 5640,
+      "type": "ending_happy",
+      "file": "endings/HE_IDEN.md"
+    },
+    {
+      "id": "HE_YURA",
+      "chapter": 31,
+      "x": 520,
+      "y": 5640,
+      "type": "ending_happy",
+      "file": "endings/HE_YURA.md"
+    },
+    {
+      "id": "BE_01",
+      "chapter": 32,
+      "x": -900.0,
+      "y": 5860,
+      "type": "ending_bad",
+      "file": "endings/BE_01.md"
+    },
+    {
+      "id": "BE_02",
+      "chapter": 32,
+      "x": -700.0,
+      "y": 5860,
+      "type": "ending_bad",
+      "file": "endings/BE_02.md"
+    },
+    {
+      "id": "BE_03",
+      "chapter": 32,
+      "x": -500.0,
+      "y": 5860,
+      "type": "ending_bad",
+      "file": "endings/BE_03.md"
+    },
+    {
+      "id": "BE_04",
+      "chapter": 32,
+      "x": -300.0,
+      "y": 5860,
+      "type": "ending_bad",
+      "file": "endings/BE_04.md"
+    },
+    {
+      "id": "BE_05",
+      "chapter": 32,
+      "x": -100.0,
+      "y": 5860,
+      "type": "ending_bad",
+      "file": "endings/BE_05.md"
+    },
+    {
+      "id": "BE_06",
+      "chapter": 32,
+      "x": 100.0,
+      "y": 5860,
+      "type": "ending_bad",
+      "file": "endings/BE_06.md"
+    },
+    {
+      "id": "BE_07",
+      "chapter": 32,
+      "x": 300.0,
+      "y": 5860,
+      "type": "ending_bad",
+      "file": "endings/BE_07.md"
+    },
+    {
+      "id": "BE_08",
+      "chapter": 32,
+      "x": 500.0,
+      "y": 5860,
+      "type": "ending_bad",
+      "file": "endings/BE_08.md"
+    },
+    {
+      "id": "BE_09",
+      "chapter": 32,
+      "x": 700.0,
+      "y": 5860,
+      "type": "ending_bad",
+      "file": "endings/BE_09.md"
+    },
+    {
+      "id": "BE_10",
+      "chapter": 32,
+      "x": 900.0,
+      "y": 5860,
+      "type": "ending_bad",
+      "file": "endings/BE_10.md"
+    }
+  ],
+  "edges": [
+    {
+      "from": "C01_N1",
+      "choiceId": "A",
+      "label": "초기 보고서 제출",
+      "to": "C02_N1"
+    },
+    {
+      "from": "C02_N1",
+      "choiceId": "A",
+      "label": "법원 프로토콜 유지",
+      "to": "C03_N1"
+    },
+    {
+      "from": "C02_N1",
+      "choiceId": "B",
+      "label": "비공식 감정 병행",
+      "to": "C03_N1"
+    },
+    {
+      "from": "C03_N1",
+      "choiceId": "A",
+      "label": "합동 브리핑 수락",
+      "to": "C04_N1"
+    },
+    {
+      "from": "C04_N1",
+      "choiceId": "A",
+      "label": "대역 가설 채택",
+      "to": "C05_N1"
+    },
+    {
+      "from": "C05_N1",
+      "choiceId": "A",
+      "label": "정식 영장",
+      "to": "C06_N1"
+    },
+    {
+      "from": "C05_N1",
+      "choiceId": "B",
+      "label": "우회 침입",
+      "to": "C06_N2"
+    },
+    {
+      "from": "C05_N1",
+      "choiceId": "C",
+      "label": "감찰 협상",
+      "to": "C06_N3"
+    },
+    {
+      "from": "C06_N1",
+      "choiceId": "A",
+      "label": "제출기록 분석",
+      "to": "C07_N1"
+    },
+    {
+      "from": "C06_N2",
+      "choiceId": "A",
+      "label": "로그삭제 도주",
+      "to": "C07_N1"
+    },
+    {
+      "from": "C06_N2",
+      "choiceId": "B",
+      "label": "단독책임",
+      "to": "BE_01"
+    },
+    {
+      "from": "C06_N2",
+      "choiceId": "C",
+      "label": "내부고발 카드",
+      "to": "C07_N1"
+    },
+    {
+      "from": "C06_N3",
+      "choiceId": "A",
+      "label": "비공개 열람 수락",
+      "to": "C07_N1"
+    },
+    {
+      "from": "C07_N1",
+      "choiceId": "A",
+      "label": "코드명 추적",
+      "to": "C08_N1"
+    },
+    {
+      "from": "C08_N1",
+      "choiceId": "A",
+      "label": "재판 가설 상정",
+      "to": "C09_N1"
+    },
+    {
+      "from": "C09_N1",
+      "choiceId": "A",
+      "label": "증거 보강 후 기소",
+      "to": "C10_N1"
+    },
+    {
+      "from": "C09_N1",
+      "choiceId": "B",
+      "label": "성급 기소",
+      "to": "BE_02"
+    },
+    {
+      "from": "C10_N1",
+      "choiceId": "A",
+      "label": "중간심리 통과",
+      "to": "C11_N1"
+    },
+    {
+      "from": "C11_N1",
+      "choiceId": "A",
+      "label": "신뢰 점검",
+      "to": "C12_N1"
+    },
+    {
+      "from": "C12_N1",
+      "choiceId": "A",
+      "label": "나연 동행",
+      "to": "C13_R_NAYEON"
+    },
+    {
+      "from": "C12_N1",
+      "choiceId": "B",
+      "label": "시유 동행",
+      "to": "C13_R_SIYU"
+    },
+    {
+      "from": "C12_N1",
+      "choiceId": "C",
+      "label": "하린 동행",
+      "to": "C13_R_HARIN"
+    },
+    {
+      "from": "C12_N1",
+      "choiceId": "D",
+      "label": "이든 동행",
+      "to": "C13_R_IDEN"
+    },
+    {
+      "from": "C12_N1",
+      "choiceId": "E",
+      "label": "유라 동행",
+      "to": "C13_R_YURA"
+    },
+    {
+      "from": "C13_R_HARIN",
+      "choiceId": "A",
+      "label": "복원 실험",
+      "to": "C14_N1"
+    },
+    {
+      "from": "C13_R_IDEN",
+      "choiceId": "A",
+      "label": "삭제로그 추적",
+      "to": "C14_N1"
+    },
+    {
+      "from": "C13_R_NAYEON",
+      "choiceId": "A",
+      "label": "재기소 준비",
+      "to": "C14_N1"
+    },
+    {
+      "from": "C13_R_SIYU",
+      "choiceId": "A",
+      "label": "보호명령 준비",
+      "to": "C14_N1"
+    },
+    {
+      "from": "C13_R_YURA",
+      "choiceId": "A",
+      "label": "왕실 열람권",
+      "to": "C14_N1"
+    },
+    {
+      "from": "C14_N1",
+      "choiceId": "A",
+      "label": "실명 공개",
+      "to": "BE_05"
+    },
+    {
+      "from": "C14_N1",
+      "choiceId": "B",
+      "label": "코드명 공개",
+      "to": "C15_N1"
+    },
+    {
+      "from": "C14_N1",
+      "choiceId": "C",
+      "label": "비공개 유지",
+      "to": "C15_N1"
+    },
+    {
+      "from": "C15_N1",
+      "choiceId": "A",
+      "label": "원본 1차복원",
+      "to": "C16_N1"
+    },
+    {
+      "from": "C16_N1",
+      "choiceId": "A",
+      "label": "복원 계속",
+      "to": "C17_N1"
+    },
+    {
+      "from": "C17_N1",
+      "choiceId": "A",
+      "label": "과거 진실 우선",
+      "to": "C18_N1"
+    },
+    {
+      "from": "C17_N1",
+      "choiceId": "B",
+      "label": "현재 관계 우선",
+      "to": "C18_N1"
+    },
+    {
+      "from": "C17_N1",
+      "choiceId": "C",
+      "label": "양립 강행",
+      "to": "BE_03"
+    },
+    {
+      "from": "C18_N1",
+      "choiceId": "A",
+      "label": "왕실 거래 거절",
+      "to": "C19_N1"
+    },
+    {
+      "from": "C18_N1",
+      "choiceId": "B",
+      "label": "조건부 수락",
+      "to": "C19_N1"
+    },
+    {
+      "from": "C19_N1",
+      "choiceId": "A",
+      "label": "핵심증거 채택",
+      "to": "C20_N1"
+    },
+    {
+      "from": "C19_N1",
+      "choiceId": "B",
+      "label": "불완전 채택",
+      "to": "BE_06"
+    },
+    {
+      "from": "C20_N1",
+      "choiceId": "A",
+      "label": "루트 사실 확정",
+      "to": "C21_N1"
+    },
+    {
+      "from": "C21_N1",
+      "choiceId": "A",
+      "label": "진본성 통과",
+      "to": "C22_N1"
+    },
+    {
+      "from": "C22_N1",
+      "choiceId": "A",
+      "label": "강경진압",
+      "to": "C23_N1"
+    },
+    {
+      "from": "C22_N1",
+      "choiceId": "B",
+      "label": "공개사과",
+      "to": "C23_N1"
+    },
+    {
+      "from": "C22_N1",
+      "choiceId": "C",
+      "label": "판단 유예",
+      "to": "BE_04"
+    },
+    {
+      "from": "C23_N1",
+      "choiceId": "A",
+      "label": "왕실 거래 수락",
+      "to": "C24_N1"
+    },
+    {
+      "from": "C23_N1",
+      "choiceId": "B",
+      "label": "왕실 거래 거절",
+      "to": "C24_N1"
+    },
+    {
+      "from": "C24_N1",
+      "choiceId": "A",
+      "label": "전면 공개재판",
+      "to": "C25_N1"
+    },
+    {
+      "from": "C24_N1",
+      "choiceId": "B",
+      "label": "편집 공개",
+      "to": "C25_N1"
+    },
+    {
+      "from": "C24_N1",
+      "choiceId": "C",
+      "label": "비공개 전환",
+      "to": "BE_07"
+    },
+    {
+      "from": "C25_N1",
+      "choiceId": "A",
+      "label": "서하 진술",
+      "to": "ROUTE_CH26"
+    },
+    {
+      "from": "C26_R_HARIN",
+      "choiceId": "A",
+      "label": "하린 신뢰 확정",
+      "to": "C27_N1"
+    },
+    {
+      "from": "C26_R_IDEN",
+      "choiceId": "A",
+      "label": "이든 신뢰 확정",
+      "to": "C27_N1"
+    },
+    {
+      "from": "C26_R_NAYEON",
+      "choiceId": "A",
+      "label": "나연 신뢰 확정",
+      "to": "C27_N1"
+    },
+    {
+      "from": "C26_R_SIYU",
+      "choiceId": "A",
+      "label": "시유 신뢰 확정",
+      "to": "C27_N1"
+    },
+    {
+      "from": "C26_R_YURA",
+      "choiceId": "A",
+      "label": "유라 신뢰 확정",
+      "to": "C27_N1"
+    },
+    {
+      "from": "C27_N1",
+      "choiceId": "A",
+      "label": "원본까지 공개",
+      "to": "BE_08"
+    },
+    {
+      "from": "C27_N1",
+      "choiceId": "B",
+      "label": "프로젝트만 공개",
+      "to": "C28_N1"
+    },
+    {
+      "from": "C27_N1",
+      "choiceId": "C",
+      "label": "특검 이관 봉인",
+      "to": "C28_N1"
+    },
+    {
+      "from": "C28_N1",
+      "choiceId": "A",
+      "label": "판결문 확정",
+      "to": "C29_N1"
+    },
+    {
+      "from": "C29_N1",
+      "choiceId": "A",
+      "label": "진실 최우선",
+      "to": "C30_N1"
+    },
+    {
+      "from": "C29_N1",
+      "choiceId": "B",
+      "label": "질서 최우선",
+      "to": "C30_N1"
+    },
+    {
+      "from": "C29_N1",
+      "choiceId": "C",
+      "label": "사랑 최우선",
+      "to": "C30_N1"
+    },
+    {
+      "from": "C30_N1",
+      "choiceId": "A",
+      "label": "루트/수치 판정 실행",
+      "to": "HE_NAYEON"
+    }
+  ],
+  "routeNodesAtCh26": {
+    "NAYEON": "C26_R_NAYEON",
+    "SIYU": "C26_R_SIYU",
+    "HARIN": "C26_R_HARIN",
+    "IDEN": "C26_R_IDEN",
+    "YURA": "C26_R_YURA"
+  },
+  "endingResolution": {
+    "if priority==ORDER and route in any and stability<0": "BE_09",
+    "if priority==LOVE and truth<3": "BE_10",
+    "if route==NAYEON": "HE_NAYEON",
+    "if route==SIYU": "HE_SIYU",
+    "if route==HARIN": "HE_HARIN",
+    "if route==IDEN": "HE_IDEN",
+    "if route==YURA": "HE_YURA"
+  }
+}

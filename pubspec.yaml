@@ -30,6 +30,8 @@ flutter:
     - story_dialogues_route_lucian_1_30.json
     - story_dialogues_route_serena_1_30.json
     - assets/story_events.json
+    - assets/story_v2/story_map_layout.json
+    - assets/story_v2/chapter_node_index.json
     - assets/art/
     - assets/ui/
     - assets/ui/nav_gen/

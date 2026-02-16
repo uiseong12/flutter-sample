@@ -1,0 +1,385 @@
+{
+  "title": "첫사랑 위조 x 왕실 대역",
+  "chapters": [
+    {
+      "chapter": 1,
+      "chapterFile": "C01.md",
+      "nodes": [
+        {
+          "id": "C01_N1",
+          "file": "nodes/C01_N1.md",
+          "choiceCount": 1
+        }
+      ]
+    },
+    {
+      "chapter": 2,
+      "chapterFile": "C02.md",
+      "nodes": [
+        {
+          "id": "C02_N1",
+          "file": "nodes/C02_N1.md",
+          "choiceCount": 2
+        }
+      ]
+    },
+    {
+      "chapter": 3,
+      "chapterFile": "C03.md",
+      "nodes": [
+        {
+          "id": "C03_N1",
+          "file": "nodes/C03_N1.md",
+          "choiceCount": 1
+        }
+      ]
+    },
+    {
+      "chapter": 4,
+      "chapterFile": "C04.md",
+      "nodes": [
+        {
+          "id": "C04_N1",
+          "file": "nodes/C04_N1.md",
+          "choiceCount": 1
+        }
+      ]
+    },
+    {
+      "chapter": 5,
+      "chapterFile": "C05.md",
+      "nodes": [
+        {
+          "id": "C05_N1",
+          "file": "nodes/C05_N1.md",
+          "choiceCount": 3
+        }
+      ]
+    },
+    {
+      "chapter": 6,
+      "chapterFile": "C06.md",
+      "nodes": [
+        {
+          "id": "C06_N1",
+          "file": "nodes/C06_N1.md",
+          "choiceCount": 1
+        },
+        {
+          "id": "C06_N2",
+          "file": "nodes/C06_N2.md",
+          "choiceCount": 3
+        },
+        {
+          "id": "C06_N3",
+          "file": "nodes/C06_N3.md",
+          "choiceCount": 1
+        }
+      ]
+    },
+    {
+      "chapter": 7,
+      "chapterFile": "C07.md",
+      "nodes": [
+        {
+          "id": "C07_N1",
+          "file": "nodes/C07_N1.md",
+          "choiceCount": 1
+        }
+      ]
+    },
+    {
+      "chapter": 8,
+      "chapterFile": "C08.md",
+      "nodes": [
+        {
+          "id": "C08_N1",
+          "file": "nodes/C08_N1.md",
+          "choiceCount": 1
+        }
+      ]
+    },
+    {
+      "chapter": 9,
+      "chapterFile": "C09.md",
+      "nodes": [
+        {
+          "id": "C09_N1",
+          "file": "nodes/C09_N1.md",
+          "choiceCount": 2
+        }
+      ]
+    },
+    {
+      "chapter": 10,
+      "chapterFile": "C10.md",
+      "nodes": [
+        {
+          "id": "C10_N1",
+          "file": "nodes/C10_N1.md",
+          "choiceCount": 1
+        }
+      ]
+    },
+    {
+      "chapter": 11,
+      "chapterFile": "C11.md",
+      "nodes": [
+        {
+          "id": "C11_N1",
+          "file": "nodes/C11_N1.md",
+          "choiceCount": 1
+        }
+      ]
+    },
+    {
+      "chapter": 12,
+      "chapterFile": "C12.md",
+      "nodes": [
+        {
+          "id": "C12_N1",
+          "file": "nodes/C12_N1.md",
+          "choiceCount": 5
+        }
+      ]
+    },
+    {
+      "chapter": 13,
+      "chapterFile": "C13.md",
+      "nodes": [
+        {
+          "id": "C13_R_HARIN",
+          "file": "nodes/C13_R_HARIN.md",
+          "choiceCount": 1
+        },
+        {
+          "id": "C13_R_IDEN",
+          "file": "nodes/C13_R_IDEN.md",
+          "choiceCount": 1
+        },
+        {
+          "id": "C13_R_NAYEON",
+          "file": "nodes/C13_R_NAYEON.md",
+          "choiceCount": 1
+        },
+        {
+          "id": "C13_R_SIYU",
+          "file": "nodes/C13_R_SIYU.md",
+          "choiceCount": 1
+        },
+        {
+          "id": "C13_R_YURA",
+          "file": "nodes/C13_R_YURA.md",
+          "choiceCount": 1
+        }
+      ]
+    },
+    {
+      "chapter": 14,
+      "chapterFile": "C14.md",
+      "nodes": [
+        {
+          "id": "C14_N1",
+          "file": "nodes/C14_N1.md",
+          "choiceCount": 3
+        }
+      ]
+    },
+    {
+      "chapter": 15,
+      "chapterFile": "C15.md",
+      "nodes": [
+        {
+          "id": "C15_N1",
+          "file": "nodes/C15_N1.md",
+          "choiceCount": 1
+        }
+      ]
+    },
+    {
+      "chapter": 16,
+      "chapterFile": "C16.md",
+      "nodes": [
+        {
+          "id": "C16_N1",
+          "file": "nodes/C16_N1.md",
+          "choiceCount": 1
+        }
+      ]
+    },
+    {
+      "chapter": 17,
+      "chapterFile": "C17.md",
+      "nodes": [
+        {
+          "id": "C17_N1",
+          "file": "nodes/C17_N1.md",
+          "choiceCount": 3
+        }
+      ]
+    },
+    {
+      "chapter": 18,
+      "chapterFile": "C18.md",
+      "nodes": [
+        {
+          "id": "C18_N1",
+          "file": "nodes/C18_N1.md",
+          "choiceCount": 2
+        }
+      ]
+    },
+    {
+      "chapter": 19,
+      "chapterFile": "C19.md",
+      "nodes": [
+        {
+          "id": "C19_N1",
+          "file": "nodes/C19_N1.md",
+          "choiceCount": 2
+        }
+      ]
+    },
+    {
+      "chapter": 20,
+      "chapterFile": "C20.md",
+      "nodes": [
+        {
+          "id": "C20_N1",
+          "file": "nodes/C20_N1.md",
+          "choiceCount": 1
+        }
+      ]
+    },
+    {
+      "chapter": 21,
+      "chapterFile": "C21.md",
+      "nodes": [
+        {
+          "id": "C21_N1",
+          "file": "nodes/C21_N1.md",
+          "choiceCount": 1
+        }
+      ]
+    },
+    {
+      "chapter": 22,
+      "chapterFile": "C22.md",
+      "nodes": [
+        {
+          "id": "C22_N1",
+          "file": "nodes/C22_N1.md",
+          "choiceCount": 3
+        }
+      ]
+    },
+    {
+      "chapter": 23,
+      "chapterFile": "C23.md",
+      "nodes": [
+        {
+          "id": "C23_N1",
+          "file": "nodes/C23_N1.md",
+          "choiceCount": 2
+        }
+      ]
+    },
+    {
+      "chapter": 24,
+      "chapterFile": "C24.md",
+      "nodes": [
+        {
+          "id": "C24_N1",
+          "file": "nodes/C24_N1.md",
+          "choiceCount": 3
+        }
+      ]
+    },
+    {
+      "chapter": 25,
+      "chapterFile": "C25.md",
+      "nodes": [
+        {
+          "id": "C25_N1",
+          "file": "nodes/C25_N1.md",
+          "choiceCount": 1
+        }
+      ]
+    },
+    {
+      "chapter": 26,
+      "chapterFile": "C26.md",
+      "nodes": [
+        {
+          "id": "C26_R_HARIN",
+          "file": "nodes/C26_R_HARIN.md",
+          "choiceCount": 1
+        },
+        {
+          "id": "C26_R_IDEN",
+          "file": "nodes/C26_R_IDEN.md",
+          "choiceCount": 1
+        },
+        {
+          "id": "C26_R_NAYEON",
+          "file": "nodes/C26_R_NAYEON.md",
+          "choiceCount": 1
+        },
+        {
+          "id": "C26_R_SIYU",
+          "file": "nodes/C26_R_SIYU.md",
+          "choiceCount": 1
+        },
+        {
+          "id": "C26_R_YURA",
+          "file": "nodes/C26_R_YURA.md",
+          "choiceCount": 1
+        }
+      ]
+    },
+    {
+      "chapter": 27,
+      "chapterFile": "C27.md",
+      "nodes": [
+        {
+          "id": "C27_N1",
+          "file": "nodes/C27_N1.md",
+          "choiceCount": 3
+        }
+      ]
+    },
+    {
+      "chapter": 28,
+      "chapterFile": "C28.md",
+      "nodes": [
+        {
+          "id": "C28_N1",
+          "file": "nodes/C28_N1.md",
+          "choiceCount": 1
+        }
+      ]
+    },
+    {
+      "chapter": 29,
+      "chapterFile": "C29.md",
+      "nodes": [
+        {
+          "id": "C29_N1",
+          "file": "nodes/C29_N1.md",
+          "choiceCount": 3
+        }
+      ]
+    },
+    {
+      "chapter": 30,
+      "chapterFile": "C30.md",
+      "nodes": [
+        {
+          "id": "C30_N1",
+          "file": "nodes/C30_N1.md",
+          "choiceCount": 1
+        }
+      ]
+    }
+  ]
+}
