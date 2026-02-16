@@ -4828,7 +4828,7 @@ class _GameShellState extends State<GameShell> with TickerProviderStateMixin {
                     final isPath = kind == 'path';
                     final isUnknown = kind == 'unknown';
                     final isLocked = kind == 'locked';
-                    final canTap = isPath && ch <= frontier;
+                    final canTap = (isPath && ch <= frontier) || (isLocked && ch == frontier + 1 && _storySelections[frontier - 1] != null);
 
                     final nodeTitle = _treeNodeNames['C${ch.toString().padLeft(2, '0')}_N1'] ?? '챕터 ${ch.toString().padLeft(2, '0')}';
 
@@ -5096,6 +5096,12 @@ class _GameShellState extends State<GameShell> with TickerProviderStateMixin {
     return GestureDetector(
       onTap: () {
         if (_storyResultReturnHint != null) {
+          setState(() {
+            _storyResultReturnHint = null;
+            _inStoryScene = false;
+            _nodeDialogueIndex = 0;
+          });
+          _beginBeatLine();
           return;
         }
         if (!_lineCompleted) {
@@ -5153,18 +5159,11 @@ class _GameShellState extends State<GameShell> with TickerProviderStateMixin {
               const SizedBox(height: 10),
               Expanded(
                 child: _storyResultReturnHint != null
-                    ? Align(
-                        alignment: Alignment.bottomRight,
-                        child: TextButton(
-                          onPressed: () {
-                            setState(() {
-                              _storyResultReturnHint = null;
-                              _inStoryScene = false;
-                              _nodeDialogueIndex = 0;
-                            });
-                            _beginBeatLine();
-                          },
-                          child: const Text('< 돌아가기... >', style: TextStyle(color: Color(0xFFFFD67A), fontWeight: FontWeight.w700)),
+                    ? const Align(
+                        alignment: Alignment.topLeft,
+                        child: Padding(
+                          padding: EdgeInsets.only(top: 4),
+                          child: Text('화면 아무 곳이나 탭하면 스토리 맵으로 돌아갑니다.', style: TextStyle(color: Color(0xFFFFD67A), fontWeight: FontWeight.w700)),
                         ),
                       )
                     : _lineCompleted
