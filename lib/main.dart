@@ -4493,7 +4493,7 @@ class _GameShellState extends State<GameShell> with TickerProviderStateMixin {
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
                               Text('클리어 $cleared/${_story.length}', style: const TextStyle(color: Color(0xFFF6F1E8), fontWeight: FontWeight.w700, fontSize: 16, shadows: [Shadow(color: Color(0x99000000), blurRadius: 6)])),
-                              Text('현재: EP ${_storyIndex + 1} · ${preview.title}', style: const TextStyle(color: Color(0xFFF6F1E8))),
+                              Text('현재: CH ${_storyIndex + 1} · ${preview.title}', style: const TextStyle(color: Color(0xFFF6F1E8)),
                               if (_endingCharacterName != null)
                                 Text('확정 엔딩: $_endingCharacterName', style: const TextStyle(color: Colors.amberAccent, fontWeight: FontWeight.bold)),
                             ],
@@ -4657,7 +4657,7 @@ class _GameShellState extends State<GameShell> with TickerProviderStateMixin {
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text('EP ${beat + 1}. ${b.title}', style: const TextStyle(fontWeight: FontWeight.bold)),
+            Text('CH ${beat + 1}. ${b.title}', style: const TextStyle(fontWeight: FontWeight.bold)),
             const SizedBox(height: 6),
             Text('유형: ${_nodeTypeLabel(beat)} · 예상 6~8분'),
             const SizedBox(height: 6),
@@ -4797,7 +4797,7 @@ class _GameShellState extends State<GameShell> with TickerProviderStateMixin {
                                         mainAxisAlignment: MainAxisAlignment.center,
                                         children: [
                                           Image.asset(_nodeTypeIconAsset(beat), width: 10, height: 10),
-                                          Text('${n['id']! + 1}', style: const TextStyle(color: Colors.white, fontSize: 8, fontWeight: FontWeight.bold)),
+                                          Text('C${(beat + 1).toString().padLeft(2, '0')}', style: const TextStyle(color: Colors.white, fontSize: 7, fontWeight: FontWeight.bold)),
                                         ],
                                       ),
                               ),
