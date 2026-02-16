@@ -59,3 +59,5 @@
 
 ## 캐릭터 보이스 가드레일
 - `CHARACTER_VOICE_GUARDRAILS.md`
+
+- `routes/ROUTE_BRANCH_BY_BRANCH_VALIDATED.md`
