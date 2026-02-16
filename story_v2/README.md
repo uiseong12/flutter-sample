@@ -28,3 +28,8 @@
 
 ## 엔딩 연출 강화본
 - `endings_cinematic/*.md`
+
+
+## 루트별 어조 패치
+- `route_tone_patches/*.md`
+- 나연/시유/하린/이든/유라 루트별 대사 톤 규칙과 샘플 포함
