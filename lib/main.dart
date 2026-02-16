@@ -1119,6 +1119,9 @@ class _GameShellState extends State<GameShell> with TickerProviderStateMixin {
   Future<void> _bootstrap() async {
     await _loadRuleFiles();
     await _applyStoryV2RuntimeBridge();
+    if (_story.isNotEmpty && _story.first.title.contains('계약약혼')) {
+      _story = _buildStoryV2StubBeats();
+    }
     await _load();
   }
 
@@ -1221,6 +1224,28 @@ class _GameShellState extends State<GameShell> with TickerProviderStateMixin {
     return cycle[idx % cycle.length];
   }
 
+  List<StoryBeat> _buildStoryV2StubBeats() {
+    final bg = [
+      'assets/generated/bg_castle/001-medieval-fantasy-royal-castle-courtyard-.png',
+      'assets/generated/bg_ballroom/001-luxurious-medieval-ballroom-interior-at-.png',
+      'assets/generated/bg_tower/001-mystic-mage-tower-observatory-at-midnigh.png',
+    ];
+    return List.generate(30, (i) {
+      final ch = i + 1;
+      return StoryBeat(
+        title: 'C${ch.toString().padLeft(2, '0')}_N1',
+        speaker: '나레이션',
+        line: 'story_v2 기본 챕터 C${ch.toString().padLeft(2, '0')} · 첫사랑 위조 x 왕실 대역',
+        backgroundAsset: bg[i % bg.length],
+        leftCharacter: '엘리안',
+        rightCharacter: '세레나',
+        choices: [
+          StoryChoice(label: '진행', mainTarget: '엘리안', mainDelta: 4, result: '다음 챕터 진행'),
+        ],
+      );
+    });
+  }
+
   Future<void> _applyStoryV2RuntimeBridge() async {
     try {
       final raw = await rootBundle.loadString('story_v2/story_manifest.json');
@@ -1275,7 +1300,7 @@ class _GameShellState extends State<GameShell> with TickerProviderStateMixin {
         _story = beats;
       }
     } catch (_) {
-      // fallback
+      _story = _buildStoryV2StubBeats();
     }
   }
 
