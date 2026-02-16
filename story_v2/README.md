@@ -56,3 +56,6 @@
 - `routes/ROUTE_HE_IDEN.md`
 - `routes/ROUTE_HE_YURA.md`
 - `routes/ROUTE_BE_FULL_CHAINS.md`
+
+## 캐릭터 보이스 가드레일
+- `CHARACTER_VOICE_GUARDRAILS.md`
