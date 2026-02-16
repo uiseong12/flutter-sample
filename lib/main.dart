@@ -4788,15 +4788,15 @@ class _GameShellState extends State<GameShell> with TickerProviderStateMixin {
       }
     }
 
-    final mapW = 700.0;
-    final mapH = (frontier + 2) * 96.0 + 90;
+    final mapW = 760.0;
+    final mapH = (frontier + 2) * 150.0 + 120;
 
     Offset posOf(Map<String, dynamic> n) {
       final id = n['id'].toString();
       final ch = n['chapter'] as int;
       final lane = (n['lane'] as int? ?? 0).toDouble();
-      final x = 350 + lane * 140 + jitter(id, 16);
-      final y = 50 + (ch - 1) * 96 + jitter('$id-y', 12);
+      final x = 380 + lane * 150 + jitter(id, 14);
+      final y = 60 + (ch - 1) * 150 + jitter('$id-y', 10);
       return Offset(x, y);
     }
 
@@ -4842,6 +4842,9 @@ class _GameShellState extends State<GameShell> with TickerProviderStateMixin {
                                 setState(() {
                                   _storyIndex = ch - 1;
                                   _nodeDialogueIndex = 0;
+                                  _inStoryScene = true;
+                                  _storyResultReturnHint = null;
+                                  _beginBeatLine();
                                 });
                               }
                             : null,
