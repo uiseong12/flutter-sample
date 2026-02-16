@@ -1,0 +1,21 @@
+# story_v2 - 구현 가능한 분기 스토리 패키지
+
+## 구성
+- `story_manifest.json` : 엔진에서 바로 읽는 분기 정의(노드/선택지/다음노드/효과)
+- `nodes/*.md` : 노드별 스토리 본문 (분기 단위로 읽기)
+- `C01.md ~ C30.md` : 챕터 단위 인덱스
+- `endings/*.md` : 해피 5 + 배드 10 엔딩 본문
+- `routes/*.md` : 엔딩별 추천 읽기 순서
+
+## 엔진 적용 규칙 (요약)
+1. 시작 노드: `C01_N1`
+2. 노드 선택 시 `effects`를 상태값에 반영
+3. `next`로 이동
+4. C12에서 `route` 잠금
+5. C25 이후 C26은 `route_nodes_at_ch26` 매핑으로 이동
+6. C30에서 `ending_resolution` 규칙으로 최종 엔딩 결정
+
+## 상태값 키
+- `truth`, `order`, `stability`
+- `love_nayeon`, `love_siyu`, `love_harin`, `love_iden`, `love_yura`
+- `route`, `priority`
