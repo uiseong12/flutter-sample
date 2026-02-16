@@ -1,0 +1,42 @@
+{
+  "meta": {
+    "project": "story_v2",
+    "style": "webtoon-cinematic",
+    "ratio": [
+      "3:4",
+      "16:9"
+    ]
+  },
+  "characters": [
+    {
+      "id": "yoon_seoha",
+      "role": "protagonist",
+      "prompt": "Yoon Seoha, female lead of memory-forgery court romance thriller, modern black tailored suit with violet inner lining, tired but resolute eyes, dark brown mid-length hair, silver ring, holding digital evidence tablet, neon-lit fantasy courthouse background, cinematic rim light, high-detail webtoon style"
+    },
+    {
+      "id": "kang_nayeon",
+      "role": "route_nayeon",
+      "prompt": "Kang Nayeon, female prosecutor, sharp low ponytail black hair, navy formal prosecution coat with metallic badge, stern gaze, modern-fantasy courtroom, steel and crimson accent lighting, webtoon cinematic portrait"
+    },
+    {
+      "id": "han_siyu",
+      "role": "route_siyu",
+      "prompt": "Han Siyu, protective legal counselor, soft brown wavy hair, cream-beige legal coat with mint scarf accent, warm but firm expression, fantasy memory court interior, soft cinematic light"
+    },
+    {
+      "id": "min_harin",
+      "role": "route_harin",
+      "prompt": "Min Harin, forensic memory analyst, ash-black bob cut, thin-frame glasses, white-gray lab coat with holographic interface gloves, cool cyan-violet lighting, high-tech memory reconstruction lab, detailed webtoon style"
+    },
+    {
+      "id": "joo_iden",
+      "role": "route_iden",
+      "prompt": "Joo Iden, rogue memory hacker, black undercut hair, dark hooded tech jacket with security patches, tactical earpiece, intense eyes, neon blue-red cyber court control room, cinematic webtoon art"
+    },
+    {
+      "id": "seol_yura",
+      "role": "route_yura",
+      "prompt": "Seol Yura, royal inspector negotiator, long dark wine-brown hair, elegant uniform with burgundy accents and royal crest brooch, poised diplomatic expression, grand archive courtroom, gold-ivory cinematic lighting, webtoon style"
+    }
+  ]
+}
