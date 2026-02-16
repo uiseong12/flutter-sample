@@ -1267,6 +1267,7 @@ class _GameShellState extends State<GameShell> with TickerProviderStateMixin {
         list.sort((a, b) => (a['id'] as String).compareTo(b['id'] as String));
         final n = list.isNotEmpty ? list.first : {'id': 'C${ch.toString().padLeft(2, '0')}_N1', 'choices': []};
         final nodeId = n['id']?.toString() ?? 'C${ch.toString().padLeft(2, '0')}_N1';
+        final nodeName = n['name']?.toString() ?? nodeId;
         final choiceMaps = (n['choices'] as List<dynamic>? ?? []).cast<Map<String, dynamic>>();
         final choices = <StoryChoice>[];
         for (var i = 0; i < choiceMaps.length; i++) {
@@ -1287,9 +1288,9 @@ class _GameShellState extends State<GameShell> with TickerProviderStateMixin {
           choices.add(StoryChoice(label: '진행', mainTarget: '엘리안', mainDelta: 4, result: '다음 챕터 진행'));
         }
         beats.add(StoryBeat(
-          title: '$nodeId',
+          title: nodeName,
           speaker: '나레이션',
-          line: 'story_v2 브릿지 적용 챕터 C${ch.toString().padLeft(2, '0')} · 분기 중심 진행',
+          line: 'story_v2 브릿지 적용 챕터 C${ch.toString().padLeft(2, '0')} · $nodeName',
           backgroundAsset: bg[(ch - 1) % bg.length],
           leftCharacter: '엘리안',
           rightCharacter: '세레나',
