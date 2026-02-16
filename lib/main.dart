@@ -5207,16 +5207,28 @@ class _GameShellState extends State<GameShell> with TickerProviderStateMixin {
                                 child: Text('click', style: TextStyle(color: Colors.white60, fontSize: 12)),
                               ),
                             if (_isCheckpointPending())
-                              const Padding(
-                                padding: EdgeInsets.only(bottom: 10),
-                                child: Text('체크포인트 선택 필요 (화면 탭)', style: TextStyle(color: Colors.amberAccent, fontSize: 12)),
+                              Padding(
+                                padding: const EdgeInsets.only(bottom: 10),
+                                child: Row(
+                                  children: [
+                                    const Expanded(
+                                      child: Text('체크포인트 선택 필요', style: TextStyle(color: Colors.amberAccent, fontSize: 12)),
+                                    ),
+                                    TextButton(
+                                      onPressed: () => _openCheckpointPopup(beat),
+                                      child: const Text('선택 열기'),
+                                    ),
+                                  ],
+                                ),
                               ),
                             if (!_hasNextDialogueLine() && !_isCheckpointPending())
                               Wrap(
                                 spacing: 8,
                                 runSpacing: 8,
-                                children: List.generate(beat.choices.length, (i) {
-                                  final choice = beat.choices[i];
+                                children: List.generate(beat.choices.isEmpty ? 1 : beat.choices.length, (i) {
+                                  final choice = beat.choices.isEmpty
+                                      ? StoryChoice(label: '다음 진행', mainTarget: '강나연', mainDelta: 1, result: '다음 챕터 진행')
+                                      : beat.choices[i];
                                   final routeLocked = _isChoiceBlockedByRouteLock(choice);
                                   final kind = i == beat.choices.length - 1 ? ChoiceKind.condition : ChoiceKind.free;
                                   final premiumSample = _premiumSampleForChoice(_storyIndex + 1, choice, choiceIndex: i);
