@@ -1,5 +1,8 @@
 # C20 · 중반 결산 (나연 루트)
 
+- cast_rule: 주인공(윤서하) 여성 / 공략 캐릭터 5인(강나연·한시유·민하린·주이든·설유라) 남성
+
+
 - node_id: `C20_R_NAYEON`
 - chapter: 20
 - route: NAYEON (강나연)

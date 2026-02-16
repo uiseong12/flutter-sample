@@ -1,5 +1,8 @@
 # C18 · 왕실 교섭 1차 대안선 (나연)
 
+- cast_rule: 주인공(윤서하) 여성 / 공략 캐릭터 5인(강나연·한시유·민하린·주이든·설유라) 남성
+
+
 - node_id: `C18_R_NAYEON_ALT`
 - chapter: 18
 - route: NAYEON (강나연)

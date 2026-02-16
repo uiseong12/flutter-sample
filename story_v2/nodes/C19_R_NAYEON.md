@@ -1,5 +1,8 @@
 # C19 · 증거 채택전 (나연 루트)
 
+- cast_rule: 주인공(윤서하) 여성 / 공략 캐릭터 5인(강나연·한시유·민하린·주이든·설유라) 남성
+
+
 - node_id: `C19_R_NAYEON`
 - chapter: 19
 - route: NAYEON (강나연)
