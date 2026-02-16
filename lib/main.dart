@@ -6332,30 +6332,67 @@ class _StoryTreeLinkPainter extends CustomPainter {
   final List<Map<String, dynamic>> edges;
   final int currentChapter;
 
+  int _chapterOf(String nodeId) {
+    final m = RegExp(r'^C(\d{2})').firstMatch(nodeId);
+    if (m == null) return 0;
+    return int.tryParse(m.group(1) ?? '0') ?? 0;
+  }
+
   @override
   void paint(Canvas canvas, Size size) {
-    final base = Paint()
-      ..style = PaintingStyle.stroke
-      ..strokeWidth = 1.4
-      ..color = const Color(0x66D7C3A0);
-    final glow = Paint()
-      ..style = PaintingStyle.stroke
-      ..strokeWidth = 2.6
-      ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 3)
-      ..color = const Color(0x55BFA67A);
-
     for (final e in edges) {
       final from = e['from']?.toString() ?? '';
       final to = e['to']?.toString() ?? '';
       final a = posMap[from];
       final b = posMap[to];
       if (a == null || b == null) continue;
+
+      final fromCh = _chapterOf(from);
+      final toCh = _chapterOf(to);
+      final horizon = (fromCh > toCh ? fromCh : toCh) - currentChapter;
+
+      // 진행하지 않은 미래 분기는 안개처럼 희미하게, 멀수록 더 가림.
+      final alphaBase = horizon <= 1
+          ? 0x66
+          : horizon <= 3
+              ? 0x38
+              : 0x16;
+      final alphaGlow = horizon <= 1
+          ? 0x55
+          : horizon <= 3
+              ? 0x2A
+              : 0x12;
+      final revealRatio = horizon <= 1
+          ? 1.0
+          : horizon <= 3
+              ? 0.7
+              : 0.42;
+
+      final base = Paint()
+        ..style = PaintingStyle.stroke
+        ..strokeWidth = 1.4
+        ..color = Color.fromARGB(alphaBase, 0xD7, 0xC3, 0xA0);
+      final glow = Paint()
+        ..style = PaintingStyle.stroke
+        ..strokeWidth = 2.8
+        ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 3.5)
+        ..color = Color.fromARGB(alphaGlow, 0xBF, 0xA6, 0x7A);
+
       final cp = Offset((a.dx + b.dx) / 2, (a.dy + b.dy) / 2 + 8);
       final path = Path()
         ..moveTo(a.dx, a.dy)
         ..quadraticBezierTo(cp.dx, cp.dy, b.dx, b.dy);
-      canvas.drawPath(path, glow);
-      canvas.drawPath(path, base);
+
+      if (revealRatio >= 0.999) {
+        canvas.drawPath(path, glow);
+        canvas.drawPath(path, base);
+      } else {
+        for (final metric in path.computeMetrics()) {
+          final partial = metric.extractPath(0, metric.length * revealRatio);
+          canvas.drawPath(partial, glow);
+          canvas.drawPath(partial, base);
+        }
+      }
     }
   }
 
