@@ -1,0 +1,136 @@
+{
+  "version": 2,
+  "economy": {
+    "softCurrency": "credits",
+    "hardCurrency": "evidenceToken",
+    "chapterRewards": {
+      "min": 80,
+      "max": 140,
+      "perfectBonus": 20
+    },
+    "weeklyCaps": {
+      "evidenceToken": 20
+    }
+  },
+  "iapProducts": [
+    {
+      "id": "et_small",
+      "type": "consumable",
+      "priceTier": "$2.99",
+      "gives": {
+        "evidenceToken": 15
+      }
+    },
+    {
+      "id": "et_medium",
+      "type": "consumable",
+      "priceTier": "$7.99",
+      "gives": {
+        "evidenceToken": 45
+      },
+      "bonus": {
+        "credits": 500
+      }
+    },
+    {
+      "id": "et_large",
+      "type": "consumable",
+      "priceTier": "$14.99",
+      "gives": {
+        "evidenceToken": 95
+      },
+      "bonus": {
+        "credits": 1500
+      }
+    },
+    {
+      "id": "monthly_pass",
+      "type": "subscription",
+      "priceTier": "$4.99/mo",
+      "benefits": {
+        "dailyEvidenceToken": 2,
+        "adSkip": true,
+        "chapterRewardBoostPct": 15
+      }
+    },
+    {
+      "id": "starter_bundle",
+      "type": "one_time",
+      "priceTier": "$5.99",
+      "gives": {
+        "evidenceToken": 25,
+        "credits": 1200
+      },
+      "unlocks": [
+        "costume_starter"
+      ]
+    }
+  ],
+  "ads": {
+    "rewarded": [
+      {
+        "placement": "after_chapter_bonus",
+        "reward": {
+          "credits": 60
+        },
+        "dailyLimit": 10
+      },
+      {
+        "placement": "daily_evidence_token",
+        "reward": {
+          "evidenceToken": 1
+        },
+        "dailyLimit": 3
+      },
+      {
+        "placement": "retry_discount",
+        "reward": {
+          "retryCostMinus": 1
+        },
+        "dailyLimit": 5
+      }
+    ],
+    "interstitial": [
+      {
+        "placement": "chapter_end",
+        "cooldownSec": 180,
+        "disableForPass": true
+      },
+      {
+        "placement": "menu_return",
+        "cooldownSec": 240,
+        "disableForPass": true
+      }
+    ],
+    "banner": [
+      {
+        "placement": "lobby_bottom",
+        "disableForPass": true
+      }
+    ]
+  },
+  "pricingRules": {
+    "retryChoiceCost": 2,
+    "retryChoiceCostAfter3rdOnSameNode": 3,
+    "checkpointRecoveryCost": 3,
+    "hiddenLogCost": 1
+  },
+  "abTests": [
+    {
+      "id": "starter_bundle_price",
+      "variants": [
+        "$4.99",
+        "$5.99",
+        "$6.99"
+      ]
+    },
+    {
+      "id": "rewarded_daily_token_limit",
+      "variants": [
+        2,
+        3,
+        4
+      ]
+    }
+  ]
+}

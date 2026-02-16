@@ -1,0 +1,66 @@
+chapter,nodeId,choiceId,choiceText,next,delta_truth,delta_order,delta_stability,delta_will,affection_target,affection_delta,strength
+C01,C01_N1,A,초기 보고서 제출,C02_N1,0,0,0,0,,0,medium
+C02,C02_N1,A,법원 프로토콜 유지,C03_N1,0,0,7,0,,0,medium
+C02,C02_N1,B,비공식 감정 병행,C03_N1,0,0,0,0,,0,medium
+C03,C03_N1,A,합동 브리핑 수락,C04_N1,0,0,0,0,,0,medium
+C04,C04_N1,A,대역 가설 채택,C05_N1,0,0,0,0,,0,medium
+C05,C05_N1,A,정식 영장,C06_N1,0,0,0,0,,0,medium
+C05,C05_N1,B,우회 침입,C06_N2,0,0,0,0,,0,medium
+C05,C05_N1,C,감찰 협상,C06_N3,-1,7,0,0,,0,medium
+C06,C06_N1,A,제출기록 분석,C07_N1,0,0,0,0,,0,medium
+C06,C06_N2,A,로그삭제 도주,C07_N1,0,0,0,0,,0,medium
+C06,C06_N2,B,단독책임,BE_01,0,0,0,0,,0,medium
+C06,C06_N2,C,내부고발 카드,C07_N1,0,0,0,0,,0,medium
+C06,C06_N3,A,비공개 열람 수락,C07_N1,-1,7,0,0,,0,medium
+C07,C07_N1,A,코드명 추적,C08_N1,0,0,0,0,,0,medium
+C08,C08_N1,A,재판 가설 상정,C09_N1,0,0,0,0,,0,medium
+C09,C09_N1,A,증거 보강 후 기소,C10_N1,0,0,0,0,,0,medium
+C09,C09_N1,B,성급 기소,BE_02,0,0,0,0,,0,medium
+C10,C10_N1,A,중간심리 통과,C11_N1,0,0,0,0,,0,medium
+C11,C11_N1,A,신뢰 점검,C12_N1,0,0,0,0,,0,medium
+C12,C12_N1,A,나연 동행,C13_R_NAYEON,0,0,0,0,nayeon,8,medium
+C12,C12_N1,B,시유 동행,C13_R_SIYU,0,0,0,0,siyu,8,medium
+C12,C12_N1,C,하린 동행,C13_R_HARIN,0,0,0,0,harin,8,medium
+C12,C12_N1,D,이든 동행,C13_R_IDEN,0,0,0,0,iden,8,medium
+C12,C12_N1,E,유라 동행,C13_R_YURA,0,0,0,0,yura,8,medium
+C13,C13_R_NAYEON,A,재기소 준비,C14_N1,0,0,0,0,,0,medium
+C13,C13_R_SIYU,A,보호명령 준비,C14_N1,0,0,7,0,,0,medium
+C13,C13_R_HARIN,A,복원 실험,C14_N1,0,0,0,0,,0,medium
+C13,C13_R_IDEN,A,삭제로그 추적,C14_N1,0,0,0,0,,0,medium
+C13,C13_R_YURA,A,왕실 열람권,C14_N1,0,0,0,0,,0,medium
+C14,C14_N1,A,실명 공개,BE_05,9,0,-3,0,,0,strong
+C14,C14_N1,B,코드명 공개,C15_N1,0,0,0,0,,0,medium
+C14,C14_N1,C,비공개 유지,C15_N1,-1,7,7,0,,0,medium
+C15,C15_N1,A,원본 1차복원,C16_N1,9,0,-3,0,,0,strong
+C16,C16_N1,A,복원 계속,C17_N1,0,0,0,5,,0,medium
+C17,C17_N1,A,과거 진실 우선,C18_N1,9,0,-3,0,,0,strong
+C17,C17_N1,B,현재 관계 우선,C18_N1,0,0,0,0,,0,medium
+C17,C17_N1,C,양립 강행,BE_03,0,0,0,0,,0,medium
+C18,C18_N1,A,왕실 거래 거절,C19_N1,0,0,0,0,,0,medium
+C18,C18_N1,B,조건부 수락,C19_N1,-1,7,0,0,,0,medium
+C19,C19_N1,A,핵심증거 채택,C20_N1,0,0,0,0,,0,medium
+C19,C19_N1,B,불완전 채택,BE_06,0,0,0,0,,0,medium
+C20,C20_N1,A,루트 사실 확정,C21_N1,0,0,0,0,,0,medium
+C21,C21_N1,A,진본성 통과,C22_N1,0,0,0,0,,0,medium
+C22,C22_N1,A,강경진압,C23_N1,0,0,0,0,,0,medium
+C22,C22_N1,B,공개사과,C23_N1,0,0,7,0,,0,medium
+C22,C22_N1,C,판단 유예,BE_04,0,0,0,0,,0,medium
+C23,C23_N1,A,왕실 거래 수락,C24_N1,0,0,0,0,,0,medium
+C23,C23_N1,B,왕실 거래 거절,C24_N1,0,0,0,0,,0,medium
+C24,C24_N1,A,전면 공개재판,C25_N1,9,0,-3,0,,0,strong
+C24,C24_N1,B,편집 공개,C25_N1,0,0,0,0,,0,medium
+C24,C24_N1,C,비공개 전환,BE_07,-1,7,0,0,,0,medium
+C25,C25_N1,A,서하 진술,ROUTE_CH26,0,0,0,0,,0,medium
+C26,C26_R_NAYEON,A,나연 신뢰 확정,C27_N1,0,0,0,0,nayeon,8,medium
+C26,C26_R_SIYU,A,시유 신뢰 확정,C27_N1,0,0,0,0,siyu,8,medium
+C26,C26_R_HARIN,A,하린 신뢰 확정,C27_N1,0,0,0,0,harin,8,medium
+C26,C26_R_IDEN,A,이든 신뢰 확정,C27_N1,0,0,0,0,iden,8,medium
+C26,C26_R_YURA,A,유라 신뢰 확정,C27_N1,0,0,0,0,yura,8,medium
+C27,C27_N1,A,원본까지 공개,BE_08,9,0,-3,0,,0,strong
+C27,C27_N1,B,프로젝트만 공개,C28_N1,0,0,0,0,,0,medium
+C27,C27_N1,C,특검 이관 봉인,C28_N1,-1,7,0,0,,0,medium
+C28,C28_N1,A,판결문 확정,C29_N1,0,0,0,0,,0,medium
+C29,C29_N1,A,진실 최우선,C30_N1,9,0,-3,0,,0,strong
+C29,C29_N1,B,질서 최우선,C30_N1,-1,7,0,0,,0,medium
+C29,C29_N1,C,사랑 최우선,C30_N1,0,0,0,0,,0,medium
+C30,C30_N1,A,루트/수치 판정 실행,HE_NAYEON,0,0,0,0,,0,medium

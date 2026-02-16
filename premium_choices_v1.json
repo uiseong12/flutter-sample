@@ -60,7 +60,37 @@
         "id": "daily_evidence_token",
         "type": "rewarded",
         "dailyLimit": 3
+      },
+      {
+        "id": "chapter_end_interstitial",
+        "type": "interstitial",
+        "cooldownSec": 180,
+        "dailyLimit": 20
       }
     ]
+  },
+  "store": {
+    "products": [
+      {
+        "id": "et_small",
+        "currency": "USD",
+        "price": "2.99",
+        "evidenceToken": 15
+      },
+      {
+        "id": "et_medium",
+        "currency": "USD",
+        "price": "7.99",
+        "evidenceToken": 45
+      },
+      {
+        "id": "monthly_pass",
+        "currency": "USD",
+        "price": "4.99/mo",
+        "dailyEvidenceToken": 2,
+        "adSkip": true
+      }
+    ],
+    "notes": "monthly_pass removes interstitial/banner ads"
   }
 }

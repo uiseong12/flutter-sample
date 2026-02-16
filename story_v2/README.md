@@ -46,3 +46,6 @@
 
 - `system/chapter_choice_delta_v1.csv`
 - `system/LIVE_OPS_RULES_V2.md`
+- `system/chapter_choice_delta_v2.csv`
+- `system/BALANCE_PATCH_V2.md`
+- `system/monetization_v2.json`
