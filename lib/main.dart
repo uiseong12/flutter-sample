@@ -1602,6 +1602,23 @@ class _GameShellState extends State<GameShell> with TickerProviderStateMixin {
     await _save();
   }
 
+
+  Future<void> _confirmUnlockNextChapter() async {
+    final rem = (_storyOpenRechargeAt ?? DateTime.now().add(const Duration(seconds: _storyKeyIntervalSec))).difference(DateTime.now());
+    final ok = await showDialog<bool>(
+      context: context,
+      builder: (_) => AlertDialog(
+        title: Text('CH${(_storyIndex + 2).toString().padLeft(2, '0')} 개방'),
+        content: Text('열쇠 1개를 사용해 다음 챕터를 개방할까요?\n\n보유 $_storyOpenCurrency/$_storyKeyMax · 다음 충전 ${_fmtClock(rem.isNegative ? Duration.zero : rem)}'),
+        actions: [
+          TextButton(onPressed: () => Navigator.pop(context, false), child: const Text('취소')),
+          FilledButton(onPressed: () => Navigator.pop(context, true), child: const Text('개방')),
+        ],
+      ),
+    );
+    if (ok == true) await _unlockStoryNowByCurrency();
+  }
+
   void _setExpression(String name, Expression expression) {
     _expressions[name] = expression;
   }
@@ -4820,9 +4837,10 @@ class _GameShellState extends State<GameShell> with TickerProviderStateMixin {
                     final canUnlockNextByKey = isLocked && ch == frontier + 1 && _storySelections[frontier - 1] != null;
 
                     final nodeTitle = _treeNodeNames['C${ch.toString().padLeft(2, '0')}_N1'] ?? '챕터 ${ch.toString().padLeft(2, '0')}';
+                    final showLabel = isCurrentPlayable || isLocked;
 
                     return Positioned(
-                      left: p.dx - 58,
+                      left: p.dx - 64,
                       top: p.dy - 20,
                       child: GestureDetector(
                         onTap: (canTapPath || canUnlockNextByKey)
@@ -4878,8 +4896,8 @@ class _GameShellState extends State<GameShell> with TickerProviderStateMixin {
                           mainAxisSize: MainAxisSize.min,
                           children: [
                             Container(
-                              width: 40,
-                              height: 40,
+                              width: 44,
+                              height: 44,
                               alignment: Alignment.center,
                               decoration: BoxDecoration(
                                 shape: BoxShape.circle,
@@ -4903,16 +4921,18 @@ class _GameShellState extends State<GameShell> with TickerProviderStateMixin {
                                           ? const Icon(Icons.check_rounded, size: 14, color: Colors.white)
                                           : const Icon(Icons.play_arrow_rounded, size: 14, color: Colors.white))),
                             ),
-                            const SizedBox(width: 8),
-                            ConstrainedBox(
-                              constraints: const BoxConstraints(maxWidth: 120),
-                              child: Text(
-                                nodeTitle,
-                                maxLines: 1,
-                                overflow: TextOverflow.ellipsis,
-                                style: const TextStyle(color: Colors.white, fontSize: 12, fontWeight: FontWeight.w600),
+                            if (showLabel) ...[
+                              const SizedBox(width: 8),
+                              ConstrainedBox(
+                                constraints: const BoxConstraints(maxWidth: 120),
+                                child: Text(
+                                  nodeTitle,
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
+                                  style: const TextStyle(color: Colors.white, fontSize: 12, fontWeight: FontWeight.w600),
+                                ),
                               ),
-                            ),
+                            ],
                           ],
                         ),
                       ),
@@ -6418,10 +6438,15 @@ class _StoryTreeLinkPainter extends CustomPainter {
   final List<Map<String, dynamic>> edges;
   final int currentChapter;
 
-  int _chapterOf(String nodeId) {
-    final m = RegExp(r'^C(\d{2})').firstMatch(nodeId);
-    if (m == null) return 0;
-    return int.tryParse(m.group(1) ?? '0') ?? 0;
+  void _drawDashedPath(Canvas canvas, Path path, Paint paint, {double dash = 5, double gap = 5}) {
+    for (final metric in path.computeMetrics()) {
+      double distance = 0;
+      while (distance < metric.length) {
+        final next = distance + dash;
+        canvas.drawPath(metric.extractPath(distance, next.clamp(0, metric.length)), paint);
+        distance = next + gap;
+      }
+    }
   }
 
   @override
@@ -6433,51 +6458,35 @@ class _StoryTreeLinkPainter extends CustomPainter {
       final b = posMap[to];
       if (a == null || b == null) continue;
 
-      final fromCh = _chapterOf(from);
-      final toCh = _chapterOf(to);
-      final horizon = (fromCh > toCh ? fromCh : toCh) - currentChapter;
-
-      // 진행하지 않은 미래 분기는 안개처럼 희미하게, 멀수록 더 가림.
-      final alphaBase = horizon <= 1
-          ? 0x66
-          : horizon <= 3
-              ? 0x38
-              : 0x16;
-      final alphaGlow = horizon <= 1
-          ? 0x55
-          : horizon <= 3
-              ? 0x2A
-              : 0x12;
-      final revealRatio = horizon <= 1
-          ? 1.0
-          : horizon <= 3
-              ? 0.7
-              : 0.42;
+      final isUnknown = to.contains('UNKNOWN');
+      final isLocked = to.contains('NEXT_');
 
       final base = Paint()
         ..style = PaintingStyle.stroke
-        ..strokeWidth = 1.4
-        ..color = Color.fromARGB(alphaBase, 0xD7, 0xC3, 0xA0);
+        ..strokeWidth = isUnknown ? 1.4 : (isLocked ? 1.6 : 2.4)
+        ..color = isUnknown
+            ? const Color(0x44A89AB8)
+            : (isLocked ? const Color(0x66BFA67A) : const Color(0xCCD7C3A0));
+
       final glow = Paint()
         ..style = PaintingStyle.stroke
-        ..strokeWidth = 2.8
+        ..strokeWidth = isUnknown ? 2.0 : 2.8
         ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 3.5)
-        ..color = Color.fromARGB(alphaGlow, 0xBF, 0xA6, 0x7A);
+        ..color = isUnknown
+            ? const Color(0x22A89AB8)
+            : (isLocked ? const Color(0x33BFA67A) : const Color(0x55D7C3A0));
 
       final cp = Offset((a.dx + b.dx) / 2, (a.dy + b.dy) / 2 + 8);
       final path = Path()
         ..moveTo(a.dx, a.dy)
         ..quadraticBezierTo(cp.dx, cp.dy, b.dx, b.dy);
 
-      if (revealRatio >= 0.999) {
+      if (isUnknown) {
+        _drawDashedPath(canvas, path, glow, dash: 3.5, gap: 4.5);
+        _drawDashedPath(canvas, path, base, dash: 3.5, gap: 4.5);
+      } else {
         canvas.drawPath(path, glow);
         canvas.drawPath(path, base);
-      } else {
-        for (final metric in path.computeMetrics()) {
-          final partial = metric.extractPath(0, metric.length * revealRatio);
-          canvas.drawPath(partial, glow);
-          canvas.drawPath(partial, base);
-        }
       }
     }
   }
