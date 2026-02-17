@@ -188,8 +188,10 @@ class _GameShellState extends State<GameShell> with TickerProviderStateMixin {
   int _menuIndex = 0;
   int _gold = 120;
   int _premiumTokens = 0;
-  int _storyOpenCurrency = 5;
+  int _storyOpenCurrency = 3;
   DateTime? _storyOpenRechargeAt;
+  static const int _storyKeyMax = 10;
+  static const int _storyKeyIntervalSec = 21600;
   String? _hudTooltipText;
   int _storyIndex = 0;
   int _baseCharm = 12;
@@ -1380,7 +1382,7 @@ class _GameShellState extends State<GameShell> with TickerProviderStateMixin {
       final m = jsonDecode(raw) as Map<String, dynamic>;
       _gold = m['gold'] ?? _gold;
       _premiumTokens = m['premiumTokens'] ?? _premiumTokens;
-      _storyOpenCurrency = (m['storyOpenCurrency'] ?? _storyOpenCurrency) as int;
+      _storyOpenCurrency = ((m['storyOpenCurrency'] ?? _storyOpenCurrency) as int).clamp(0, _storyKeyMax);
       final rechargeRaw = m['storyOpenRechargeAt']?.toString();
       _storyOpenRechargeAt = rechargeRaw == null ? null : DateTime.tryParse(rechargeRaw);
       _storyIndex = (m['storyIndex'] ?? _storyIndex) as int;
@@ -1401,7 +1403,7 @@ class _GameShellState extends State<GameShell> with TickerProviderStateMixin {
         _storySelections[i] = loadedSelections[i];
       }
 
-      final stepPickRaw = (m['stepNodePick'] as Map<String, dynamic>? ?? {});
+      final stepPickRaw = ((m['chapterBranchPick'] as Map<String, dynamic>?) ?? (m['stepNodePick'] as Map<String, dynamic>? ?? {}));
       _stepNodePick = stepPickRaw.map((k, v) => MapEntry(int.parse(k), v as int));
       _logs
         ..clear()
@@ -1480,6 +1482,17 @@ class _GameShellState extends State<GameShell> with TickerProviderStateMixin {
         'endingEvaluated': _endingEvaluated,
         'storySelections': _storySelections,
         'stepNodePick': _stepNodePick.map((k, v) => MapEntry(k.toString(), v)),
+        'chapterBranchPick': _stepNodePick.map((k, v) => MapEntry(k.toString(), v)),
+        'chapterState': {
+          for (int i = 0; i < _story.length; i++)
+            (i + 1).toString(): (_storySelections[i] == null ? (i <= _storyIndex ? 'PLAYABLE' : 'LOCKED') : (i == _storyIndex ? 'COMPLETED_UNCLAIMED' : 'NEXT_OPENED')),
+        },
+        'keys': {
+          'count': _storyOpenCurrency,
+          'max': _storyKeyMax,
+          'lastRechargeAt': _storyOpenRechargeAt?.toIso8601String(),
+          'intervalSec': _storyKeyIntervalSec,
+        },
         'logs': _logs,
         'characters': _characters.map((e) => e.toJson()).toList(),
         'relationshipStates': _relationshipStates.map((k, v) => MapEntry(k, v.name)),
@@ -1546,11 +1559,17 @@ class _GameShellState extends State<GameShell> with TickerProviderStateMixin {
 
   void _applyStoryOpenRecharge() {
     final now = DateTime.now();
-    _storyOpenRechargeAt ??= now.add(const Duration(hours: 6));
-    while (_storyOpenRechargeAt != null && !now.isBefore(_storyOpenRechargeAt!)) {
-      _storyOpenCurrency += 1;
-      _storyOpenRechargeAt = _storyOpenRechargeAt!.add(const Duration(hours: 6));
+    _storyOpenRechargeAt ??= now.add(const Duration(seconds: _storyKeyIntervalSec));
+    if (_storyOpenCurrency >= _storyKeyMax) {
+      _storyOpenCurrency = _storyKeyMax;
+      return;
     }
+    final nextAt = _storyOpenRechargeAt!;
+    if (now.isBefore(nextAt)) return;
+    final elapsed = now.difference(nextAt).inSeconds;
+    final gained = 1 + (elapsed ~/ _storyKeyIntervalSec);
+    _storyOpenCurrency = (_storyOpenCurrency + gained).clamp(0, _storyKeyMax);
+    _storyOpenRechargeAt = nextAt.add(Duration(seconds: gained * _storyKeyIntervalSec));
   }
 
   Future<void> _unlockStoryNowByCurrency() async {
@@ -1909,9 +1928,7 @@ class _GameShellState extends State<GameShell> with TickerProviderStateMixin {
 
     _logs.insert(0, '[대사] ${choice.result}');
 
-    if (_storyIndex > 0 && _storyIndex % 3 == 0) {
-      _storyLockUntil = DateTime.now().add(const Duration(hours: 3, minutes: 20));
-    }
+    // 챕터 간 게이팅은 열쇠 소비로만 처리 (시간 잠금 비활성)
 
     _lockRouteAtNode15IfNeeded();
     await _evaluateEndingIfNeeded(pickedNodeIndex, choice.result);
@@ -4520,7 +4537,7 @@ class _GameShellState extends State<GameShell> with TickerProviderStateMixin {
   Widget _storyProgressPage() {
     final cleared = _storySelections.where((e) => e != null).length;
     final preview = _story[_storyIndex];
-    final lockRem = _storyLockRemaining;
+    // 챕터 잠금은 시간 타이머가 아니라 열쇠 소비로만 처리
     final rechargeRem = (_storyOpenRechargeAt ?? DateTime.now().add(const Duration(hours: 6))).difference(DateTime.now());
     final mq = MediaQuery.of(context);
     final usableH = mq.size.height - mq.padding.top - mq.padding.bottom;
@@ -4598,7 +4615,7 @@ class _GameShellState extends State<GameShell> with TickerProviderStateMixin {
                           child: Row(
                             children: [
                               Expanded(
-                                child: _sealPrimaryButton('선택 노드 시작', (_storySelections[_storyIndex] != null || lockRem.inSeconds > 0) ? null : () {
+                                child: _sealPrimaryButton('선택 노드 시작', (_storySelections[_storyIndex] != null) ? null : () {
                                   setState(() {
                                     _inStoryScene = true;
                                     _storyResultReturnHint = null;
@@ -4619,66 +4636,43 @@ class _GameShellState extends State<GameShell> with TickerProviderStateMixin {
                             ],
                           ),
                         ),
-                        if (lockRem.inSeconds > 0)
-                          TweenAnimationBuilder<double>(
-                            tween: Tween(begin: 0.35, end: 0.85),
-                            duration: const Duration(milliseconds: 1200),
-                            curve: Curves.easeInOut,
-                            builder: (_, glow, child) => Container(
-                              margin: const EdgeInsets.only(top: 8),
-                              decoration: BoxDecoration(
-                                borderRadius: BorderRadius.circular(10),
-                                boxShadow: [BoxShadow(color: const Color(0x88E6BD77).withOpacity(glow), blurRadius: 12, spreadRadius: 1)],
-                              ),
-                              child: child,
-                            ),
-                            child: Container(
-                              padding: const EdgeInsets.fromLTRB(10, 8, 10, 10),
-                              decoration: BoxDecoration(
-                                color: const Color(0xCC231A2C),
-                                borderRadius: BorderRadius.circular(10),
-                                border: Border.all(color: const Color(0xBBAE8A53)),
-                              ),
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
+                        Container(
+                          margin: const EdgeInsets.only(top: 8),
+                          padding: const EdgeInsets.fromLTRB(10, 8, 10, 10),
+                          decoration: BoxDecoration(
+                            color: const Color(0xCC231A2C),
+                            borderRadius: BorderRadius.circular(10),
+                            border: Border.all(color: const Color(0xBBAE8A53)),
+                          ),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              const Text('🔒 다음 챕터는 열쇠 1개로 개방', style: TextStyle(color: Color(0xFFF9E7C4), fontWeight: FontWeight.w700)),
+                              const SizedBox(height: 6),
+                              Text('보유 열쇠: $_storyOpenCurrency/$_storyKeyMax · 다음 충전 ${_fmtClock(rechargeRem.isNegative ? Duration.zero : rechargeRem)}', style: const TextStyle(fontSize: 11, color: Color(0xCCF6F1E8))),
+                              const SizedBox(height: 6),
+                              Row(
                                 children: [
-                                  Text('🔒 다음 노드 개방까지 ${_fmtClock(lockRem)}', style: const TextStyle(color: Color(0xFFF9E7C4), fontWeight: FontWeight.w700)),
-                                  const SizedBox(height: 6),
-                                  ClipRRect(
-                                    borderRadius: BorderRadius.circular(999),
-                                    child: LinearProgressIndicator(
-                                      value: 1 - (lockRem.inSeconds / (3 * 3600 + 20 * 60)).clamp(0, 1),
-                                      minHeight: 8,
-                                      backgroundColor: const Color(0xFF2A2235),
-                                      valueColor: const AlwaysStoppedAnimation(Color(0xFFE7B96D)),
+                                  Expanded(
+                                    child: OutlinedButton(
+                                      style: _fantasyButtonStyle(filled: false),
+                                      onPressed: _shortenStoryLockByAd,
+                                      child: const Text('광고로 30분 단축'),
                                     ),
                                   ),
-                                  const SizedBox(height: 6),
-                                  Text('보유 노드 재화: $_storyOpenCurrency · 다음 충전 ${_fmtClock(rechargeRem.isNegative ? Duration.zero : rechargeRem)}', style: const TextStyle(fontSize: 11, color: Color(0xCCF6F1E8))),
-                                  const SizedBox(height: 6),
-                                  Row(
-                                    children: [
-                                      Expanded(
-                                        child: OutlinedButton(
-                                          style: _fantasyButtonStyle(filled: false),
-                                          onPressed: _shortenStoryLockByAd,
-                                          child: const Text('광고로 30분 단축'),
-                                        ),
-                                      ),
-                                      const SizedBox(width: 8),
-                                      Expanded(
-                                        child: FilledButton(
-                                          style: _fantasyButtonStyle(filled: true),
-                                          onPressed: _unlockStoryNowByCurrency,
-                                          child: const Text('열쇠 1개로 다음 노드 개방'),
-                                        ),
-                                      ),
-                                    ],
+                                  const SizedBox(width: 8),
+                                  Expanded(
+                                    child: FilledButton(
+                                      style: _fantasyButtonStyle(filled: true),
+                                      onPressed: _unlockStoryNowByCurrency,
+                                      child: const Text('열쇠 1개로 다음 챕터 개방'),
+                                    ),
                                   ),
                                 ],
                               ),
-                            ),
+                            ],
                           ),
+                        ),
                       ],
                     ),
                   ),
@@ -4777,6 +4771,7 @@ class _GameShellState extends State<GameShell> with TickerProviderStateMixin {
     if (frontier < maxChapter) {
       final nextCh = frontier + 1;
       final selectedAtFrontier = _storySelections[frontier - 1];
+      final selectedAtPrev = frontier > 1 ? _storySelections[frontier - 2] : null;
       final choiceCount = _story[frontier - 1].choices.length;
       final branchCount = choiceCount < 2 ? 2 : (choiceCount > 4 ? 4 : choiceCount);
 
@@ -4785,13 +4780,17 @@ class _GameShellState extends State<GameShell> with TickerProviderStateMixin {
         final id = 'NEXT_${nextCh}_$i';
         String kind;
 
-        if (selectedAtFrontier == null) {
-          // 아직 현재 챕터 미클리어: 전부 잠금
-          kind = 'locked';
-        } else {
-          // 현재 챕터 클리어 이후: 해금 가능 후보 1개 + 나머지 ???
+        if (selectedAtFrontier != null) {
+          // 현재 챕터까지 확정되면 다음 후보가 잠금+???로 표시
           final openIdx = selectedAtFrontier % branchCount;
           kind = (i == openIdx) ? 'locked' : 'unknown';
+        } else if (selectedAtPrev != null) {
+          // 직전 챕터 선택에 따라 현재 후보를 먼저 노출
+          final openIdx = selectedAtPrev % branchCount;
+          kind = (i == openIdx) ? 'locked' : 'unknown';
+        } else {
+          // 초기 상태: 전부 잠금
+          kind = 'locked';
         }
 
         nodes.add({'id': id, 'chapter': nextCh, 'lane': side, 'kind': kind});
