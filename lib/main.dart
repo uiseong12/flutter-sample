@@ -4537,85 +4537,93 @@ class _GameShellState extends State<GameShell> with TickerProviderStateMixin {
   Widget _storyProgressPage() {
     final cleared = _storySelections.where((e) => e != null).length;
     final preview = _story[_storyIndex];
-    // 챕터 잠금은 시간 타이머가 아니라 열쇠 소비로만 처리
-    final rechargeRem = (_storyOpenRechargeAt ?? DateTime.now().add(const Duration(hours: 6))).difference(DateTime.now());
+    final rechargeRem = (_storyOpenRechargeAt ?? DateTime.now().add(const Duration(seconds: _storyKeyIntervalSec))).difference(DateTime.now());
     final mq = MediaQuery.of(context);
     final usableH = mq.size.height - mq.padding.top - mq.padding.bottom;
-    final panelH = (usableH * 0.72).clamp(520.0, 760.0);
-    final headerTop = panelH * 0.02;
-    final startTop = panelH * 0.15;
-    final mapTop = panelH * 0.28;
-    final mapBottom = panelH * 0.08;
+
+    final currentCleared = _storySelections[_storyIndex] != null;
+    final canOpenNext = currentCleared && _storyIndex < _story.length - 1;
 
     return SizedBox(
       height: usableH,
       child: Stack(
         children: [
-                Positioned.fill(
-                  child: AnimatedSwitcher(
-                    duration: const Duration(milliseconds: 360),
-                    child: SizedBox.expand(
-                      key: ValueKey(_sceneBackgroundAssetForNode(_storyIndex)),
-                      child: Image.asset(_sceneBackgroundAssetForNode(_storyIndex), fit: BoxFit.cover),
+          Positioned.fill(
+            child: AnimatedSwitcher(
+              duration: const Duration(milliseconds: 360),
+              child: SizedBox.expand(
+                key: ValueKey(_sceneBackgroundAssetForNode(_storyIndex)),
+                child: Image.asset(_sceneBackgroundAssetForNode(_storyIndex), fit: BoxFit.cover),
+              ),
+            ),
+          ),
+          Positioned.fill(child: Container(color: Colors.black.withOpacity(0.28))),
+          Positioned.fill(child: _topBottomScrim()),
+
+          // 1) 상단 상태바(정보만)
+          Positioned(
+            left: 12,
+            right: 12,
+            top: 10,
+            child: Container(
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+              decoration: BoxDecoration(
+                color: Colors.black.withOpacity(0.45),
+                borderRadius: BorderRadius.circular(10),
+                border: Border.all(color: Colors.white24),
+              ),
+              child: Row(
+                children: [
+                  Expanded(
+                    child: Text(
+                      '클리어 $cleared/${_story.length} · 현재 ${preview.title}',
+                      style: const TextStyle(color: Color(0xFFF6F1E8), fontWeight: FontWeight.w700, fontSize: 13),
+                      overflow: TextOverflow.ellipsis,
                     ),
                   ),
-                ),
-                Positioned.fill(child: Container(color: Colors.black.withOpacity(0.28))),
-                Positioned.fill(child: _topBottomScrim()),
-                Positioned(
-                  left: 12,
-                  right: 12,
-                  top: headerTop,
-                  child: Container(
-                    padding: const EdgeInsets.all(10),
-                    decoration: BoxDecoration(
-                      color: Colors.black.withOpacity(0.42),
-                      borderRadius: BorderRadius.circular(10),
-                    ),
-                    child: Row(
-                      children: [
-                        Expanded(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text('클리어 $cleared/${_story.length}', style: const TextStyle(color: Color(0xFFF6F1E8), fontWeight: FontWeight.w700, fontSize: 16, shadows: [Shadow(color: Color(0x99000000), blurRadius: 6)])),
-                              Text('현재: CH ${_storyIndex + 1} · ${preview.title}', style: const TextStyle(color: Color(0xFFF6F1E8))),
-                              if (_endingCharacterName != null)
-                                Text('확정 엔딩: $_endingCharacterName', style: const TextStyle(color: Colors.amberAccent, fontWeight: FontWeight.bold)),
-                            ],
-                          ),
-                        ),
-                        IconButton(onPressed: _showStoryLegend, icon: const Icon(Icons.help_outline, color: Color(0xFFF6F1E8))),
-                      ],
-                    ),
+                  const SizedBox(width: 8),
+                  Text(
+                    '열쇠 $_storyOpenCurrency/$_storyKeyMax · ${_fmtClock(rechargeRem.isNegative ? Duration.zero : rechargeRem)}',
+                    style: const TextStyle(color: Color(0xFFF6F1E8), fontSize: 12),
                   ),
-                ),
-                Positioned(
-                  left: 0,
-                  right: 0,
-                  top: mapTop,
-                  bottom: mapBottom,
-                  child: _branchRouteMap(height: panelH - mapTop - mapBottom),
-                ),
-                Positioned(
-                  left: 12,
-                  right: 12,
-                  top: startTop,
-                  child: SafeArea(
-                    bottom: false,
-                    child: Column(
-                      children: [
-                        Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
-                          decoration: BoxDecoration(
-                            color: Colors.black.withOpacity(0.42),
-                            borderRadius: BorderRadius.circular(10),
-                            border: Border.all(color: Colors.white24),
-                          ),
-                          child: Row(
-                            children: [
-                              Expanded(
-                                child: _sealPrimaryButton('선택 노드 시작', (_storySelections[_storyIndex] != null) ? null : () {
+                  IconButton(onPressed: _showStoryLegend, icon: const Icon(Icons.help_outline, color: Color(0xFFF6F1E8))),
+                ],
+              ),
+            ),
+          ),
+
+          // 2) 중앙 맵(단독)
+          Positioned(
+            left: 0,
+            right: 0,
+            top: 72,
+            bottom: 110,
+            child: _branchRouteMap(height: usableH - 72 - 110),
+          ),
+
+          // 3) 하단 액션바(CTA 1순위)
+          Positioned(
+            left: 12,
+            right: 12,
+            bottom: 12,
+            child: Container(
+              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 10),
+              decoration: BoxDecoration(
+                color: Colors.black.withOpacity(0.52),
+                borderRadius: BorderRadius.circular(12),
+                border: Border.all(color: Colors.white24),
+              ),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Row(
+                    children: [
+                      Expanded(
+                        child: _sealPrimaryButton(
+                          currentCleared ? '열쇠로 챕터 개방' : '챕터 시작',
+                          currentCleared
+                              ? (canOpenNext ? _unlockStoryNowByCurrency : null)
+                              : () {
                                   setState(() {
                                     _inStoryScene = true;
                                     _storyResultReturnHint = null;
@@ -4623,60 +4631,28 @@ class _GameShellState extends State<GameShell> with TickerProviderStateMixin {
                                     _transitionPreset = TransitionPreset.fade;
                                   });
                                   _beginBeatLine();
-                                }),
-                              ),
-                              const SizedBox(width: 8),
-                              const Expanded(
-                                child: Text(
-                                  '클리어 후엔 열쇠로 다음 노드 개방',
-                                  style: TextStyle(color: Color(0xFFF6F1E8), fontSize: 11, shadows: [Shadow(color: Color(0x99000000), blurRadius: 6)]),
-                                  textAlign: TextAlign.center,
-                                ),
-                              ),
-                            ],
-                          ),
+                                },
                         ),
-                        Container(
-                          margin: const EdgeInsets.only(top: 8),
-                          padding: const EdgeInsets.fromLTRB(10, 8, 10, 10),
-                          decoration: BoxDecoration(
-                            color: const Color(0xCC231A2C),
-                            borderRadius: BorderRadius.circular(10),
-                            border: Border.all(color: const Color(0xBBAE8A53)),
-                          ),
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              const Text('🔒 다음 챕터는 열쇠 1개로 개방', style: TextStyle(color: Color(0xFFF9E7C4), fontWeight: FontWeight.w700)),
-                              const SizedBox(height: 6),
-                              Text('보유 열쇠: $_storyOpenCurrency/$_storyKeyMax · 다음 충전 ${_fmtClock(rechargeRem.isNegative ? Duration.zero : rechargeRem)}', style: const TextStyle(fontSize: 11, color: Color(0xCCF6F1E8))),
-                              const SizedBox(height: 6),
-                              Row(
-                                children: [
-                                  Expanded(
-                                    child: OutlinedButton(
-                                      style: _fantasyButtonStyle(filled: false),
-                                      onPressed: _shortenStoryLockByAd,
-                                      child: const Text('광고로 30분 단축'),
-                                    ),
-                                  ),
-                                  const SizedBox(width: 8),
-                                  Expanded(
-                                    child: FilledButton(
-                                      style: _fantasyButtonStyle(filled: true),
-                                      onPressed: _unlockStoryNowByCurrency,
-                                      child: const Text('열쇠 1개로 다음 챕터 개방'),
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ],
-                          ),
-                        ),
-                      ],
-                    ),
+                      ),
+                    ],
                   ),
-                ),
+                  const SizedBox(height: 6),
+                  Row(
+                    children: [
+                      Expanded(
+                        child: Text(
+                          currentCleared ? '분기 확정됨 · 다음 챕터 잠김(열쇠 필요)' : '현재 챕터 미완료 · 먼저 챕터를 진행하세요',
+                          style: const TextStyle(color: Color(0xFFF6F1E8), fontSize: 11),
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      ),
+                      TextButton(onPressed: _shortenStoryLockByAd, child: const Text('광고 단축')),
+                    ],
+                  ),
+                ],
+              ),
+            ),
+          ),
         ],
       ),
     );
@@ -4838,6 +4814,8 @@ class _GameShellState extends State<GameShell> with TickerProviderStateMixin {
                     final isPath = kind == 'path';
                     final isUnknown = kind == 'unknown';
                     final isLocked = kind == 'locked';
+                    final isCompleted = isPath && _storySelections[ch - 1] != null;
+                    final isCurrentPlayable = isPath && ch == _storyIndex + 1 && _storySelections[ch - 1] == null;
                     final canTapPath = isPath && ch <= frontier;
                     final canUnlockNextByKey = isLocked && ch == frontier + 1 && _storySelections[frontier - 1] != null;
 
@@ -4890,7 +4868,7 @@ class _GameShellState extends State<GameShell> with TickerProviderStateMixin {
                                   Text(nodeTitle, style: const TextStyle(fontWeight: FontWeight.bold)),
                                   const SizedBox(height: 6),
                                   Text('챕터: CH ${ch.toString().padLeft(2, '0')}'),
-                                  Text('상태: ${isUnknown ? '비공개 분기' : isLocked ? '잠김' : '진행 경로'}'),
+                                  Text('상태: ${isUnknown ? '비공개 분기' : isLocked ? '열쇠 필요' : (isCompleted ? '완료' : '진행 가능')}'),
                                 ],
                               ),
                             ),
@@ -4910,20 +4888,24 @@ class _GameShellState extends State<GameShell> with TickerProviderStateMixin {
                                       ? const [Color(0xFF3B3B49), Color(0xFF252530)]
                                       : isLocked
                                           ? const [Color(0xFF33333F), Color(0xFF20202A)]
-                                          : const [Color(0xFF9C84FF), Color(0xFF5C47B6)],
+                                          : isCompleted
+                                              ? const [Color(0xFFC89D66), Color(0xFF7A5A39)]
+                                              : const [Color(0xFF9C84FF), Color(0xFF5C47B6)],
                                 ),
                                 border: Border.all(color: isUnknown ? const Color(0x88E4E4E4) : const Color(0xDDF6E9CC), width: 2),
-                                boxShadow: (isPath && ch == _storyIndex + 1) ? [const BoxShadow(color: Color(0xCC7E67FF), blurRadius: 10)] : null,
+                                boxShadow: isCurrentPlayable ? [const BoxShadow(color: Color(0xCC7E67FF), blurRadius: 10)] : null,
                               ),
                               child: isUnknown
                                   ? const Text('??', style: TextStyle(color: Colors.white, fontSize: 10, fontWeight: FontWeight.w900))
                                   : (isLocked
                                       ? const Icon(Icons.lock_rounded, size: 14, color: Color(0xFFE7DCC8))
-                                      : const Icon(Icons.auto_awesome_rounded, size: 14, color: Colors.white)),
+                                      : (isCompleted
+                                          ? const Icon(Icons.check_rounded, size: 14, color: Colors.white)
+                                          : const Icon(Icons.play_arrow_rounded, size: 14, color: Colors.white))),
                             ),
                             const SizedBox(width: 8),
                             ConstrainedBox(
-                              constraints: const BoxConstraints(maxWidth: 150),
+                              constraints: const BoxConstraints(maxWidth: 120),
                               child: Text(
                                 nodeTitle,
                                 maxLines: 1,
